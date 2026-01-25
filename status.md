@@ -4,10 +4,7 @@
 
 ### 🔐 Authentication & Users
 
-- [ ] **[Frontend]** Create `AuthService` (Login, Register, Token storage)
-- [ ] **[Frontend]** Build Login Page & Route
-- [ ] **[Frontend]** Build Registration Page & Route
-- [ ] **[Frontend]** Add Auth Interceptor (Attach JWT to requests)
+
 
 ### 📦 Modules Management
 - [ ] **[Backend]** Implement `ModuleService` (CRUD logic, Owner validation)
@@ -52,3 +49,7 @@
 - [x] **[Backend]** Implement `AuthService` (Password hashing, JWT generation)
 - [x] **[Backend]** Create `AuthController` (Login, Register endpoints)
 - [x] **[Backend]** Implement Unit & Integration Tests (Auth Module)
+- [x] **[Frontend]** Create `AuthService` (Login, Register, Token storage)
+- [x] **[Frontend]** Build Login Page & Route
+- [x] **[Frontend]** Build Registration Page & Route
+- [x] **[Frontend]** Add Auth Interceptor (Attach JWT to requests)
