@@ -20,7 +20,7 @@ These rules are **hard constraints** for agents working on the backend. If a tas
 
 ### 1.3 Folder / naming conventions (default)
 - `Controllers/`
-- `Services/` (interfaces in same folder or `Services/Abstractions/`)
+- `Services/` (interfaces in same folder or `Services/Interfaces/`)
 - `Dtos/` grouped by feature (e.g., `Dtos/Users/`)
 - `Models/` or `Entities/` for EF entities
 - `Data/` for `DbContext`, configurations, migrations

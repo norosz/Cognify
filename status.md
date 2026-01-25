@@ -3,8 +3,8 @@
 ## 📋 To Do
 
 ### 🔐 Authentication & Users
-- [ ] **[Backend]** Implement `AuthService` (Password hashing, JWT generation)
-- [ ] **[Backend]** Create `AuthController` (Login, Register endpoints)
+- [x] **[Backend]** Implement `AuthService` (Password hashing, JWT generation)
+- [x] **[Backend]** Create `AuthController` (Login, Register endpoints)
 - [ ] **[Frontend]** Create `AuthService` (Login, Register, Token storage)
 - [ ] **[Frontend]** Build Login Page & Route
 - [ ] **[Frontend]** Build Registration Page & Route

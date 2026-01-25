@@ -1,6 +1,6 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
-var password = builder.AddParameter("sql-password");
+var password = builder.AddParameter("sql-password", "Password123!");
 
 var sqldb = builder.AddSqlServer("sql", password, 14333)
     .WithLifetime(ContainerLifetime.Persistent)
