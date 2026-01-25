@@ -1,6 +1,7 @@
 using Cognify.Server.Data;
 using Cognify.Server.Services;
 using Cognify.Server.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace Cognify.Server;
 
@@ -45,6 +46,12 @@ public class Program
         var app = builder.Build();
 
         app.MapDefaultEndpoints();
+
+        using (var scope = app.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            db.Database.Migrate();
+        }
 
         app.UseDefaultFiles();
         app.MapStaticAssets();

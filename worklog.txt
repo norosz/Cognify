@@ -32,3 +32,10 @@ CHANGED: Updated `Cognify.Server/Program.cs`.
 DECISIONS: None.
 NEXT: Implement Module Service and Controller.
 BLOCKERS: None.
+
+[2026-01-25 14:58] Antigravity
+DONE: Added automatic database migration at startup.
+CHANGED: Updated `Cognify.Server/Program.cs`.
+DECISIONS: Calling `Database.Migrate()` on startup ensures dev environment DB is always up to date.
+NEXT: Implement Module Service and Controller.
+BLOCKERS: None.
