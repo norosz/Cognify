@@ -18,3 +18,10 @@ CHANGED: Added `Cognify.Server/Dtos/Auth/*.cs`, `Cognify.Server/Services/AuthSer
 DECISIONS: Used BCrypt for password hashing; JWT tokens expire in 24 hours; Dev secret key used in `appsettings.json`.
 NEXT: Implement Module Service and Controller.
 BLOCKERS: None.
+
+[2026-01-25 14:50] Antigravity
+DONE: Refactored `Services/Abstractions` to `Services/Interfaces`. Updated `BACKEND_AGENT_RULES.md` to reflect this convention.
+CHANGED: Renamed `Cognify.Server/Services/Abstractions/` to `Interfaces/`. Updated namespaces in `AuthService.cs`, `PasswordHasher.cs`, `AuthController.cs`, `Program.cs`. Updated `BACKEND_AGENT_RULES.md`.
+DECISIONS: Convention change to prefer `Interfaces` over `Abstractions`.
+NEXT: Implement Module Service and Controller.
+BLOCKERS: None.

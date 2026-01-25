@@ -4,7 +4,7 @@ using System.Text;
 using Cognify.Server.Data;
 using Cognify.Server.Dtos.Auth;
 using Cognify.Server.Models;
-using Cognify.Server.Services.Abstractions;
+using Cognify.Server.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 

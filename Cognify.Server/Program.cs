@@ -1,7 +1,6 @@
-
 using Cognify.Server.Data;
 using Cognify.Server.Services;
-using Cognify.Server.Services.Abstractions;
+using Cognify.Server.Services.Interfaces;
 
 namespace Cognify.Server;
 

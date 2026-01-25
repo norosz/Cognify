@@ -1,4 +1,4 @@
-namespace Cognify.Server.Services.Abstractions;
+namespace Cognify.Server.Services.Interfaces;
 
 public interface IPasswordHasher
 {

@@ -1,5 +1,5 @@
-using Cognify.Server.Services.Abstractions;
 using BCrypt.Net;
+using Cognify.Server.Services.Interfaces;
 
 namespace Cognify.Server.Services;
 

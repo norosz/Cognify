@@ -1,5 +1,5 @@
 using Cognify.Server.Dtos.Auth;
-using Cognify.Server.Services.Abstractions;
+using Cognify.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Cognify.Server.Controllers;
