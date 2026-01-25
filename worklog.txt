@@ -65,3 +65,17 @@ CHANGED: Updated `*.spec.ts` files in `cognify.client`.
 DECISIONS: Used `provideRouter([])` and spied on injected `Router` for component tests to ensure `RouterLink` compatibility.
 NEXT: Push changes and wait for further instructions.
 BLOCKERS: None.
+
+[2026-01-25 16:29] Antigravity
+DONE: Implemented Backend functionality for Modules Management.
+Detailed:
+- Created `Module` entity and DTOs.
+- Implemented `ModuleService` (CRUD, Owner Validation).
+- Created `ModulesController` with API endpoints.
+- Implemented `ModulesControllerTests` (Integration Tests).
+- Registered `ModuleService` in `Program.cs`.
+CHANGED: Added `Cognify.Server/Services/ModuleService.cs`, `Cognify.Server/Controllers/ModulesController.cs`, `Cognify.Tests/Controllers/ModulesControllerTests.cs`.
+DECISIONS: Enforced ownership check in Service layer; Tests cover CRUD and cross-user access restrictions.
+NEXT: Implement Frontend Modules Service and Components.
+BLOCKERS: None.
+
