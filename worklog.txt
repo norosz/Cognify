@@ -11,3 +11,10 @@ CHANGED: Added `PROJECT_RULES.md`.
 DECISIONS: Formalized the rule to read context files and maintain `status.md`/`worklog.txt` in a dedicated rules file.
 NEXT: Implement JWT Authentication Service.
 BLOCKERS: None.
+
+[2026-01-25 14:48] Antigravity
+DONE: Implemented JWT Authentication (Backend). Added `RegisterDto`, `LoginDto`, `AuthResponseDto`. Implemented `PasswordHasher` (BCrypt) and `AuthService`. Created `AuthController` with Login/Register endpoints. Configured JWT Bearer Auth in `Program.cs` and `appsettings.json`.
+CHANGED: Added `Cognify.Server/Dtos/Auth/*.cs`, `Cognify.Server/Services/AuthService.cs`, `Cognify.Server/Controllers/AuthController.cs`. Updated `Cognify.Server/Program.cs`, `Cognify.Server/appsettings.json`.
+DECISIONS: Used BCrypt for password hashing; JWT tokens expire in 24 hours; Dev secret key used in `appsettings.json`.
+NEXT: Implement Module Service and Controller.
+BLOCKERS: None.
