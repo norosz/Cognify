@@ -39,3 +39,18 @@ CHANGED: Updated `Cognify.Server/Program.cs`.
 DECISIONS: Calling `Database.Migrate()` on startup ensures dev environment DB is always up to date.
 NEXT: Implement Module Service and Controller.
 BLOCKERS: None.
+
+[2026-01-25 15:57] Antigravity
+DONE: Implemented Backend Integration Tests (xUnit, SQLite InMemory). Implemented Frontend Authentication (Angular, Material).
+Detailed:
+- Created \Cognify.Tests\ project with unit/integration tests for Auth.
+- Refactored \Cognify.Server/Program.cs\ to support test environments.
+- Implemented Frontend Auth: Service, Interceptor, Guard.
+- Implemented Frontend UI: Login, Register (Angular Material).
+- Configured API Proxy (\proxy.conf.js\).
+- Refactored frontend auth models to \uth.models.ts\.
+CHANGED: Added \Cognify.Tests/*\, \cognify.client/src/app/core/auth/*\, \cognify.client/src/app/features/auth/*\, \cognify.client/proxy.conf.js\.
+DECISIONS: Used SQLite In-Memory for integration tests; Used Angular Signals for AuthService state; Configured proxy to avoid CORS issues during dev.
+NEXT: Implement Module Service and Controller.
+BLOCKERS: None.
+
