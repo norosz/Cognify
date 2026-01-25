@@ -4,5 +4,6 @@
     <Build />
   </Project>
   <Project Path="Cognify.Server/Cognify.Server.csproj" />
+  <Project Path="Cognify.Tests/Cognify.Tests.csproj" />
   <Project Path="Cognify.ServiceDefaults/Cognify.ServiceDefaults.csproj" />
 </Solution>
