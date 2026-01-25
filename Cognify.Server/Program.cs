@@ -11,7 +11,7 @@ public class Program
         builder.AddServiceDefaults();
 
         // Add services to the container.
-        builder.AddSqlServerDbContext<ApplicationDbContext>("sqldb");
+        builder.AddSqlServerDbContext<ApplicationDbContext>("sqldata");
 
         builder.Services.AddControllers();
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

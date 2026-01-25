@@ -1,8 +1,10 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
-var sql = builder.AddSqlServer("sql")
-                 .WithDataVolume();
-var sqldb = sql.AddDatabase("sqldb");
+var password = builder.AddParameter("sql-password");
+
+var sqldb = builder.AddSqlServer("sql", password, 14333)
+    .WithLifetime(ContainerLifetime.Persistent)
+    .AddDatabase("sqldata");
 
 var api = builder.AddProject<Projects.Cognify_Server>("api")
     .WithReference(sqldb);

@@ -1,0 +1,13 @@
+[2026-01-25 13:38] Antigravity
+DONE: Read project specs; Created feature branch `feature/models-and-migrations`; Implemented EF Core Entities (User, Module, Document, Note, QuestionSet, Question, Attempt); Implemented `ApplicationDbContext`; Configured SQL Server in AppHost (Port 14333, Persistent); Generated `InitialCreate` migration.
+CHANGED: Added `Cognify.Server/Models/*.cs`, `Cognify.Server/Data/ApplicationDbContext.cs`, `Cognify.Server/Migrations/*`; Updated `Cognify.Server/Program.cs`, `Cognify.AppHost/AppHost.cs`.
+DECISIONS: Used `Guid` for all IDs; Structured entities in `Models/` and context in `Data/` as per backend rules; Fixed SQL port to 14333 and password to parameter for dev convenience.
+NEXT: Implement JWT Authentication Service and Endpoints.
+BLOCKERS: None.
+
+[2026-01-25 13:42] Antigravity
+DONE: Created `PROJECT_RULES.md` defining agent workflow and documentation standards.
+CHANGED: Added `PROJECT_RULES.md`.
+DECISIONS: Formalized the rule to read context files and maintain `status.md`/`worklog.txt` in a dedicated rules file.
+NEXT: Implement JWT Authentication Service.
+BLOCKERS: None.
