@@ -25,3 +25,10 @@ CHANGED: Renamed `Cognify.Server/Services/Abstractions/` to `Interfaces/`. Updat
 DECISIONS: Convention change to prefer `Interfaces` over `Abstractions`.
 NEXT: Implement Module Service and Controller.
 BLOCKERS: None.
+
+[2026-01-25 14:52] Antigravity
+DONE: Fixed runtime error by adding `AddAuthorization()` to `Program.cs`.
+CHANGED: Updated `Cognify.Server/Program.cs`.
+DECISIONS: None.
+NEXT: Implement Module Service and Controller.
+BLOCKERS: None.
