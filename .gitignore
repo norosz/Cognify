@@ -1,0 +1,80 @@
+##################################
+# OS / Editor
+##################################
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+!.vscode/extensions.json
+
+##################################
+# Visual Studio / Rider
+##################################
+.vs/
+*.user
+*.suo
+*.cache
+*.log
+
+##################################
+# .NET / ASP.NET
+##################################
+bin/
+obj/
+*.dll
+*.pdb
+*.exe
+
+##################################
+# ASP.NET user secrets
+##################################
+**/secrets.json
+**/*.Development.json
+**/appsettings.Development.json
+**/appsettings.json
+
+##################################
+# .NET Aspire
+##################################
+**/.aspire/
+**/aspire-manifest.json
+
+##################################
+# NuGet
+##################################
+packages/
+.nuget/
+
+##################################
+# Angular / Node
+##################################
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+##################################
+# Angular build
+##################################
+dist/
+.angular/
+.cache/
+
+##################################
+# Environment files
+##################################
+**/environment*.ts
+!.env.example
+
+##################################
+# Logs
+##################################
+logs/
+*.log
+
+##################################
+# Docker
+##################################
+docker-compose.override.yml

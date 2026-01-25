@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="Cognify.AppHost/Cognify.AppHost.csproj" />
+  <Project Path="cognify.client/cognify.client.esproj">
+    <Build />
+  </Project>
+  <Project Path="Cognify.Server/Cognify.Server.csproj" />
+  <Project Path="Cognify.ServiceDefaults/Cognify.ServiceDefaults.csproj" />
+</Solution>
