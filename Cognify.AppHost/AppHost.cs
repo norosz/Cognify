@@ -1,6 +1,11 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
-var api = builder.AddProject<Projects.Cognify_Server>("api");
+var sql = builder.AddSqlServer("sql")
+                 .WithDataVolume();
+var sqldb = sql.AddDatabase("sqldb");
+
+var api = builder.AddProject<Projects.Cognify_Server>("api")
+    .WithReference(sqldb);
 
 var web = builder.AddJavaScriptApp("web", "../cognify.client")
     .WithHttpEndpoint(port: 4200, env: "PORT")
