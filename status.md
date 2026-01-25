@@ -3,8 +3,7 @@
 ## 📋 To Do
 
 ### 🔐 Authentication & Users
-- [x] **[Backend]** Implement `AuthService` (Password hashing, JWT generation)
-- [x] **[Backend]** Create `AuthController` (Login, Register endpoints)
+
 - [ ] **[Frontend]** Create `AuthService` (Login, Register, Token storage)
 - [ ] **[Frontend]** Build Login Page & Route
 - [ ] **[Frontend]** Build Registration Page & Route
@@ -50,3 +49,6 @@
 - [x] **Database**: Implement `ApplicationDbContext` (Relationships, Delete Behavior)
 - [x] **Infra**: Configure Persistent SQL Server (Port 14333, Volume)
 - [x] **Database**: Generate `InitialCreate` Migration
+- [x] **[Backend]** Implement `AuthService` (Password hashing, JWT generation)
+- [x] **[Backend]** Create `AuthController` (Login, Register endpoints)
+- [x] **[Backend]** Implement Unit & Integration Tests (Auth Module)
