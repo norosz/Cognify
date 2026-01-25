@@ -1,4 +1,6 @@
 
+using Cognify.Server.Data;
+
 namespace Cognify.Server;
 
 public class Program
@@ -9,6 +11,7 @@ public class Program
         builder.AddServiceDefaults();
 
         // Add services to the container.
+        builder.AddSqlServerDbContext<ApplicationDbContext>("sqldata");
 
         builder.Services.AddControllers();
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
