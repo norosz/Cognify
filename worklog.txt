@@ -43,14 +43,25 @@ BLOCKERS: None.
 [2026-01-25 15:57] Antigravity
 DONE: Implemented Backend Integration Tests (xUnit, SQLite InMemory). Implemented Frontend Authentication (Angular, Material).
 Detailed:
-- Created \Cognify.Tests\ project with unit/integration tests for Auth.
-- Refactored \Cognify.Server/Program.cs\ to support test environments.
+- Created `Cognify.Tests` project with unit/integration tests for Auth.
+- Refactored `Cognify.Server/Program.cs` to support test environments.
 - Implemented Frontend Auth: Service, Interceptor, Guard.
 - Implemented Frontend UI: Login, Register (Angular Material).
-- Configured API Proxy (\proxy.conf.js\).
-- Refactored frontend auth models to \uth.models.ts\.
-CHANGED: Added \Cognify.Tests/*\, \cognify.client/src/app/core/auth/*\, \cognify.client/src/app/features/auth/*\, \cognify.client/proxy.conf.js\.
+- Configured API Proxy (`proxy.conf.js`).
+- Refactored frontend auth models to `auth.models.ts`.
+CHANGED: Added `Cognify.Tests/*`, `cognify.client/src/app/core/auth/*`, `cognify.client/src/app/features/auth/*`, `cognify.client/proxy.conf.js`.
 DECISIONS: Used SQLite In-Memory for integration tests; Used Angular Signals for AuthService state; Configured proxy to avoid CORS issues during dev.
 NEXT: Implement Module Service and Controller.
 BLOCKERS: None.
 
+[2026-01-25 16:04] Antigravity
+DONE: Implemented and Verified Frontend Unit Tests (17/17 Passed).
+Detailed:
+- Implemented unit tests for `AuthService`, `AuthGuard`, `AuthInterceptor`.
+- Implemented component tests for `LoginComponent` and `RegisterComponent`.
+- Fixed `app.component.spec.ts` to align with template changes.
+- Configured `provideRouter` and `provideHttpClientTesting` in spec files.
+CHANGED: Updated `*.spec.ts` files in `cognify.client`.
+DECISIONS: Used `provideRouter([])` and spied on injected `Router` for component tests to ensure `RouterLink` compatibility.
+NEXT: Push changes and wait for further instructions.
+BLOCKERS: None.
