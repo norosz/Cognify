@@ -17,8 +17,9 @@ Cognify is a **containerized, AI-assisted learning platform** built with a moder
 
 **Primary goals:**
 - **Cognitive Modeling**: Track user mastery, confidence, and memory decay.
-- **Adaptive Content**: Generate content tailored to the user's specific state.
-- **Continuous Feedback**: Use every interaction to refine the user model.
+- **Adaptive Content**: Generate content tailored to the user's specific state (Low Mastery vs High Mastery).
+- **Continuous Learning Loop**: Operate as a closed-loop AI system (User Action → Data → AI Analysis → Model Update → Adaptive Content).
+- **Mistake Intelligence**: Classify recurring errors to build a learner-specific misconception profile.
 - **Distributed Architecture**: Demonstrate complex state management with .NET Aspire.
 
 ---
@@ -100,13 +101,30 @@ Cognify.ServiceDefaults/    # Shared .NET code (extensions, config)
 
 ## 5. Core Features & Use Cases
 
-1. User registration and authentication (JWT)
-2. Creation and management of learning modules
-3. Upload and management of learning documents (Blob Storage)
-4. Creation and management of notes
-5. **AI-powered question generation** (OpenAI API)
-6. Quiz attempts and scoring
-7. Review of learning progress
+1. **User Knowledge Model & Tracking**
+   - Persistent tracking of cognitive state per topic (Mastery, Confidence, Mistake Patterns).
+   - Updates based on interactions (Quiz answers, Self-evaluations, Document uploads).
+
+2. **Adaptive Quiz Engine**
+   - **Low Mastery**: Focus on conceptual understanding.
+   - **High Mastery**: Challenge with edge cases and application.
+   - **Forgetting Risk**: Spaced repetition to prevent decay.
+
+3. **AI Learning Dashboard**
+   - **Knowledge Map**: Heatmap of mastery.
+   - **Decay Forecast**: Prediction of when topics will be forgotten.
+   - **Weakness Visualization**: Pinpointing conceptual gaps.
+   - **Exam Readiness Score**: AI-estimated preparedness.
+
+4. **Mistake Intelligence**
+   - Classification of recurring conceptual errors.
+   - Building learner-specific misconception profiles.
+
+5. **Learning Management**
+   - User registration and authentication (JWT).
+   - Creation/management of modules and documents (Blob Storage).
+   - Notes creation and management.
+   - Quiz attempts and scoring.
 
 ---
 
@@ -118,7 +136,8 @@ Cognify.ServiceDefaults/    # Shared .NET code (extensions, config)
 - **Document**: Uploaded file (stored in Blob Storage)
 - **Note**: Structured learning content
 - **UserKnowledgeState**: (NEW) AI Persistent memory of the learner.
-    - Fields: Topic, MasteryScore (0-1), ConfidenceScore (0-1), MistakePatterns (JSON), ForgettingRisk (Enum), LastReviewedAt.
+    - Fields: Topic, MasteryScore (0-1), ConfidenceScore (0-1), MistakePatterns (JSON), ForgettingRisk (Enum), LastReviewedAt, ExamReadinessScore.
+    - **Note**: This forms the basis of the "Continuous Learning Loop".
 - **QuestionSet**: AI-generated assessment
 - **Attempt**: User quiz attempt (Feed for the Knowledge Model)
 

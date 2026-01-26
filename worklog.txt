@@ -234,10 +234,17 @@ CHANGED: `cognify.client/src/app/features/modules/**/*`, `Cognify.Server/Service
 DECISIONS: Used an event-driven approach (Output/EventEmmiter) to handle cross-component refresh; Added `Id` to Question DTOs to fix input binding.
 NEXT: Await further instructions (e.g., Agents Implementation).
 BLOCKERS: None.
+
 [2026-01-26 21:42] Antigravity
 SCOPE PIVOT: Transformed project from 'Quiz App' to 'Adaptive Learning Platform'.
 DETAILS:
 - Updated README.md with new identity and capabilities.
 - Updated PROJECT_SPEC.md with new domain model (UserKnowledgeState) and architecture.
 - Updated status.md and task.md with new roadmap (Adaptive Engine, Decay Prediction, etc.).
+NEXT: Begin implementation of User Knowledge Model.
+
+[2026-01-26 22:17] Antigravity
+DONE: Synchronized PROJECT_SPEC.md with README.md.
+DETAILS: Expanded project spec to include Mistake Intelligence, Continuous Learning Loop, and detailed Dashboard components, ensuring full alignment with the new product vision.
+CHANGED: PROJECT_SPEC.md.
 NEXT: Begin implementation of User Knowledge Model.
