@@ -1,0 +1,34 @@
+.module-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 24px;
+
+    .back-button {
+        margin-top: -4px;
+        margin-left: -8px;
+    }
+
+    .header-content {
+        h1 {
+            margin: 0 0 8px 0;
+            font-size: 2rem;
+        }
+
+        p {
+            color: #666;
+            margin: 0;
+            font-size: 1.1rem;
+        }
+    }
+}
+
+.tab-content {
+    padding: 24px 0;
+}
+
+.loading {
+    text-align: center;
+    padding: 48px;
+    color: #888;
+}

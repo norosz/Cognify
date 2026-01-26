@@ -65,3 +65,43 @@ CHANGED: Updated `*.spec.ts` files in `cognify.client`.
 DECISIONS: Used `provideRouter([])` and spied on injected `Router` for component tests to ensure `RouterLink` compatibility.
 NEXT: Push changes and wait for further instructions.
 BLOCKERS: None.
+
+[2026-01-25 16:29] Antigravity
+DONE: Implemented Backend functionality for Modules Management.
+Detailed:
+- Created `Module` entity and DTOs.
+- Implemented `ModuleService` (CRUD, Owner Validation).
+- Created `ModulesController` with API endpoints.
+- Implemented `ModulesControllerTests` (Integration Tests).
+- Registered `ModuleService` in `Program.cs`.
+CHANGED: Added `Cognify.Server/Services/ModuleService.cs`, `Cognify.Server/Controllers/ModulesController.cs`, `Cognify.Tests/Controllers/ModulesControllerTests.cs`.
+DECISIONS: Enforced ownership check in Service layer; Tests cover CRUD and cross-user access restrictions.
+NEXT: Implement Frontend Modules Service and Components.
+BLOCKERS: None.
+
+[2026-01-26 11:37] Antigravity
+DONE: Refactored ModuleService and ModulesController to use internal UserContext injection.
+Detailed:
+- Removed userId parameter from IModuleService and ModuleService methods.
+- Injected IUserContextService into ModuleService to retrieve userId internally.
+- Updated ModulesController to rely on the simplified IModuleService contract.
+- Verified changes with ModulesControllerTests (14/14 passed).
+CHANGED: Cognify.Server/Services/Interfaces/IModuleService.cs, Cognify.Server/Services/ModuleService.cs, Cognify.Server/Controllers/ModulesController.cs.
+DECISIONS: Moved user ID retrieval logic into the Service layer to cleaner Controller signature and better encapsulation.
+NEXT: Implement Frontend Modules Components.
+BLOCKERS: None.
+
+[2026-01-26 11:51] Antigravity
+DONE: Implemented Frontend Modules System (Dashboard, Create, Details) + Shared Layout.
+Detailed:
+- Implemented `MainLayoutComponent` with Navigation Bar (Brand, User, Logout).
+- Implemented `DashboardComponent` (Module List, Create Action).
+- Implemented `CreateModuleDialogComponent` (Form integration).
+- Implemented `ModuleDetailComponent` (Tabs for Docs/Notes/Quizzes).
+- Updated `app.routes.ts` with `authGuard` and layout wrapping.
+- Verified with Frontend Unit Tests (20/20 passed).
+CHANGED: `cognify.client/src/app/core/layout/*`, `cognify.client/src/app/features/dashboard/*`, `cognify.client/src/app/features/modules/*`, `cognify.client/src/app/app.routes.ts`.
+DECISIONS: Used `MatDialog` for creation flow; Used `MainLayout` wrapper for all authenticated routes.
+NEXT: Implement Documents Implementation (File Upload).
+BLOCKERS: None.
+

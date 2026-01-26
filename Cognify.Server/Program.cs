@@ -18,6 +18,9 @@ public class Program
         // Register Application Services
         builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
         builder.Services.AddScoped<IAuthService, AuthService>();
+        builder.Services.AddScoped<IModuleService, ModuleService>();
+        builder.Services.AddHttpContextAccessor();
+        builder.Services.AddScoped<IUserContextService, UserContextService>();
 
         // Register Authentication
         var jwtSettings = builder.Configuration.GetSection("Jwt");

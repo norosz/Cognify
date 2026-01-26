@@ -1,0 +1,26 @@
+<div class="dashboard-header">
+    <h1>My Modules</h1>
+    <button mat-raised-button color="primary" (click)="openCreateModuleDialog()">
+        <mat-icon>add</mat-icon>
+        New Module
+    </button>
+</div>
+
+<div class="modules-grid">
+    @for (module of modules(); track module.id) {
+    <mat-card class="module-card" [routerLink]="['/modules', module.id]">
+        <mat-card-header>
+            <mat-card-title>{{ module.title }}</mat-card-title>
+            <mat-card-subtitle>{{ module.createdAt | date }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+            <p>{{ module.description || 'No description provided.' }}</p>
+        </mat-card-content>
+    </mat-card>
+    } @empty {
+    <div class="empty-state">
+        <mat-icon class="huge-icon">library_books</mat-icon>
+        <p>No modules yet. Create your first one!</p>
+    </div>
+    }
+</div>

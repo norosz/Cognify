@@ -1,0 +1,21 @@
+<h2 mat-dialog-title>Create New Module</h2>
+<mat-dialog-content>
+    <form [formGroup]="form" class="create-module-form">
+        <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Title</mat-label>
+            <input matInput formControlName="title" placeholder="e.g. History of Rome" required />
+            @if (form.get('title')?.hasError('required')) {
+            <mat-error>Title is required</mat-error>
+            }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Description</mat-label>
+            <textarea matInput formControlName="description" rows="4" placeholder="Brief description..."></textarea>
+        </mat-form-field>
+    </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+    <button mat-button (click)="onCancel()">Cancel</button>
+    <button mat-raised-button color="primary" [disabled]="form.invalid" (click)="onSubmit()">Create</button>
+</mat-dialog-actions>
