@@ -12,8 +12,15 @@
 <mat-tab-group>
     <mat-tab label="Documents">
         <div class="tab-content">
-            <p>Documents list will go here.</p>
-            <button mat-raised-button color="primary">Upload Document</button>
+            <div class="actions-bar">
+                <button mat-raised-button color="primary" (click)="openUploadDialog()">
+                    <mat-icon>upload_file</mat-icon> Upload Document
+                </button>
+            </div>
+
+
+
+            <app-document-list [moduleId]="m.id"></app-document-list>
         </div>
     </mat-tab>
     <mat-tab label="Notes">

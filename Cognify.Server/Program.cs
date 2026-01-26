@@ -14,6 +14,11 @@ public class Program
 
         // Add services to the container.
         builder.AddSqlServerDbContext<ApplicationDbContext>("sqldata");
+        
+        // Configure Azure Blob Storage with credentials for SAS token generation
+        // When using Azurite emulator, this will use the default connection string
+        // which includes the account key necessary for GenerateSasUri()
+        builder.AddAzureBlobServiceClient("blobs");
 
         // Register Application Services
         builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
@@ -21,6 +26,8 @@ public class Program
         builder.Services.AddScoped<IModuleService, ModuleService>();
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddScoped<IUserContextService, UserContextService>();
+        builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
+        builder.Services.AddScoped<IDocumentService, DocumentService>();
 
         // Register Authentication
         var jwtSettings = builder.Configuration.GetSection("Jwt");
@@ -41,6 +48,18 @@ public class Program
             });
 
         builder.Services.AddAuthorization();
+        
+        // Enable CORS for frontend development
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("AllowFrontend", policy =>
+            {
+                policy.WithOrigins("http://localhost:4200", "https://localhost:4200")
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
+            });
+        });
+
         builder.Services.AddControllers();
 
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -70,7 +89,24 @@ public class Program
 
         app.UseHttpsRedirection();
 
+        // Add global exception handler to catch errors before crash
+        app.UseExceptionHandler(errorApp =>
+        {
+            errorApp.Run(async context =>
+            {
+                var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+                var exceptionFeature = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>();
+                if (exceptionFeature != null)
+                {
+                    logger.LogError(exceptionFeature.Error, "Unhandled exception occurred: {Message}", exceptionFeature.Error.Message);
+                }
+                context.Response.StatusCode = 500;
+                await context.Response.WriteAsJsonAsync(new { error = "An error occurred processing your request." });
+            });
+        });
+
         app.UseAuthentication();
+        app.UseCors("AllowFrontend");
         app.UseAuthorization();
 
 

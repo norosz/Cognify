@@ -1,0 +1,47 @@
+.w-full {
+    width: 100%;
+}
+
+.documents-container {
+    margin-top: 1rem;
+}
+
+.empty-state {
+    padding: 2rem;
+    text-align: center;
+    color: #666;
+    background: #f9f9f9;
+    border-radius: 8px;
+}
+
+.status-badge {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.status-processing {
+    background-color: #e3f2fd;
+    color: #1565c0;
+}
+
+.status-ready {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+.status-error {
+    background-color: #ffebee;
+    color: #c62828;
+}
+
+.document-link {
+    color: #1976d2;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.document-link:hover {
+    text-decoration: underline;
+}
