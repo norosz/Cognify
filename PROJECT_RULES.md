@@ -11,6 +11,7 @@ This document defines the mandatory workflow and rules for any AI agent or devel
 - **Strict Adherence**: Deviating from the patterns defined in these files is **forbidden** unless explicitly approved by the user.
 
 ## 2. Documentation Maintenance
+**MANDATORY**: You must update `worklog.txt` and `status.md` for every single task. Failure to do so is a violation of project rules.
 You must keep the project documentation up-to-date **in real-time**.
 
 ### 2.1 Status Board (`status.md`)
@@ -35,3 +36,6 @@ You must keep the project documentation up-to-date **in real-time**.
 2. **Execute**: Implement the changes following the Agent Rules.
 3. **Verify**: Run builds and tests to ensure correctness.
 4. **Document**: Update `worklog.txt` and move the task to "Done" in `status.md`.
+
+## 4. Communication
+- **Clarification First**: Always ask the user if a request or question is not clear enough. Do not make assumptions.

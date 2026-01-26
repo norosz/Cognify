@@ -2,32 +2,13 @@
 
 ## 📋 To Do
 
-### 🔐 Authentication & Users
-
-
-
-### 📦 Modules Management
-- [ ] **[Backend]** Implement `ModuleService` (CRUD logic, Owner validation)
-- [ ] **[Backend]** Create `ModulesController`
-- [ ] **[Frontend]** Build Dashboard/Home (Module List)
-- [ ] **[Frontend]** Build Create Module UI
-- [ ] **[Frontend]** Build Module Detail View (Tabs/Layout)
-
-### 📄 Documents & Storage
-- [ ] **[Backend]** Implement `BlobStorageService` (Azurite integration)
-- [ ] **[Backend]** Implement `DocumentService` (Upload, metadata)
-- [ ] **[Backend]** Create `DocumentsController`
-- [ ] **[Frontend]** Build Document List Component
-- [ ] **[Frontend]** Implement File Upload UI
-- [ ] **[Frontend]** Document Preview & Status Indicator
-
-### 📝 Notes
+### � Notes
 - [ ] **[Backend]** Implement `NoteService` (CRUD)
 - [ ] **[Backend]** Create `NotesController`
 - [ ] **[Frontend]** Build Note List Component
 - [ ] **[Frontend]** Build Note Editor (Markdown/Text)
 
-### 🤖 AI Generation & Quizzes
+### 🤖 AI Generation, Agents & Quizzes
 - [ ] **[Backend]** Configure OpenAI Service (Aspire/Settings)
 - [ ] **[Backend]** Implement `AiService` (Prompt engineering, API call)
 - [ ] **[Backend]** Create `AiController` (Generate questions endpoint)
@@ -36,8 +17,19 @@
 - [ ] **[Frontend]** Build Quiz Generation UI
 - [ ] **[Frontend]** Build Quiz Taking Interface
 - [ ] **[Frontend]** Build Quiz Result/Score View
+- [ ] **[Agent]** Implement Handwriting Parsing Agent (OCR)
+- [ ] **[Agent]** Implement Question Generation Agent
+- [ ] **[Agent]** Implement Grading Agent
 
 ## 🏗️ In Progress
+
+### 📄 Documents & Storage
+- [ ] **[Backend]** Implement `BlobStorageService` (Azurite integration)
+- [ ] **[Backend]** Implement `DocumentService` (Upload, metadata)
+- [ ] **[Backend]** Create `DocumentsController`
+- [ ] **[Frontend]** Build Document List Component
+- [ ] **[Frontend]** Implement File Upload UI
+- [ ] **[Frontend]** Document Preview & Status Indicator
 - [ ] **[Project]** Detailed Planning & Documentation
 
 ## ✅ Done
@@ -53,3 +45,10 @@
 - [x] **[Frontend]** Build Login Page & Route
 - [x] **[Frontend]** Build Registration Page & Route
 - [x] **[Frontend]** Add Auth Interceptor (Attach JWT to requests)
+- [x] **[Backend]** Implement `ModuleService` (CRUD logic, Owner validation)
+- [x] **[Backend]** Create `ModulesController`
+- [x] **[Frontend]** Build Dashboard/Home (Module List)
+- [x] **[Frontend]** Build Create Module UI
+- [x] **[Frontend]** Build Module Detail View (Tabs/Layout)
+- [x] **[Frontend]** Implement Main Layout & Navigation
+- [x] **[Security]** Refactor Auth: JWT Decode, Password Confirmation
