@@ -28,6 +28,7 @@ public class Program
         builder.Services.AddScoped<IUserContextService, UserContextService>();
         builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
         builder.Services.AddScoped<IDocumentService, DocumentService>();
+        builder.Services.AddScoped<INoteService, NoteService>();
 
         // Register Authentication
         var jwtSettings = builder.Configuration.GetSection("Jwt");

@@ -8,6 +8,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ModuleService } from '../../../core/modules/module.service';
 import { ModuleDto } from '../../../core/modules/module.models';
 import { DocumentListComponent } from '../components/document-list/document-list.component';
+import { NotesListComponent } from '../../notes/components/notes-list/notes-list.component';
 import { UploadDocumentDialogComponent } from '../components/upload-document-dialog/upload-document-dialog.component';
 import { DocumentsService } from '../services/documents.service';
 
@@ -21,7 +22,8 @@ import { DocumentsService } from '../services/documents.service';
     MatButtonModule,
     RouterLink,
     MatDialogModule,
-    DocumentListComponent
+    DocumentListComponent,
+    NotesListComponent
   ],
   templateUrl: './module-detail.component.html',
   styleUrl: './module-detail.component.scss'

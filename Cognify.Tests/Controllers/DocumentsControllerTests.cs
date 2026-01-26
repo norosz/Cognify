@@ -111,7 +111,7 @@ public class DocumentsControllerTests : IClassFixture<WebApplicationFactory<Prog
             .Setup(x => x.GenerateUploadSasToken(It.IsAny<string>(), It.IsAny<DateTimeOffset>()))
             .Returns("https://sas-url");
         _blobStorageMock
-            .Setup(x => x.GenerateDownloadSasToken(It.IsAny<string>(), It.IsAny<DateTimeOffset>()))
+            .Setup(x => x.GenerateDownloadSasToken(It.IsAny<string>(), It.IsAny<DateTimeOffset>(), It.IsAny<string?>()))
             .Returns("https://sas-url");
 
         // Initiate
@@ -140,7 +140,7 @@ public class DocumentsControllerTests : IClassFixture<WebApplicationFactory<Prog
             .Setup(x => x.GenerateUploadSasToken(It.IsAny<string>(), It.IsAny<DateTimeOffset>()))
             .Returns("https://sas-url");
         _blobStorageMock
-            .Setup(x => x.GenerateDownloadSasToken(It.IsAny<string>(), It.IsAny<DateTimeOffset>()))
+            .Setup(x => x.GenerateDownloadSasToken(It.IsAny<string>(), It.IsAny<DateTimeOffset>(), It.IsAny<string?>()))
             .Returns("https://sas-url");
 
         // Create a document

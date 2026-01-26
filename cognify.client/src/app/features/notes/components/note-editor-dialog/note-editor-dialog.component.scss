@@ -1,0 +1,22 @@
+.full-width {
+    width: 100%;
+    margin-bottom: 24px;
+    display: block;
+}
+
+form {
+    margin-top: 24px !important;
+}
+
+.content-field {
+    textarea {
+        resize: vertical;
+        min-height: 150px;
+    }
+}
+
+button {
+    gap: 8px;
+    display: inline-flex;
+    align-items: center;
+}

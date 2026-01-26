@@ -3,10 +3,10 @@
 ## 📋 To Do
 
 ### � Notes
-- [ ] **[Backend]** Implement `NoteService` (CRUD)
-- [ ] **[Backend]** Create `NotesController`
-- [ ] **[Frontend]** Build Note List Component
-- [ ] **[Frontend]** Build Note Editor (Markdown/Text)
+- [x] **[Backend]** Implement `NoteService` (CRUD)
+- [x] **[Backend]** Create `NotesController`
+- [x] **[Frontend]** Build Note List Component
+- [x] **[Frontend]** Build Note Editor (Markdown/Text)
 
 ### 🤖 AI Generation, Agents & Quizzes
 - [ ] **[Backend]** Configure OpenAI Service (Aspire/Settings)
