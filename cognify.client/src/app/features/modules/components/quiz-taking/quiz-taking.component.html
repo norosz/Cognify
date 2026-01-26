@@ -1,0 +1,52 @@
+<div *ngIf="!questionSet() && !error()">
+    <p>Loading quiz...</p>
+</div>
+
+<div *ngIf="error()" class="error-container">
+    <p class="error-text">{{ error() }}</p>
+    <button mat-button (click)="close()">Close</button>
+</div>
+
+<ng-container *ngIf="questionSet() as qs">
+    <h2 mat-dialog-title>Quiz</h2>
+
+    <div mat-dialog-content>
+
+        <!-- Quiz Taking Mode -->
+        <ng-container *ngIf="!result()">
+            <div class="questions-list">
+                <div *ngFor="let q of qs.questions; let i = index" class="question-item">
+                    <p class="question-prompt"><strong>{{ i + 1 }}.</strong> {{ q.prompt }}</p>
+
+                    <mat-radio-group [(ngModel)]="answers[q.id!]" aria-label="Select an option" class="options-group">
+                        <mat-radio-button *ngFor="let opt of q.options" [value]="opt" class="option-radio">
+                            {{ opt }}
+                        </mat-radio-button>
+                    </mat-radio-group>
+
+                    <!-- Changing strategy: Use index or better, update frontend model to have ID -->
+                    <!-- For now let's assume I fix the model first. -->
+                </div>
+            </div>
+        </ng-container>
+
+        <!-- Result Mode -->
+        <div *ngIf="result() as res" class="result-container">
+            <h3>Quiz Completed!</h3>
+            <div class="score-display" [style.color]="getScoreColor(res.score)">
+                {{ res.score | number:'1.0-0' }}%
+            </div>
+
+            <p>Correct Answers: {{ res.score / 100 * qs.questions.length | number:'1.0-0' }} / {{ qs.questions.length }}
+            </p>
+        </div>
+
+    </div>
+
+    <div mat-dialog-actions align="end">
+        <button mat-button (click)="close()">{{ result() ? 'Close' : 'Cancel' }}</button>
+        <button *ngIf="!result()" mat-flat-button color="primary" (click)="submit()" [disabled]="submitting()">
+            Submit
+        </button>
+    </div>
+</ng-container>

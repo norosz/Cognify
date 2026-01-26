@@ -2,6 +2,7 @@ using Cognify.Server.Data;
 using Cognify.Server.Services;
 using Cognify.Server.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using OpenAI;
 
 namespace Cognify.Server;
 
@@ -29,6 +30,17 @@ public class Program
         builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
         builder.Services.AddScoped<IDocumentService, DocumentService>();
         builder.Services.AddScoped<INoteService, NoteService>();
+        
+        // Register AI
+        builder.Services.AddSingleton(sp => 
+        {
+            var config = sp.GetRequiredService<IConfiguration>();
+            var apiKey = config["OpenAI:ApiKey"] ?? throw new InvalidOperationException("OpenAI API Key is missing");
+            return new OpenAIClient(apiKey);
+        });
+        builder.Services.AddScoped<IAiService, AiService>();
+        builder.Services.AddScoped<IQuestionService, QuestionService>();
+        builder.Services.AddScoped<IAttemptService, AttemptService>();
 
         // Register Authentication
         var jwtSettings = builder.Configuration.GetSection("Jwt");

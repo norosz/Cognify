@@ -19,7 +19,8 @@ var api = builder.AddProject<Projects.Cognify_Server>("api")
     .WithReference(sqldb)
     .WaitFor(sqldb)
     .WithReference(blobs)
-    .WaitFor(storage);
+    .WaitFor(storage)
+    .WithEnvironment("OpenAI:ApiKey", builder.AddParameter("openai-key", secret: true));
 
 var web = builder.AddJavaScriptApp("web", "../cognify.client")
     .WithHttpEndpoint(port: 4200, env: "PORT")

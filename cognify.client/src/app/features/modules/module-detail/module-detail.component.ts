@@ -11,6 +11,7 @@ import { DocumentListComponent } from '../components/document-list/document-list
 import { NotesListComponent } from '../../notes/components/notes-list/notes-list.component';
 import { UploadDocumentDialogComponent } from '../components/upload-document-dialog/upload-document-dialog.component';
 import { DocumentsService } from '../services/documents.service';
+import { QuizListComponent } from '../components/quiz-list/quiz-list.component';
 
 @Component({
   selector: 'app-module-detail',
@@ -23,7 +24,9 @@ import { DocumentsService } from '../services/documents.service';
     RouterLink,
     MatDialogModule,
     DocumentListComponent,
-    NotesListComponent
+    DocumentListComponent,
+    NotesListComponent,
+    QuizListComponent
   ],
   templateUrl: './module-detail.component.html',
   styleUrl: './module-detail.component.scss'
@@ -37,6 +40,7 @@ export class ModuleDetailComponent implements OnInit {
   module = signal<ModuleDto | null>(null);
 
   @ViewChild(DocumentListComponent) documentList!: DocumentListComponent;
+  @ViewChild(QuizListComponent) quizList!: QuizListComponent;
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
@@ -47,6 +51,13 @@ export class ModuleDetailComponent implements OnInit {
       });
     }
   }
+
+  onQuizGenerated() {
+    if (this.quizList) {
+      this.quizList.loadQuizzes();
+    }
+  }
+
 
   openUploadDialog() {
     console.log('Opening upload dialog...');

@@ -25,6 +25,10 @@
                 <p class="note-preview">{{ note.content }}</p>
             </mat-card-content>
             <mat-card-actions align="end" (click)="$event.stopPropagation()">
+                <button mat-icon-button (click)="generateQuiz(note); $event.stopPropagation()"
+                    matTooltip="Generate Quiz">
+                    <mat-icon>psychology</mat-icon>
+                </button>
                 <button mat-icon-button [matMenuTriggerFor]="menu">
                     <mat-icon>more_vert</mat-icon>
                 </button>

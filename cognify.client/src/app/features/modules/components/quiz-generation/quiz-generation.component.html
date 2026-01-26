@@ -1,0 +1,49 @@
+<h2 mat-dialog-title>AI Quiz Generation</h2>
+
+<div mat-dialog-content>
+    <div *ngIf="loading()" class="loading-container">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Processing Note...</p>
+    </div>
+
+    <div *ngIf="error()" class="error-container">
+        <p class="error-text">{{ error() }}</p>
+        <button mat-button color="primary" (click)="generate()">Try Again</button>
+    </div>
+
+    <div *ngIf="!loading() && !error() && questions().length > 0">
+        <p>Generated {{ questions().length }} questions from your note.</p>
+
+        <mat-accordion>
+            <mat-expansion-panel *ngFor="let q of questions(); let i = index">
+                <mat-expansion-panel-header>
+                    <mat-panel-title>
+                        Question {{ i + 1 }}
+                    </mat-panel-title>
+                    <mat-panel-description>
+                        {{ q.prompt | slice:0:50 }}...
+                    </mat-panel-description>
+                </mat-expansion-panel-header>
+
+                <p class="question-prompt">{{ q.prompt }}</p>
+
+                <div class="options-list">
+                    <div *ngFor="let opt of q.options" class="option-item" [class.correct]="opt === q.correctAnswer">
+                        <mat-icon *ngIf="opt === q.correctAnswer">check_circle</mat-icon>
+                        <mat-icon *ngIf="opt !== q.correctAnswer">radio_button_unchecked</mat-icon>
+                        <span>{{ opt }}</span>
+                    </div>
+                </div>
+
+                <p class="explanation"><strong>Explanation:</strong> {{ q.explanation }}</p>
+            </mat-expansion-panel>
+        </mat-accordion>
+    </div>
+</div>
+
+<div mat-dialog-actions align="end">
+    <button mat-button (click)="close()">Cancel</button>
+    <button mat-flat-button color="primary" [disabled]="loading() || questions().length === 0" (click)="save()">
+        Save Quiz
+    </button>
+</div>

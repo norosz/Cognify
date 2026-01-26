@@ -8,6 +8,12 @@
 - [x] **[Frontend]** Build Note List Component
 - [x] **[Frontend]** Build Note Editor (Markdown/Text)
 
+### 🤖 AI Generation, Agents & Quizzes
+
+
+- [ ] **[Agent]** Implement Handwriting Parsing Agent (OCR)
+- [ ] **[Agent]** Implement Question Generation Agent
+- [ ] **[Agent]** Implement Grading Agent
 ### 🧠 User Knowledge & AI Feedback
 - [ ] **[Backend]** Create `UserKnowledgeState` Entity (Topic, Mastery, Confidence)
 - [ ] **[Backend]** Implement `KnowledgeStateService` (Update logic)
@@ -58,3 +64,11 @@
 - [x] **[Frontend]** Implement File Upload UI
 - [x] **[Frontend]** Fixed Upload Crash & Implemented Force Download
 - [x] **[Project]** Detailed Planning & Documentation
+- [x] **[Backend]** Configure OpenAI Service (Aspire/Settings)
+- [x] **[Backend]** Implement `AiService` (Prompt engineering, API call)
+- [x] **[Backend]** Create `AiController` (Generate questions endpoint)
+- [x] **[Backend]** Implement `QuestionService` & `AttemptService`
+- [x] **[Backend]** Create `AttemptsController` (Submit, Score)
+- [x] **[Frontend]** Build Quiz Generation UI
+- [x] **[Frontend]** Build Quiz Taking Interface
+- [x] **[Frontend]** Build Quiz Result/Score View

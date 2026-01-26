@@ -1,0 +1,36 @@
+<div class="quiz-container">
+    <div *ngIf="isLoading()" class="loading-spinner">
+        <mat-spinner diameter="40"></mat-spinner>
+    </div>
+
+    <div *ngIf="!isLoading()">
+        <div *ngIf="quizzes().length === 0" class="empty-state">
+            <mat-icon>quiz</mat-icon>
+            <p>No quizzes available yet. Generate one from your notes!</p>
+        </div>
+
+        <div class="grid">
+            <mat-card *ngFor="let item of quizzes()" class="quiz-card">
+                <mat-card-header>
+                    <div mat-card-avatar>
+                        <mat-icon>school</mat-icon>
+                    </div>
+                    <mat-card-title>Quiz</mat-card-title>
+                    <mat-card-subtitle>From note: {{ item.noteTitle }}</mat-card-subtitle>
+                </mat-card-header>
+                <mat-card-content>
+                    <p>{{ item.quiz.questions.length }} Questions</p>
+                    <p class="date">Created: {{ item.quiz.createdAt | date }}</p>
+                </mat-card-content>
+                <mat-card-actions align="end">
+                    <button mat-icon-button color="warn" (click)="deleteQuiz(item.quiz)">
+                        <mat-icon>delete</mat-icon>
+                    </button>
+                    <button mat-flat-button color="primary" (click)="takeQuiz(item.quiz)">
+                        Take Quiz
+                    </button>
+                </mat-card-actions>
+            </mat-card>
+        </div>
+    </div>
+</div>

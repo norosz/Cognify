@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, inject, signal } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -29,6 +29,7 @@ import { NoteEditorDialogComponent } from '../note-editor-dialog/note-editor-dia
 })
 export class NotesListComponent implements OnInit {
     @Input() moduleId!: string;
+    @Output() quizGenerated = new EventEmitter<void>();
 
     notes = signal<Note[]>([]);
     isLoading = signal<boolean>(false);
@@ -36,6 +37,23 @@ export class NotesListComponent implements OnInit {
     private noteService = inject(NoteService);
     private dialog = inject(MatDialog);
     private snackBar = inject(MatSnackBar);
+
+    // Lazy loaded via dialog but referenced in logic
+    async generateQuiz(note: Note) {
+        const { QuizGenerationComponent } = await import('../../../modules/components/quiz-generation/quiz-generation.component');
+
+        const dialogRef = this.dialog.open(QuizGenerationComponent, {
+            width: '600px',
+            data: { noteId: note.id }
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+            if (result) {
+                this.snackBar.open('Quiz generated successfully!', 'Close', { duration: 3000 });
+                this.quizGenerated.emit();
+            }
+        });
+    }
 
     ngOnInit(): void {
         if (this.moduleId) {

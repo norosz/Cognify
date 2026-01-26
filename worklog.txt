@@ -209,6 +209,31 @@ NEXT: Push changes and proceed to Quiz Implementation.
 BLOCKERS: None.
 
 
+[2026-01-26 21:00] Antigravity
+DONE: Implemented Backend for AI-powered Quizzes and Assessments.
+Detailed:
+- Configured Azure.AI.OpenAI in AppHost and Server.
+- Implemented `AiService` to generate questions from notes.
+- Implemented `QuestionService` and `AttemptService` (CRUD, Scoring).
+- Created `AiController`, `QuestionSetsController`, `AttemptsController`.
+- Implemented Integration Tests for all new services/controllers (33 tests passed).
+CHANGED: Added `Cognify.Server/Services/AiService.cs`, `QuestionService.cs`, `AttemptService.cs`; Added Controllers; Added Tests `Cognify.Tests/Services/*` and `Cognify.Tests/Controllers/AiControllerTests.cs`.
+DECISIONS: Used `mock` for AI Service tests to avoid API costs; Implemented simple scoring logic in backend.
+NEXT: Implement Frontend Quiz UI (Generation, Taking, Results).
+BLOCKERS: None.
+
+[2026-01-26 21:35] Antigravity
+DONE: Implemented and Fixed Frontend Quiz UI.
+Detailed:
+- Implemented `QuizGenerationComponent` (AI Preview, Save).
+- Implemented `QuizTakingComponent` (Take Quiz, Radio Buttons, Score Result).
+- Refactored `QuestionService` and `QuestionDto` to properly expose IDs.
+- Fixed `NotesListComponent` to emit event upon quiz generation, triggering auto-refresh in `ModuleDetail`.
+- Verified UI functionality (Refresh, Input binding).
+CHANGED: `cognify.client/src/app/features/modules/**/*`, `Cognify.Server/Services/QuestionService.cs`.
+DECISIONS: Used an event-driven approach (Output/EventEmmiter) to handle cross-component refresh; Added `Id` to Question DTOs to fix input binding.
+NEXT: Await further instructions (e.g., Agents Implementation).
+BLOCKERS: None.
 [2026-01-26 21:42] Antigravity
 SCOPE PIVOT: Transformed project from 'Quiz App' to 'Adaptive Learning Platform'.
 DETAILS:
