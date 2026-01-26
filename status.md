@@ -3,8 +3,8 @@
 ## 📋 To Do
 
 ### � Notes
-- [ ] **[Backend]** Implement `NoteService` (CRUD)
-- [ ] **[Backend]** Create `NotesController`
+- [x] **[Backend]** Implement `NoteService` (CRUD)
+- [x] **[Backend]** Create `NotesController`
 - [ ] **[Frontend]** Build Note List Component
 - [ ] **[Frontend]** Build Note Editor (Markdown/Text)
 

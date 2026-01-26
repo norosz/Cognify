@@ -1,0 +1,122 @@
+using Cognify.Server.Data;
+using Cognify.Server.Dtos.Notes;
+using Cognify.Server.Models;
+using Cognify.Server.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
+
+namespace Cognify.Server.Services;
+
+public class NoteService(ApplicationDbContext context, IUserContextService userContext) : INoteService
+{
+    public async Task<List<NoteDto>> GetByModuleIdAsync(Guid moduleId)
+    {
+        var userId = userContext.GetCurrentUserId();
+
+        // Ensure user owns the module
+        var module = await context.Modules.AsNoTracking()
+            .FirstOrDefaultAsync(m => m.Id == moduleId && m.OwnerUserId == userId);
+
+        if (module == null)
+        {
+            return new List<NoteDto>(); // Or throw Unauthorized/NotFound exception depending on preference
+        }
+
+        var notes = await context.Notes.AsNoTracking()
+            .Where(n => n.ModuleId == moduleId)
+            .OrderByDescending(n => n.CreatedAt)
+            .ToListAsync();
+
+        return notes.Select(MapToDto).ToList();
+    }
+
+    public async Task<NoteDto?> GetByIdAsync(Guid id)
+    {
+        var userId = userContext.GetCurrentUserId();
+        
+        var note = await context.Notes.AsNoTracking()
+            .Include(n => n.Module)
+            .FirstOrDefaultAsync(n => n.Id == id);
+
+        if (note == null || note.Module == null || note.Module.OwnerUserId != userId)
+        {
+            return null;
+        }
+
+        return MapToDto(note);
+    }
+
+    public async Task<NoteDto> CreateAsync(CreateNoteDto dto)
+    {
+        var userId = userContext.GetCurrentUserId();
+
+        // Verify module ownership
+        var module = await context.Modules.FirstOrDefaultAsync(m => m.Id == dto.ModuleId && m.OwnerUserId == userId);
+        if (module == null)
+        {
+            throw new UnauthorizedAccessException("User does not own this module."); // Or specialized exception
+        }
+
+        var note = new Note
+        {
+            ModuleId = dto.ModuleId,
+            Title = dto.Title,
+            Content = dto.Content
+        };
+
+        context.Notes.Add(note);
+        await context.SaveChangesAsync();
+
+        return MapToDto(note);
+    }
+
+    public async Task<NoteDto?> UpdateAsync(Guid id, UpdateNoteDto dto)
+    {
+        var userId = userContext.GetCurrentUserId();
+
+        var note = await context.Notes
+            .Include(n => n.Module)
+            .FirstOrDefaultAsync(n => n.Id == id);
+
+        if (note == null || note.Module == null || note.Module.OwnerUserId != userId)
+        {
+            return null;
+        }
+
+        note.Title = dto.Title;
+        note.Content = dto.Content;
+
+        await context.SaveChangesAsync();
+
+        return MapToDto(note);
+    }
+
+    public async Task<bool> DeleteAsync(Guid id)
+    {
+        var userId = userContext.GetCurrentUserId();
+
+        var note = await context.Notes
+            .Include(n => n.Module)
+            .FirstOrDefaultAsync(n => n.Id == id);
+
+        if (note == null || note.Module == null || note.Module.OwnerUserId != userId)
+        {
+            return false;
+        }
+
+        context.Notes.Remove(note);
+        await context.SaveChangesAsync();
+        return true;
+    }
+
+    private static NoteDto MapToDto(Note note)
+    {
+        return new NoteDto
+        {
+            Id = note.Id,
+            ModuleId = note.ModuleId,
+            Title = note.Title,
+            Content = note.Content,
+            CreatedAt = note.CreatedAt
+        };
+    }
+}

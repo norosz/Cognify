@@ -151,3 +151,17 @@ CHANGED: `Cognify.Server/Services/BlobStorageService.cs`, `Cognify.Server/Servic
 DECISIONS: Bypassing interceptors for the specific upload endpoint was necessary to avoid complex circular dependencies and ensure a clean, raw generic HTTP upload flow; Forcing download via SAS token headers provides the best UX for document management.
 NEXT: Implement Notes Implementation.
 BLOCKERS: None.
+
+[2026-01-26 19:15] Antigravity
+DONE: Implemented Backend functionality for Notes. Implementation includes DTOs, Service, Controller, and Integration Tests.
+Detailed:
+- Created `NoteDto`, `CreateNoteDto`, `UpdateNoteDto`.
+- Implemented `NoteService` with CRUD operations and ownership checks.
+- Created `NotesController` exposing endpoints.
+- Registered `NoteService` in `Program.cs`.
+- Implemented `NotesControllerTests` (5/5 Passed).
+CHANGED: Added `Cognify.Server/Dtos/Notes/*.cs`, `Cognify.Server/Services/NoteService.cs`, `Cognify.Server/Services/Interfaces/INoteService.cs`, `Cognify.Server/Controllers/NotesController.cs`, `Cognify.Tests/Controllers/NotesControllerTests.cs`. Updated `Cognify.Server/Program.cs`.
+DECISIONS: Enforced strict ownership validation in `NoteService` using `IUserContextService`.
+NEXT: Implement Frontend Notes Service and Components.
+BLOCKERS: None.
+
