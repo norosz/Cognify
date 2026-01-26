@@ -16,7 +16,7 @@
             <p>No notes yet. Create one to get started!</p>
         </div>
 
-        <mat-card *ngFor="let note of notes()" class="note-card" (click)="openEditor(note)">
+        <mat-card *ngFor="let note of notes()" class="note-card cognify-glass-card" (click)="openEditor(note)">
             <mat-card-header>
                 <mat-card-title>{{ note.title }}</mat-card-title>
                 <mat-card-subtitle>{{ note.createdAt | date:'medium' }}</mat-card-subtitle>

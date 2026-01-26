@@ -12,12 +12,14 @@
         h1 {
             margin: 0 0 0.5rem 0;
             font-size: 2rem;
-            color: #333;
+            color: #f5f5f5;
+            /* Light text for dark background */
         }
 
         p {
             margin: 0;
-            color: #666;
+            color: #d0d0d0;
+            /* Slightly dimmer light text */
             font-size: 1.1rem;
         }
     }

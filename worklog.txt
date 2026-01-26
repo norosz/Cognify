@@ -248,3 +248,18 @@ DONE: Synchronized PROJECT_SPEC.md with README.md.
 DETAILS: Expanded project spec to include Mistake Intelligence, Continuous Learning Loop, and detailed Dashboard components, ensuring full alignment with the new product vision.
 CHANGED: PROJECT_SPEC.md.
 NEXT: Begin implementation of User Knowledge Model.
+
+[2026-01-27 00:01] Antigravity
+DONE: Refined Dashboard, Login, and Quiz Styling.
+Detailed:
+- Implemented global Glassmorphism card styles in `styles.scss` (`.cognify-glass-card`).
+- Updated `DashboardComponent`, `NoteListComponent`, and `QuizListComponent` to use unified glass styles.
+- Styled `LoginComponent` to match the dashboard (transparent glass card on global gradient).
+- Updated `NoteEditorDialog` inputs to have dark backgrounds and "Beautiful Blue" (`#90caf9`) focus states.
+- Implemented consistent "Beautiful Blue" focus effects for all inputs globally in `styles.scss`.
+- Styled `QuizTakingComponent` with glassmorphism (dark transparent background, white text).
+- Fixed styling issues: Login card height, Note text truncation (fade-out), Upload dialog hover effect.
+CHANGED: `styles.scss`, `dashboard.component.scss`, `notes-list.component.scss`, `quiz-list.component.scss`, `login.component.*`, `quiz-taking.component.scss`, `upload-document-dialog.component.css`.
+DECISIONS: Enforced styles globally in `styles.scss` with high specificity to override Angular Material defaults reliably.
+NEXT: Await further instructions.
+BLOCKERS: None.
