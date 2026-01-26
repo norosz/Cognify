@@ -2,7 +2,14 @@ import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
+import { jwtDecode } from 'jwt-decode';
 import { AuthResponse, LoginRequest, RegisterRequest } from './auth.models';
+
+interface JwtPayload {
+  email: string;
+  sub: string;
+  exp: number;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -45,15 +52,25 @@ export class AuthService {
 
   private handleAuthSuccess(response: AuthResponse): void {
     localStorage.setItem(this.tokenKey, response.token);
-    this.currentUser.set({ email: response.email });
+    this.restoreSession();
   }
 
   private restoreSession(): void {
     const token = this.getToken();
     if (token) {
-      // ideally verify token or decode payload here
-      // for now, just assume logged in state if token exists
-      this.currentUser.set({ email: 'User' }); // Placeholder until we decode token
+      try {
+        const decoded = jwtDecode<JwtPayload>(token);
+        const isExpired = decoded.exp * 1000 < Date.now();
+
+        if (isExpired) {
+          this.logout();
+        } else {
+          this.currentUser.set({ email: decoded.email });
+        }
+      } catch (error) {
+        console.error('Invalid token', error);
+        this.logout();
+      }
     }
   }
 }

@@ -105,3 +105,16 @@ DECISIONS: Used `MatDialog` for creation flow; Used `MainLayout` wrapper for all
 NEXT: Implement Documents Implementation (File Upload).
 BLOCKERS: None.
 
+[2026-01-26 12:08] Antigravity
+DONE: Refactored Frontend Auth and Updated Project Docs.
+Detailed:
+- Updated `AuthService` to use `jwt-decode` for token expiration and user email extraction.
+- Added `Confirm Password` field and validation to `RegisterComponent`.
+- Added Communication Rule to `PROJECT_RULES.md`.
+- Added Future AI Agents Roadmap to `PROJECT_SPEC.md`.
+- Verified Auth changes with tests (21/21 passed).
+CHANGED: `cognify.client/src/app/core/auth/auth.service.ts`, `cognify.client/src/app/features/auth/register/*`, `PROJECT_RULES.md`, `PROJECT_SPEC.md`.
+DECISIONS: Client-side token decoding provides better UX than assuming validity; Explicit Confirm Password prevents user errors.
+NEXT: Implement Documents Implementation (File Upload).
+BLOCKERS: None.
+

@@ -182,12 +182,20 @@ Cognify.ServiceDefaults/    # Shared .NET code (extensions, config)
 
 ---
 
-## 11. Not in Scope (v1)
+## 11. Future AI Agents & Roadmap
 
-- OCR processing
+The application architecture must support pluggable AI agents for future enhancements:
+1.  **Handwriting Parsing Agent**: A specialized agent/service to process uploaded images (notes/documents) and extract handwritten text into digital Notes (OCR).
+2.  **Question Generation Agent**: An advanced agent to analyze Note content and generate tailored QuestionSets (Multiple Choice, True/False, Open Ended).
+3.  **Grading Agent**: An agent to evaluate free-text answers and provide feedback.
+
+---
+
+## 12. Not in Scope (v1)
+
 - Real-time collaboration
-- AI-based grading of free-text answers
 - Multi-language support
+- Complex role-based access control (RBAC) beyond 'Owner'
 
 ---
 
