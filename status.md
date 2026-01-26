@@ -23,14 +23,7 @@
 
 ## 🏗️ In Progress
 
-### 📄 Documents & Storage
-- [ ] **[Backend]** Implement `BlobStorageService` (Azurite integration)
-- [ ] **[Backend]** Implement `DocumentService` (Upload, metadata)
-- [ ] **[Backend]** Create `DocumentsController`
-- [ ] **[Frontend]** Build Document List Component
-- [ ] **[Frontend]** Implement File Upload UI
-- [ ] **[Frontend]** Document Preview & Status Indicator
-- [ ] **[Project]** Detailed Planning & Documentation
+
 
 ## ✅ Done
 - [x] **Context**: Read Project Specifications and Rules
@@ -52,3 +45,10 @@
 - [x] **[Frontend]** Build Module Detail View (Tabs/Layout)
 - [x] **[Frontend]** Implement Main Layout & Navigation
 - [x] **[Security]** Refactor Auth: JWT Decode, Password Confirmation
+- [x] **[Backend]** Implement `BlobStorageService` (Azurite integration)
+- [x] **[Backend]** Implement `DocumentService` (Upload, metadata)
+- [x] **[Backend]** Create `DocumentsController`
+- [x] **[Frontend]** Build Document List Component
+- [x] **[Frontend]** Implement File Upload UI
+- [x] **[Frontend]** Fixed Upload Crash & Implemented Force Download
+- [x] **[Project]** Detailed Planning & Documentation

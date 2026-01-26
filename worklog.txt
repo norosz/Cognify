@@ -136,5 +136,18 @@ DECISIONS: Used `StatusCode(403)` instead of `Forbid()` to avoid 500 error due t
 NEXT: Frontend Implementation (Service & UI).
 BLOCKERS: None.
 
-
-
+[2026-01-26 18:09] Antigravity
+DONE: Fixed Frontend Upload Crash and Implemented Forced Download.
+Detailed:
+- Debugged and resolved a persistent frontend crash during file upload, identified as a conflict between Brave/Windows file picker and Angular Zone.js.
+- Refactored `DocumentsService` to use a `directHttp` client, bypassing interceptors to prevent circular dependency issues during upload.
+- Wrapped file selection in `ngZone.runOutsideAngular` for stability.
+- Enabled global CORS on Backend for development.
+- Implemented **Forced Document Download**:
+    - Updated `IBlobStorageService` to inject `Content-Disposition: attachment` into SAS tokens.
+    - Updated `DocumentService` to propagate filenames to the storage service.
+    - Verified that clicking documents now triggers a download instead of opening in the browser.
+CHANGED: `Cognify.Server/Services/BlobStorageService.cs`, `Cognify.Server/Services/DocumentService.cs`, `Cognify.Server/Program.cs`, `cognify.client/src/app/features/modules/services/documents.service.ts`, `cognify.client/src/app/features/modules/components/upload-document-dialog/*`.
+DECISIONS: Bypassing interceptors for the specific upload endpoint was necessary to avoid complex circular dependencies and ensure a clean, raw generic HTTP upload flow; Forcing download via SAS token headers provides the best UX for document management.
+NEXT: Implement Notes Implementation.
+BLOCKERS: None.
