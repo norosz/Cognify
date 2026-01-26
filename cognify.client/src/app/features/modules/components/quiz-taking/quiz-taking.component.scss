@@ -1,5 +1,5 @@
 .error-container {
-    color: red;
+    color: #ff5252;
     text-align: center;
     padding: 20px;
 }
@@ -11,20 +11,32 @@
 }
 
 .question-item {
-    background: #f9f9f9;
-    padding: 16px;
-    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05); // Glassmorphism container
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 12px;
 }
 
 .question-prompt {
     font-size: 1.1em;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
+    color: #ffffff; // White text
+    line-height: 1.5;
 }
 
 .options-group {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
+
+    // Override radio button text color
+    padding-left: 8px;
+}
+
+::ng-deep .option-radio {
+    .mdc-label {
+        color: #e0e0e0; // Light grey text
+    }
 }
 
 .result-container {
@@ -34,14 +46,17 @@
     justify-content: center;
     padding: 40px;
     text-align: center;
+    color: #ffffff;
 
     h3 {
         margin-bottom: 16px;
+        font-size: 1.5em;
     }
 
     .score-display {
         font-size: 4em;
         font-weight: bold;
         margin-bottom: 16px;
+        text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     }
 }

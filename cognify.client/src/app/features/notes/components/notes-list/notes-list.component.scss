@@ -30,17 +30,18 @@
         grid-column: 1 / -1;
         text-align: center;
         padding: 48px;
-        color: #666;
-        background: #f9f9f9;
+        color: #e0e0e0;
+        background: rgba(255, 255, 255, 0.05);
         border-radius: 8px;
-        border: 1px dashed #ccc;
+        border: 1px solid rgba(255, 255, 255, 0.1);
 
         mat-icon {
             font-size: 48px;
             width: 48px;
             height: 48px;
             margin-bottom: 16px;
-            color: #999;
+            color: #ffffff;
+            opacity: 0.7;
         }
 
         p {
@@ -50,16 +51,10 @@
     }
 
     .note-card {
-        cursor: pointer;
-        transition: transform 0.2s, box-shadow 0.2s;
+        // Layout overrides
         height: 200px;
         display: flex;
         flex-direction: column;
-
-        &:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
 
         mat-card-content {
             flex: 1;
@@ -75,8 +70,11 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
             text-overflow: ellipsis;
-            color: #444;
             white-space: pre-wrap;
+
+            // Beautiful Fade Out Effect
+            -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+            mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
         }
     }
 }

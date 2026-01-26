@@ -8,7 +8,7 @@
 
 <div class="modules-grid">
     @for (module of modules(); track module.id) {
-    <mat-card class="module-card" [routerLink]="['/modules', module.id]">
+    <mat-card class="module-card cognify-glass-card" [routerLink]="['/modules', module.id]">
         <mat-card-header>
             <mat-card-title>{{ module.title }}</mat-card-title>
             <mat-card-subtitle>{{ module.createdAt | date }}</mat-card-subtitle>
