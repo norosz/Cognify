@@ -40,19 +40,32 @@ describe('RegisterComponent', () => {
   it('should require a 6+ char password', () => {
     const emailControl = component.registerForm.get('email');
     const passwordControl = component.registerForm.get('password');
+    const confirmControl = component.registerForm.get('confirmPassword');
 
     emailControl?.setValue('valid@example.com');
     passwordControl?.setValue('123'); // Too short
+    confirmControl?.setValue('123');
 
     expect(component.registerForm.valid).toBeFalse();
     expect(passwordControl?.hasError('minlength')).toBeTrue();
+  });
+
+  it('should validate password match', () => {
+    component.registerForm.patchValue({
+      email: 'valid@example.com',
+      password: 'password123',
+      confirmPassword: 'otherpassword'
+    });
+
+    expect(component.registerForm.valid).toBeFalse();
+    expect(component.registerForm.get('confirmPassword')?.hasError('passwordMismatch')).toBeTrue();
   });
 
   it('should call AuthService.register and navigate to login on success', () => {
     const email = 'newuser@example.com';
     const password = 'password123';
 
-    component.registerForm.setValue({ email, password });
+    component.registerForm.setValue({ email, password, confirmPassword: password });
     authServiceSpy.register.and.returnValue(of({ token: 't', email, userId: 'u' }));
 
     component.onSubmit();
@@ -62,7 +75,11 @@ describe('RegisterComponent', () => {
   });
 
   it('should display conflict error message', () => {
-    component.registerForm.setValue({ email: 'taken@example.com', password: 'password123' });
+    component.registerForm.setValue({
+      email: 'taken@example.com',
+      password: 'password123',
+      confirmPassword: 'password123'
+    });
     const errorResponse = new HttpErrorResponse({ status: 409 });
     authServiceSpy.register.and.returnValue(throwError(() => errorResponse));
 
