@@ -33,6 +33,19 @@ Visualize your brain:
 - **Decay Forecast**: When to review what.
 - **Weakness Visualization**: Pinpoint conceptual gaps.
 
+### ♻️ Continuous Learning Loop
+Cognify operates as a closed-loop AI system:
+> **User Action → Data Capture → AI Analysis → Knowledge Model Update → Adaptive Content**
+
+The AI is not a one-time generator but a persistent decision engine that evolves with every interaction. Unlike stateless AI chat systems, Cognify maintains a persistent cognitive state for each learner, allowing long-term adaptation and memory modeling.
+
+- **Exam Readiness Score**: AI-estimated preparedness based on mastery distribution and decay prediction.
+
+### ❌ Mistake Intelligence
+AI classifies recurring conceptual errors and builds a learner-specific misconception profile to drive targeted remediation.
+
+> Cognify introduces an AI-driven domain layer where learning state, analytics, and content generation form a continuous adaptive feedback system.
+
 ## 💻 Tech Stack
 - **Backend**: ASP.NET Core 10 (Adaptive Services, Knowledge State)
 - **Frontend**: Angular 19 (Visualization, Dashboard)
