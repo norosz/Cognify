@@ -1,0 +1,24 @@
+.spacer {
+  flex: 1 1 auto;
+}
+
+.brand-button {
+  font-weight: bold;
+  font-size: 1.1rem;
+  
+  mat-icon {
+    margin-right: 8px;
+  }
+}
+
+.user-email {
+  margin-right: 16px;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.content-container {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}

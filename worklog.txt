@@ -79,3 +79,15 @@ DECISIONS: Enforced ownership check in Service layer; Tests cover CRUD and cross
 NEXT: Implement Frontend Modules Service and Components.
 BLOCKERS: None.
 
+[2026-01-26 11:37] Antigravity
+DONE: Refactored ModuleService and ModulesController to use internal UserContext injection.
+Detailed:
+- Removed userId parameter from IModuleService and ModuleService methods.
+- Injected IUserContextService into ModuleService to retrieve userId internally.
+- Updated ModulesController to rely on the simplified IModuleService contract.
+- Verified changes with ModulesControllerTests (14/14 passed).
+CHANGED: Cognify.Server/Services/Interfaces/IModuleService.cs, Cognify.Server/Services/ModuleService.cs, Cognify.Server/Controllers/ModulesController.cs.
+DECISIONS: Moved user ID retrieval logic into the Service layer to cleaner Controller signature and better encapsulation.
+NEXT: Implement Frontend Modules Components.
+BLOCKERS: None.
+
