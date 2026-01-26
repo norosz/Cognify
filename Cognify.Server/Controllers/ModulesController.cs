@@ -8,19 +8,19 @@ namespace Cognify.Server.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class ModulesController(IModuleService moduleService, IUserContextService userContext) : ControllerBase
+public class ModulesController(IModuleService moduleService) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<List<ModuleDto>>> GetModules()
     {
-        var modules = await moduleService.GetModulesAsync(userContext.GetCurrentUserId());
+        var modules = await moduleService.GetModulesAsync();
         return Ok(modules);
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<ModuleDto>> GetModule(Guid id)
     {
-        var module = await moduleService.GetModuleAsync(id, userContext.GetCurrentUserId());
+        var module = await moduleService.GetModuleAsync(id);
         if (module == null) return NotFound();
         return Ok(module);
     }
@@ -28,14 +28,14 @@ public class ModulesController(IModuleService moduleService, IUserContextService
     [HttpPost]
     public async Task<ActionResult<ModuleDto>> CreateModule(CreateModuleDto dto)
     {
-        var module = await moduleService.CreateModuleAsync(userContext.GetCurrentUserId(), dto);
+        var module = await moduleService.CreateModuleAsync(dto);
         return CreatedAtAction(nameof(GetModule), new { id = module.Id }, module);
     }
 
     [HttpPut("{id}")]
     public async Task<ActionResult<ModuleDto>> UpdateModule(Guid id, UpdateModuleDto dto)
     {
-        var module = await moduleService.UpdateModuleAsync(id, userContext.GetCurrentUserId(), dto);
+        var module = await moduleService.UpdateModuleAsync(id, dto);
         if (module == null) return NotFound();
         return Ok(module);
     }
@@ -43,7 +43,7 @@ public class ModulesController(IModuleService moduleService, IUserContextService
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteModule(Guid id)
     {
-        var success = await moduleService.DeleteModuleAsync(id, userContext.GetCurrentUserId());
+        var success = await moduleService.DeleteModuleAsync(id);
         if (!success) return NotFound();
         return NoContent();
     }

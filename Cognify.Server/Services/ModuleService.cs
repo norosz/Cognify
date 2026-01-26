@@ -6,10 +6,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Cognify.Server.Services;
 
-public class ModuleService(ApplicationDbContext context) : IModuleService
+public class ModuleService(ApplicationDbContext context, IUserContextService userContext) : IModuleService
 {
-    public async Task<List<ModuleDto>> GetModulesAsync(Guid userId)
+    public async Task<List<ModuleDto>> GetModulesAsync()
     {
+        var userId = userContext.GetCurrentUserId();
         return await context.Modules
             .Where(m => m.OwnerUserId == userId)
             .OrderByDescending(m => m.CreatedAt)
@@ -23,8 +24,9 @@ public class ModuleService(ApplicationDbContext context) : IModuleService
             .ToListAsync();
     }
 
-    public async Task<ModuleDto?> GetModuleAsync(Guid id, Guid userId)
+    public async Task<ModuleDto?> GetModuleAsync(Guid id)
     {
+        var userId = userContext.GetCurrentUserId();
         var module = await context.Modules
             .FirstOrDefaultAsync(m => m.Id == id && m.OwnerUserId == userId);
 
@@ -39,8 +41,9 @@ public class ModuleService(ApplicationDbContext context) : IModuleService
         };
     }
 
-    public async Task<ModuleDto> CreateModuleAsync(Guid userId, CreateModuleDto dto)
+    public async Task<ModuleDto> CreateModuleAsync(CreateModuleDto dto)
     {
+        var userId = userContext.GetCurrentUserId();
         var module = new Module
         {
             Title = dto.Title,
@@ -60,8 +63,9 @@ public class ModuleService(ApplicationDbContext context) : IModuleService
         };
     }
 
-    public async Task<ModuleDto?> UpdateModuleAsync(Guid id, Guid userId, UpdateModuleDto dto)
+    public async Task<ModuleDto?> UpdateModuleAsync(Guid id, UpdateModuleDto dto)
     {
+        var userId = userContext.GetCurrentUserId();
         var module = await context.Modules
             .FirstOrDefaultAsync(m => m.Id == id && m.OwnerUserId == userId);
 
@@ -81,8 +85,9 @@ public class ModuleService(ApplicationDbContext context) : IModuleService
         };
     }
 
-    public async Task<bool> DeleteModuleAsync(Guid id, Guid userId)
+    public async Task<bool> DeleteModuleAsync(Guid id)
     {
+        var userId = userContext.GetCurrentUserId();
         var module = await context.Modules
             .FirstOrDefaultAsync(m => m.Id == id && m.OwnerUserId == userId);
 
