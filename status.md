@@ -14,6 +14,24 @@
 - [ ] **[Agent]** Implement Handwriting Parsing Agent (OCR)
 - [ ] **[Agent]** Implement Question Generation Agent
 - [ ] **[Agent]** Implement Grading Agent
+### 🧠 User Knowledge & AI Feedback
+- [ ] **[Backend]** Create `UserKnowledgeState` Entity (Topic, Mastery, Confidence)
+- [ ] **[Backend]** Implement `KnowledgeStateService` (Update logic)
+- [ ] **[Backend]** Implement `LearningAnalyticsService` (Aggregator)
+
+### 🎯 Adaptive Quiz Engine
+- [ ] **[Backend]** Create `AdaptiveQuizService` (Contextual prompting)
+- [ ] **[Backend]** Implement Prompt Engineering for Mastery/Confidence levels
+
+### 📉 Decay & Mistake Intelligence
+- [ ] **[Backend]** Implement `DecayPredictionService` (Spaced Repetition)
+- [ ] **[Backend]** Implement `MistakeAnalysisService` (Error Pattern Detection)
+- [ ] **[Backend]** Update `UserKnowledgeState` with `MistakePatterns` & `ForgettingRisk`
+
+### 📊 AI Learning Dashboard (Frontend)
+- [ ] **[Frontend]** Build Knowledge Map Visualization
+- [ ] **[Frontend]** Build Memory Decay Chart
+- [ ] **[Frontend]** Build Concept Weakness List
 
 ## 🏗️ In Progress
 

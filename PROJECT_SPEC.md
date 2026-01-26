@@ -12,11 +12,14 @@ Cognify is a **containerized, AI-assisted learning platform** built with a moder
 - **Azure-compatible services** (Azurite for Blob Storage, OpenAI API for AI)
 - **Docker** for containerization
 
+**Identity:**
+"An AI-powered adaptive learning system that models the learner’s cognition and dynamically adjusts teaching strategy."
+
 **Primary goals:**
-- Demonstrate distributed application design
-- Showcase containerization and orchestration
-- Clean backend–frontend separation
-- Practical AI usage in education
+- **Cognitive Modeling**: Track user mastery, confidence, and memory decay.
+- **Adaptive Content**: Generate content tailored to the user's specific state.
+- **Continuous Feedback**: Use every interaction to refine the user model.
+- **Distributed Architecture**: Demonstrate complex state management with .NET Aspire.
 
 ---
 
@@ -114,18 +117,17 @@ Cognify.ServiceDefaults/    # Shared .NET code (extensions, config)
 - **Module**: Learning unit (topic/lesson)
 - **Document**: Uploaded file (stored in Blob Storage)
 - **Note**: Structured learning content
+- **UserKnowledgeState**: (NEW) AI Persistent memory of the learner.
+    - Fields: Topic, MasteryScore (0-1), ConfidenceScore (0-1), MistakePatterns (JSON), ForgettingRisk (Enum), LastReviewedAt.
 - **QuestionSet**: AI-generated assessment
-- **Question**: Individual quiz question
-- **Attempt**: User quiz attempt
+- **Attempt**: User quiz attempt (Feed for the Knowledge Model)
 
-### Database Tables
-- User: Id (GUID), Email, PasswordHash, CreatedAt
-- Module: Id (GUID), Title, Description, OwnerUserId (FK), CreatedAt
-- Document: Id (GUID), ModuleId (FK), BlobPath, Status, ExtractedText, CreatedAt
-- Note: Id (GUID), ModuleId (FK), Title, Content, CreatedAt
-- QuestionSet: Id (GUID), NoteId (FK), CreatedAt
-- Question: Id (GUID), QuestionSetId (FK), Type, Prompt, OptionsJson, CorrectAnswerJson, Explanation
-- Attempt: Id (GUID), QuestionSetId (FK), UserId (FK), AnswersJson, Score, CreatedAt
+### Architecture Changes (v2)
+- **KnowledgeStateService**: Manages the cognitive model.
+- **LearningAnalyticsService**: Aggregates performance data.
+- **AdaptiveQuizService**: generating optimal next questions.
+- **DecayPredictionService**: Spaced repetition logic.
+- **MistakeAnalysisService**: Error classification.
 
 ---
 
