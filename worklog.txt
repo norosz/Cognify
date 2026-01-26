@@ -165,3 +165,23 @@ DECISIONS: Enforced strict ownership validation in `NoteService` using `IUserCon
 NEXT: Implement Frontend Notes Service and Components.
 BLOCKERS: None.
 
+[2026-01-26 19:22] Antigravity
+DONE: Fixed integration test failures in `DocumentsControllerTests`.
+Detailed:
+- Updated `DocumentsControllerTests.cs` to correctly mock `IBlobStorageService.GenerateDownloadSasToken` which now requires an optional 3rd argument.
+- Verified all Document tests pass (4/4).
+CHANGED: `Cognify.Tests/Controllers/DocumentsControllerTests.cs`.
+DECISIONS: Maintained mock strictness while adapting to the updated service signature.
+NEXT: Implement Frontend Notes Service and Components.
+BLOCKERS: None.
+
+[2026-01-26 19:22] Antigravity
+DONE: Fixed integration test failures in `DocumentsControllerTests`.
+Detailed:
+- Updated `DocumentsControllerTests.cs` to correctly mock `IBlobStorageService.GenerateDownloadSasToken` which now requires an optional 3rd argument.
+- Verified all Document tests pass (4/4).
+CHANGED: `Cognify.Tests/Controllers/DocumentsControllerTests.cs`.
+DECISIONS: Maintained mock strictness while adapting to the updated service signature.
+NEXT: Implement Frontend Notes Service and Components.
+BLOCKERS: None.
+
