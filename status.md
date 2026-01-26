@@ -8,18 +8,24 @@
 - [x] **[Frontend]** Build Note List Component
 - [x] **[Frontend]** Build Note Editor (Markdown/Text)
 
-### 🤖 AI Generation, Agents & Quizzes
-- [ ] **[Backend]** Configure OpenAI Service (Aspire/Settings)
-- [ ] **[Backend]** Implement `AiService` (Prompt engineering, API call)
-- [ ] **[Backend]** Create `AiController` (Generate questions endpoint)
-- [ ] **[Backend]** Implement `QuestionService` & `AttemptService`
-- [ ] **[Backend]** Create `AttemptsController` (Submit, Score)
-- [ ] **[Frontend]** Build Quiz Generation UI
-- [ ] **[Frontend]** Build Quiz Taking Interface
-- [ ] **[Frontend]** Build Quiz Result/Score View
-- [ ] **[Agent]** Implement Handwriting Parsing Agent (OCR)
-- [ ] **[Agent]** Implement Question Generation Agent
-- [ ] **[Agent]** Implement Grading Agent
+### 🧠 User Knowledge & AI Feedback
+- [ ] **[Backend]** Create `UserKnowledgeState` Entity (Topic, Mastery, Confidence)
+- [ ] **[Backend]** Implement `KnowledgeStateService` (Update logic)
+- [ ] **[Backend]** Implement `LearningAnalyticsService` (Aggregator)
+
+### 🎯 Adaptive Quiz Engine
+- [ ] **[Backend]** Create `AdaptiveQuizService` (Contextual prompting)
+- [ ] **[Backend]** Implement Prompt Engineering for Mastery/Confidence levels
+
+### 📉 Decay & Mistake Intelligence
+- [ ] **[Backend]** Implement `DecayPredictionService` (Spaced Repetition)
+- [ ] **[Backend]** Implement `MistakeAnalysisService` (Error Pattern Detection)
+- [ ] **[Backend]** Update `UserKnowledgeState` with `MistakePatterns` & `ForgettingRisk`
+
+### 📊 AI Learning Dashboard (Frontend)
+- [ ] **[Frontend]** Build Knowledge Map Visualization
+- [ ] **[Frontend]** Build Memory Decay Chart
+- [ ] **[Frontend]** Build Concept Weakness List
 
 ## 🏗️ In Progress
 

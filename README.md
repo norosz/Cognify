@@ -1,58 +1,46 @@
-# Cognify: AI-Powered Learning Platform
+# 🧠 Cognify: Personalized Cognitive Tutor Platform
 
-> **A containerized, AI-assisted learning platform built with .NET 10, Angular 19, and .NET Aspire.**
+> **An AI-powered adaptive learning system that models the learner’s cognition and dynamically adjusts teaching strategy.**
 
-Cognify is a modern full-stack educational tool designed to demonstrate the power of distributed application architecture and generative AI in education. It allows users to organize learning materials, process documents, and generate interactive quizzes using AI.
+Cognify goes beyond simple quizzes to build a persistent **User Knowledge Model**, predicting memory decay and adapting content to your specific learning style and mastery level.
 
-## 🚀 Why Cognify?
+## 🚀 Key Capabilities
 
-Cognify serves as a comprehensive reference implementation for modern cloud-native development, tackling real-world educational challenges.
+### 🧠 1. User Knowledge Model
+Persistent tracking of your cognitive state per topic:
+- **Mastery Score**: How well you understand a concept.
+- **Confidence Score**: Your self-reported confidence.
+- **Mistake Patterns**: AI analysis of your recurring errors.
 
-*   **🎓 AI-Driven Learning**: Automatically generates quizzes and assessments from your study notes using OpenAI.
-*   **🏗️ Modern Architecture**: Built on **.NET 10** and **Angular 19**, showcasing the latest in web development.
-*   **☁️ Cloud-Native Ready**: Fully containerized with **Docker** and orchestrated by **.NET Aspire** for seamless local development and deployment.
-*   **🔒 Secure & Private**: Implements robust JWT-based authentication and ownership policies, ensuring your data remains yours.
-*   **🛠️ Developer Experience**: Demonstrates clean separation of concerns, persistent storage integration (SQL & Blob), and automated testing.
+### 🔁 2. AI Feedback Loop
+Every interaction updates your profile. The system learns from:
+- Quiz answers & time taken.
+- Self-evaluations.
+- Document uploads.
 
-## 🌟 Key Features
+### 🎯 3. Adaptive Quiz Engine
+No more generic tests. The AI generates questions based on:
+- **Low Mastery**: Focus on conceptual understanding.
+- **High Mastery**: Challenge with edge cases and application.
+- **Forgetting Risk**: Spaced repetition to prevent decay.
 
-*   **User Management**: Secure registration and login flow.
-*   **Module System**: Organize topics into learning modules.
-*   **Document Processing**: Upload PDFs and images (future OCR integration planned).
-*   **Smart Notes**: Create structured notes that serve as the context for AI generation.
-*   **Interactive Quizzes**: Take AI-generated tests with immediate feedback and scoring.
+### 📉 4. Learning Decay Prediction
+The system predicts when you are likely to forget a topic and schedules reviews automatically effectively implementing AI-driven Spaced Repetition.
 
-## 💻 Technology Stack
+### 📊 5. AI Learning Dashboard
+Visualize your brain:
+- **Knowledge Map**: Heatmap of your mastery.
+- **Decay Forecast**: When to review what.
+- **Weakness Visualization**: Pinpoint conceptual gaps.
 
-*   **Backend**: ASP.NET Core 10, Entity Framework Core, SQL Server
-*   **Frontend**: Angular 19, Angular Material, RxJS
-*   **Orchestration**: .NET Aspire
-*   **Storage**: Azurite (Blob Storage Emulator)
-*   **AI**: OpenAI API
+## 💻 Tech Stack
+- **Backend**: ASP.NET Core 10 (Adaptive Services, Knowledge State)
+- **Frontend**: Angular 19 (Visualization, Dashboard)
+- **AI**: Azure OpenAI (Contextual Generation, Analysis)
+- **Orchestration**: .NET Aspire
+- **Data**: SQL Server (Structured State) + Azure Blob (Materials)
 
 ## 🏃 Getting Started
-
-### Prerequisites
-*   [.NET 10 SDK](https://dotnet.microsoft.com/)
-*   [Node.js](https://nodejs.org/) (LTS)
-*   [Docker Desktop](https://www.docker.com/products/docker-desktop)
-
-### Running the Application
-1.  **Clone the repository**:
-    ```bash
-    git clone https://github.com/norosz/Cognify.git
-    cd Cognify
-    ```
-2.  **Trust the development certificate**:
-    ```bash
-    dotnet dev-certs https --trust
-    ```
-3.  **Start with .NET Aspire**:
-    ```bash
-    cd Cognify.AppHost
-    dotnet run
-    ```
-    This will launch the **Aspire Dashboard**, where you can view and access the running Backend API and Frontend Client.
-
----
-*Built with ❤️ for education and technology.*
+1. Clone the repo.
+2. `dotnet dev-certs https --trust`
+3. `cd Cognify.AppHost` & `dotnet run`.

@@ -208,3 +208,11 @@ DECISIONS: Prioritized visual comfort and clear separation of inputs.
 NEXT: Push changes and proceed to Quiz Implementation.
 BLOCKERS: None.
 
+
+[2026-01-26 21:42] Antigravity
+SCOPE PIVOT: Transformed project from 'Quiz App' to 'Adaptive Learning Platform'.
+DETAILS:
+- Updated README.md with new identity and capabilities.
+- Updated PROJECT_SPEC.md with new domain model (UserKnowledgeState) and architecture.
+- Updated status.md and task.md with new roadmap (Adaptive Engine, Decay Prediction, etc.).
+NEXT: Begin implementation of User Knowledge Model.
