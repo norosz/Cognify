@@ -198,3 +198,13 @@ DECISIONS: Used Material Dialog for note editing to keep context; Removed `envir
 NEXT: Await further instructions (e.g., Quiz implementation).
 BLOCKERS: None.
 
+[2026-01-26 19:44] Antigravity
+DONE: Refined Note Editor UI.
+Detailed:
+- Increased margin between form fields in `NoteEditorDialogComponent` to 24px for better readability.
+- Applied `!important` to override default spacing where necessary.
+CHANGED: `cognify.client/src/app/features/notes/components/note-editor-dialog/note-editor-dialog.component.scss`.
+DECISIONS: Prioritized visual comfort and clear separation of inputs.
+NEXT: Push changes and proceed to Quiz Implementation.
+BLOCKERS: None.
+
