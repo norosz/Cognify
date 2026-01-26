@@ -4,7 +4,8 @@ namespace Cognify.Server.Services.Interfaces;
 
 public interface IDocumentService
 {
-    Task<DocumentDto> UploadDocumentAsync(Guid moduleId, Stream fileStream, string fileName, string contentType);
-    Task<IEnumerable<DocumentDto>> GetModuleDocumentsAsync(Guid moduleId);
+    Task<UploadInitiateResponse> InitiateUploadAsync(Guid moduleId, string fileName, string contentType);
+    Task<DocumentDto> CompleteUploadAsync(Guid documentId);
     Task DeleteDocumentAsync(Guid documentId);
+    Task<IEnumerable<DocumentDto>> GetModuleDocumentsAsync(Guid moduleId);
 }

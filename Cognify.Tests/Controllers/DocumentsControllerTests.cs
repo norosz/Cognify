@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using Azure.Storage.Sas;
 using Cognify.Server;
 using Cognify.Server.Data;
 using Cognify.Server.Dtos.Auth;
@@ -77,57 +78,55 @@ public class DocumentsControllerTests : IClassFixture<WebApplicationFactory<Prog
     }
 
     [Fact]
-    public async Task UploadDocument_ShouldReturnCreated_WhenFileIsValid()
+    public async Task InitiateUpload_ShouldReturnSas_WhenValid()
     {
         // Arrange
         var (client, _) = await CreateAuthenticatedClientAsync();
         var module = await CreateModuleAsync(client);
 
         _blobStorageMock
-            .Setup(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync("blobs/guid_test.txt");
+            .Setup(x => x.GenerateUploadSasToken(It.IsAny<string>(), It.IsAny<DateTimeOffset>()))
+            .Returns("https://azurite/container/blob?sas=token");
 
-        using var content = new MultipartFormDataContent();
-        var fileContent = new ByteArrayContent(new byte[] { 1, 2, 3 });
-        fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("text/plain");
-        content.Add(fileContent, "file", "test.txt");
+        var request = new UploadInitiateRequest("test.txt", "text/plain");
 
         // Act
-        var response = await client.PostAsync($"/api/modules/{module.Id}/documents", content);
+        var response = await client.PostAsJsonAsync($"/api/modules/{module.Id}/documents/initiate", request);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Created);
-        var doc = await response.Content.ReadFromJsonAsync<DocumentDto>();
-        doc!.FileName.Should().Contain("test.txt");
-        doc.ModuleId.Should().Be(module.Id);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await response.Content.ReadFromJsonAsync<UploadInitiateResponse>();
+        result!.SasUrl.Should().Contain("sas=token");
+        result.BlobName.Should().Contain("test.txt");
     }
 
     [Fact]
-    public async Task UploadDocument_ShouldReturnBadRequest_WhenFileIsMissing()
+    public async Task CompleteUpload_ShouldReturnReady_WhenValid()
     {
+        // Arrange
         var (client, _) = await CreateAuthenticatedClientAsync();
         var module = await CreateModuleAsync(client);
-        using var content = new MultipartFormDataContent();
 
-        var response = await client.PostAsync($"/api/modules/{module.Id}/documents", content);
+        _blobStorageMock
+            .Setup(x => x.GenerateUploadSasToken(It.IsAny<string>(), It.IsAny<DateTimeOffset>()))
+            .Returns("https://sas-url");
+        _blobStorageMock
+            .Setup(x => x.GenerateDownloadSasToken(It.IsAny<string>(), It.IsAny<DateTimeOffset>()))
+            .Returns("https://sas-url");
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-    }
+        // Initiate
+        var request = new UploadInitiateRequest("test.txt", "text/plain");
+        var initRes = await client.PostAsJsonAsync($"/api/modules/{module.Id}/documents/initiate", request);
+        var initData = await initRes.Content.ReadFromJsonAsync<UploadInitiateResponse>();
 
-    [Fact]
-    public async Task UploadDocument_ShouldReturnForbidden_WhenNotOwner()
-    {
-        var (ownerClient, _) = await CreateAuthenticatedClientAsync();
-        var module = await CreateModuleAsync(ownerClient);
+        // Act
+        var response = await client.PostAsync($"/api/documents/{initData!.DocumentId}/complete", null);
 
-        var (otherClient, _) = await CreateAuthenticatedClientAsync();
-
-        using var content = new MultipartFormDataContent();
-        content.Add(new ByteArrayContent(new byte[] { 1 }), "file", "test.txt");
-
-        var response = await otherClient.PostAsync($"/api/modules/{module.Id}/documents", content);
-
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var doc = await response.Content.ReadFromJsonAsync<DocumentDto>();
+        doc!.Status.Should().Be(DocumentStatus.Ready);
+        doc.DownloadUrl.Should().Be("https://sas-url"); // Should return Read SAS
     }
 
     [Fact]
@@ -138,13 +137,17 @@ public class DocumentsControllerTests : IClassFixture<WebApplicationFactory<Prog
         var module = await CreateModuleAsync(client);
 
         _blobStorageMock
-            .Setup(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync("path");
+            .Setup(x => x.GenerateUploadSasToken(It.IsAny<string>(), It.IsAny<DateTimeOffset>()))
+            .Returns("https://sas-url");
+        _blobStorageMock
+            .Setup(x => x.GenerateDownloadSasToken(It.IsAny<string>(), It.IsAny<DateTimeOffset>()))
+            .Returns("https://sas-url");
 
-        // Upload one
-        using var content = new MultipartFormDataContent();
-        content.Add(new ByteArrayContent(new byte[] { 1 }), "file", "test.txt");
-        await client.PostAsync($"/api/modules/{module.Id}/documents", content);
+        // Create a document
+        var request = new UploadInitiateRequest("test.txt", "text/plain");
+        var initRes = await client.PostAsJsonAsync($"/api/modules/{module.Id}/documents/initiate", request);
+        var initData = await initRes.Content.ReadFromJsonAsync<UploadInitiateResponse>();
+        await client.PostAsync($"/api/documents/{initData!.DocumentId}/complete", null);
 
         // Act
         var response = await client.GetAsync($"/api/modules/{module.Id}/documents");
@@ -153,6 +156,8 @@ public class DocumentsControllerTests : IClassFixture<WebApplicationFactory<Prog
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var list = await response.Content.ReadFromJsonAsync<List<DocumentDto>>();
         list.Should().HaveCount(1);
+        list![0].Status.Should().Be(DocumentStatus.Ready);
+        list[0].DownloadUrl.Should().Be("https://sas-url");
     }
 
     [Fact]
@@ -162,21 +167,19 @@ public class DocumentsControllerTests : IClassFixture<WebApplicationFactory<Prog
         var (client, _) = await CreateAuthenticatedClientAsync();
         var module = await CreateModuleAsync(client);
 
-        _blobStorageMock
-             .Setup(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>()))
-             .ReturnsAsync("path");
+        _blobStorageMock.Setup(x => x.GenerateUploadSasToken(It.IsAny<string>(), It.IsAny<DateTimeOffset>())).Returns("url");
+        _blobStorageMock.Setup(x => x.DeleteAsync(It.IsAny<string>())).Returns(Task.CompletedTask);
 
-        using var content = new MultipartFormDataContent();
-        content.Add(new ByteArrayContent(new byte[] { 1 }), "file", "test.txt");
-        var upRes = await client.PostAsync($"/api/modules/{module.Id}/documents", content);
-        var doc = await upRes.Content.ReadFromJsonAsync<DocumentDto>();
+        var request = new UploadInitiateRequest("test.txt", "text/plain");
+        var initRes = await client.PostAsJsonAsync($"/api/modules/{module.Id}/documents/initiate", request);
+        var initData = await initRes.Content.ReadFromJsonAsync<UploadInitiateResponse>();
 
         // Act
-        var response = await client.DeleteAsync($"/api/documents/{doc!.Id}");
+        var response = await client.DeleteAsync($"/api/documents/{initData!.DocumentId}");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
-        _blobStorageMock.Verify(x => x.DeleteAsync("path"), Times.Once);
+        _blobStorageMock.Verify(x => x.DeleteAsync(It.IsAny<string>()), Times.Once);
         
         // Verify list is empty
         var listRes = await client.GetAsync($"/api/modules/{module.Id}/documents");

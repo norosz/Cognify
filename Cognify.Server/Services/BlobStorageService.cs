@@ -1,55 +1,59 @@
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using Azure.Storage.Sas;
 using Cognify.Server.Services.Interfaces;
 
 namespace Cognify.Server.Services;
 
-public class BlobStorageService : IBlobStorageService
+public class BlobStorageService(BlobServiceClient blobServiceClient) : IBlobStorageService
 {
-    private readonly BlobServiceClient _blobServiceClient;
     private const string ContainerName = "documents";
 
-    public BlobStorageService(BlobServiceClient blobServiceClient)
+    public string GenerateUploadSasToken(string blobName, DateTimeOffset expiresOn)
     {
-        _blobServiceClient = blobServiceClient;
-    }
+        var container = blobServiceClient.GetBlobContainerClient(ContainerName);
+        var blob = container.GetBlobClient(blobName);
 
-    private async Task<BlobContainerClient> GetContainerClientAsync()
-    {
-        var containerClient = _blobServiceClient.GetBlobContainerClient(ContainerName);
-        await containerClient.CreateIfNotExistsAsync(PublicAccessType.None);
-        return containerClient;
-    }
-
-    public async Task<string> UploadAsync(Stream content, string fileName, string contentType)
-    {
-        var containerClient = await GetContainerClientAsync();
-        var uniqueFileName = $"{Guid.NewGuid()}_{fileName}";
-        var blobClient = containerClient.GetBlobClient(uniqueFileName);
-
-        await blobClient.UploadAsync(content, new BlobHttpHeaders { ContentType = contentType });
-
-        return uniqueFileName; // Storing the path relative to the container
-    }
-
-    public async Task<Stream> DownloadAsync(string blobPath)
-    {
-        var containerClient = await GetContainerClientAsync();
-        var blobClient = containerClient.GetBlobClient(blobPath);
-
-        if (!await blobClient.ExistsAsync())
+        var sas = new BlobSasBuilder
         {
-            throw new FileNotFoundException($"Blob {blobPath} not found.");
+            BlobContainerName = ContainerName,
+            BlobName = blobName,
+            Resource = "b",
+            ExpiresOn = expiresOn
+        };
+
+        sas.SetPermissions(BlobSasPermissions.Write | BlobSasPermissions.Create);
+
+        return blob.GenerateSasUri(sas).ToString();
+    }
+
+    public string GenerateDownloadSasToken(string blobName, DateTimeOffset expiresOn, string? originalFileName = null)
+    {
+        var container = blobServiceClient.GetBlobContainerClient(ContainerName);
+        var blob = container.GetBlobClient(blobName);
+
+        var sas = new BlobSasBuilder
+        {
+            BlobContainerName = ContainerName,
+            BlobName = blobName,
+            Resource = "b",
+            ExpiresOn = expiresOn
+        };
+
+        if (!string.IsNullOrEmpty(originalFileName))
+        {
+            sas.ContentDisposition = $"attachment; filename={originalFileName}";
         }
 
-        var downloadInfo = await blobClient.DownloadAsync();
-        return downloadInfo.Value.Content;
+        sas.SetPermissions(BlobSasPermissions.Read);
+
+        return blob.GenerateSasUri(sas).ToString();
     }
 
-    public async Task DeleteAsync(string blobPath)
+    public async Task DeleteAsync(string blobName)
     {
-        var containerClient = await GetContainerClientAsync();
-        var blobClient = containerClient.GetBlobClient(blobPath);
-        await blobClient.DeleteIfExistsAsync();
+        var container = blobServiceClient.GetBlobContainerClient(ContainerName);
+        var blob = container.GetBlobClient(blobName);
+        await blob.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots);
     }
 }

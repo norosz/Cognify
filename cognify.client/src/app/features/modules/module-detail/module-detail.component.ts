@@ -9,6 +9,7 @@ import { ModuleService } from '../../../core/modules/module.service';
 import { ModuleDto } from '../../../core/modules/module.models';
 import { DocumentListComponent } from '../components/document-list/document-list.component';
 import { UploadDocumentDialogComponent } from '../components/upload-document-dialog/upload-document-dialog.component';
+import { DocumentsService } from '../services/documents.service';
 
 @Component({
   selector: 'app-module-detail',
@@ -29,6 +30,7 @@ export class ModuleDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private moduleService = inject(ModuleService);
   private dialog = inject(MatDialog);
+  private documentsService = inject(DocumentsService);
 
   module = signal<ModuleDto | null>(null);
 
@@ -45,17 +47,27 @@ export class ModuleDetailComponent implements OnInit {
   }
 
   openUploadDialog() {
+    console.log('Opening upload dialog...');
     const currentModule = this.module();
-    if (!currentModule) return;
+    if (!currentModule) {
+      console.error('No module data found!');
+      return;
+    }
 
+    console.log('Module found:', currentModule.id);
     const dialogRef = this.dialog.open(UploadDocumentDialogComponent, {
       width: '400px',
       data: { moduleId: currentModule.id }
     });
 
     dialogRef.afterClosed().subscribe(result => {
+      console.log('Dialog closed with result:', result);
       if (result) {
-        this.documentList.loadDocuments();
+        if (this.documentList) {
+          this.documentList.loadDocuments();
+        } else {
+          console.warn('DocumentList component not found!');
+        }
       }
     });
   }

@@ -1,10 +1,10 @@
-import { Component, Inject, inject } from '@angular/core';
+import { Component, Inject, inject, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatIconModule } from '@angular/material/icon';
-import { DocumentsService } from '../../services/documents.service';
+import { DocumentsService, UploadInitiateResponse } from '../../services/documents.service';
 
 @Component({
   selector: 'app-upload-document-dialog',
@@ -19,22 +19,42 @@ export class UploadDocumentDialogComponent {
   uploadError: string | null = null;
 
   private documentsService = inject(DocumentsService);
+  private ngZone = inject(NgZone);
 
   constructor(
     public dialogRef: MatDialogRef<UploadDocumentDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: { moduleId: string }
-  ) { }
+  ) {
+    console.log('UploadDialog initialized');
+  }
 
   onFileSelected(event: any): void {
-    const file = event.target.files[0];
-    if (file) {
-      this.selectedFile = file;
-      this.uploadError = null;
-    }
+    if (event.preventDefault) event.preventDefault();
+    if (event.stopPropagation) event.stopPropagation();
+
+    this.ngZone.runOutsideAngular(() => {
+      try {
+        if (!event.target || !event.target.files || event.target.files.length === 0) {
+          return;
+        }
+
+        const file = event.target.files[0];
+        if (file) {
+          this.ngZone.run(() => {
+            this.selectedFile = file;
+            this.uploadError = null;
+          });
+        }
+      } catch (e) {
+        console.error('Error in handler:', e);
+      }
+    });
   }
 
   upload(): void {
-    if (!this.selectedFile) return;
+    if (!this.selectedFile) {
+      return;
+    }
 
     this.isUploading = true;
     this.uploadError = null;
@@ -42,7 +62,7 @@ export class UploadDocumentDialogComponent {
     this.documentsService.uploadDocument(this.data.moduleId, this.selectedFile).subscribe({
       next: (doc) => {
         this.isUploading = false;
-        this.dialogRef.close(true); // Return true to indicate success
+        this.dialogRef.close(true);
       },
       error: (err) => {
         console.error('Upload failed', err);

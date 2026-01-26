@@ -49,6 +49,12 @@ export class DocumentListComponent implements OnInit {
     }
   }
 
+  openDocument(doc: DocumentDto): void {
+    if (doc.downloadUrl) {
+      window.open(doc.downloadUrl, '_blank');
+    }
+  }
+
   getStatusLabel(status: number): string {
     switch (status) {
       case 0: return 'Processing';

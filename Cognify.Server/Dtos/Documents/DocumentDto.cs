@@ -1,16 +1,31 @@
-using Cognify.Server.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace Cognify.Server.Dtos.Documents;
 
-public class DocumentDto
+public record UploadInitiateRequest(
+    [Required] string FileName,
+    [Required] string ContentType
+);
+
+public record UploadInitiateResponse(
+    Guid DocumentId,
+    string SasUrl,
+    string BlobName
+);
+
+public record DocumentDto(
+    Guid Id,
+    Guid ModuleId,
+    string FileName,
+    string BlobPath,
+    DocumentStatus Status,
+    DateTime CreatedAt,
+    string? DownloadUrl = null // SAS URL for download
+);
+
+public enum DocumentStatus
 {
-    public Guid Id { get; set; }
-    public Guid ModuleId { get; set; }
-    public string BlobPath { get; set; } = string.Empty;
-    public string FileName { get; set; } = string.Empty; // Extracted from BlobPath or stored separately? 
-    // Spec says "BlobPath". I'll format BlobPath to be just the name or URL? 
-    // Usually BlobPath is internal. But Spec says "BlobPath, Status...".
-    // I'll assume BlobPath is the file name in the container for now.
-    public DocumentStatus Status { get; set; }
-    public DateTime CreatedAt { get; set; }
+    Pending = 0,
+    Ready = 1,
+    Error = 2
 }

@@ -35,3 +35,13 @@
     background-color: #ffebee;
     color: #c62828;
 }
+
+.document-link {
+    color: #1976d2;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.document-link:hover {
+    text-decoration: underline;
+}

@@ -11,32 +11,48 @@ namespace Cognify.Server.Controllers;
 public class DocumentsController : ControllerBase
 {
     private readonly IDocumentService _documentService;
+    private readonly ILogger<DocumentsController> _logger;
     private const long MaxFileSize = 10 * 1024 * 1024; // 10 MB
     private static readonly string[] AllowedExtensions = { ".pdf", ".docx", ".txt", ".md", ".png", ".jpg", ".jpeg" };
 
-    public DocumentsController(IDocumentService documentService)
+    public DocumentsController(IDocumentService documentService, ILogger<DocumentsController> logger)
     {
         _documentService = documentService;
+        _logger = logger;
     }
 
-    [HttpPost("modules/{moduleId}/documents")]
-    public async Task<ActionResult<DocumentDto>> UploadDocument(Guid moduleId, IFormFile file)
+    [HttpPost("modules/{moduleId}/documents/initiate")]
+    public async Task<ActionResult<UploadInitiateResponse>> InitiateUpload(Guid moduleId, [FromBody] UploadInitiateRequest request)
     {
-        if (file == null || file.Length == 0)
-            return BadRequest("No file uploaded.");
-
-        if (file.Length > MaxFileSize)
-            return BadRequest($"File size exceeds the limit of {MaxFileSize / 1024 / 1024} MB.");
-
-        var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-        if (!AllowedExtensions.Contains(extension))
-            return BadRequest("Invalid file type.");
-
         try
         {
-            using var stream = file.OpenReadStream();
-            var document = await _documentService.UploadDocumentAsync(moduleId, stream, file.FileName, file.ContentType);
-            return CreatedAtAction(nameof(GetDocument), new { id = document.Id }, document);
+            var response = await _documentService.InitiateUploadAsync(moduleId, request.FileName, request.ContentType);
+            return Ok(response);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Module not found for upload initiation. ModuleId: {ModuleId}", moduleId);
+            return NotFound(ex.Message);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            _logger.LogWarning(ex, "Unauthorized upload attempt. ModuleId: {ModuleId}", moduleId);
+            return StatusCode(403, ex.Message);
+        }
+        catch (Exception ex)
+        {
+             _logger.LogError(ex, "Error initiating upload for ModuleId: {ModuleId}", moduleId);
+             return StatusCode(500, ex.Message);
+        }
+    }
+
+    [HttpPost("documents/{documentId}/complete")]
+    public async Task<ActionResult<DocumentDto>> CompleteUpload(Guid documentId)
+    {
+        try
+        {
+            var document = await _documentService.CompleteUploadAsync(documentId);
+            return Ok(document);
         }
         catch (KeyNotFoundException ex)
         {
@@ -78,25 +94,5 @@ public class DocumentsController : ControllerBase
         {
             return StatusCode(403, ex.Message);
         }
-    }
-
-    // Placeholder for getting a single document metadata if needed, 
-    // although GetModuleDocuments might be enough for lists.
-    // CreatedAtAction needs a valid route.
-    [HttpGet("documents/{id}")]
-    [ApiExplorerSettings(IgnoreApi = true)] // Internal use for CreatedAtAction validation? Or just implement it.
-    public IActionResult GetDocument(Guid id)
-    {
-        // Not implemented in Service yet as per spec requirement, mostly List is used.
-        // But for CreatedAtAction REST pattern, we should have it.
-        // For now, I'll return placeholder or implement GetDocumentById in Service.
-        // Let's implement full correctness later if needed, or simply return Ok(id).
-        // Actually, let's just make it return 200 with ID for now to satisfy the pattern 
-        // without adding service overhead if not required. 
-        // But wait, the user might want to click the document. 
-        // Retrieving ONE document is reasonable.
-        // I will add GetDocumentAsync to Service efficiently in next step if required. 
-        // For now, I'll skip adding this method to interface and just return Ok.
-        return Ok(new { Id = id }); 
     }
 }

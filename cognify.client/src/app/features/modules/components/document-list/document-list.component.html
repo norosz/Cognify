@@ -4,7 +4,11 @@
         <!-- Name Column -->
         <ng-container matColumnDef="fileName">
             <th mat-header-cell *matHeaderCellDef> Name </th>
-            <td mat-cell *matCellDef="let doc"> {{doc.fileName}} </td>
+            <td mat-cell *matCellDef="let doc">
+                <a *ngIf="doc.downloadUrl" [href]="doc.downloadUrl" target="_blank"
+                    class="document-link">{{doc.fileName}}</a>
+                <span *ngIf="!doc.downloadUrl">{{doc.fileName}}</span>
+            </td>
         </ng-container>
 
         <!-- Created At Column -->
