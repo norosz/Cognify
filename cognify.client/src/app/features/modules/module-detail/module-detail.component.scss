@@ -1,34 +1,42 @@
 .module-header {
+    margin-bottom: 2rem;
     display: flex;
+    gap: 1rem;
     align-items: flex-start;
-    gap: 16px;
-    margin-bottom: 24px;
 
     .back-button {
-        margin-top: -4px;
-        margin-left: -8px;
+        margin-top: 0.5rem;
     }
 
     .header-content {
         h1 {
-            margin: 0 0 8px 0;
+            margin: 0 0 0.5rem 0;
             font-size: 2rem;
+            color: #333;
         }
 
         p {
-            color: #666;
             margin: 0;
+            color: #666;
             font-size: 1.1rem;
         }
     }
 }
 
 .tab-content {
-    padding: 24px 0;
+    padding: 1.5rem 0;
+}
+
+.actions-bar {
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: flex-end;
 }
 
 .loading {
-    text-align: center;
-    padding: 48px;
-    color: #888;
+    display: flex;
+    justify-content: center;
+    padding: 4rem;
+    color: #666;
+    font-style: italic;
 }
