@@ -9,11 +9,7 @@
 - [x] **[Frontend]** Build Note Editor (Markdown/Text)
 
 ### 🤖 AI Generation, Agents & Quizzes
-- [ ] **[Backend]** Configure OpenAI Service (Aspire/Settings)
-- [ ] **[Backend]** Implement `AiService` (Prompt engineering, API call)
-- [ ] **[Backend]** Create `AiController` (Generate questions endpoint)
-- [ ] **[Backend]** Implement `QuestionService` & `AttemptService`
-- [ ] **[Backend]** Create `AttemptsController` (Submit, Score)
+
 - [ ] **[Frontend]** Build Quiz Generation UI
 - [ ] **[Frontend]** Build Quiz Taking Interface
 - [ ] **[Frontend]** Build Quiz Result/Score View
@@ -52,3 +48,8 @@
 - [x] **[Frontend]** Implement File Upload UI
 - [x] **[Frontend]** Fixed Upload Crash & Implemented Force Download
 - [x] **[Project]** Detailed Planning & Documentation
+- [x] **[Backend]** Configure OpenAI Service (Aspire/Settings)
+- [x] **[Backend]** Implement `AiService` (Prompt engineering, API call)
+- [x] **[Backend]** Create `AiController` (Generate questions endpoint)
+- [x] **[Backend]** Implement `QuestionService` & `AttemptService`
+- [x] **[Backend]** Create `AttemptsController` (Submit, Score)
