@@ -1,0 +1,17 @@
+.full-width {
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+.content-field {
+    textarea {
+        resize: vertical;
+        min-height: 150px;
+    }
+}
+
+button {
+    gap: 8px;
+    display: inline-flex;
+    align-items: center;
+}

@@ -185,3 +185,16 @@ DECISIONS: Maintained mock strictness while adapting to the updated service sign
 NEXT: Implement Frontend Notes Service and Components.
 BLOCKERS: None.
 
+[2026-01-26 19:28] Antigravity
+DONE: Implemented Frontend functionality for Notes.
+Detailed:
+- Created `NoteService` interacting with Backend API.
+- Implemented `NotesListComponent` for displaying notes in Module Detail.
+- Implemented `NoteEditorDialogComponent` for Creating/Updating notes.
+- Integrated Notes tab into `ModuleDetailComponent`.
+- Added Unit Tests for Service and Components (32 Total Checked).
+CHANGED: `cognify.client/src/app/core/services/note.service.ts`, `cognify.client/src/app/features/notes/**/*`, `cognify.client/src/app/features/modules/module-detail/*`.
+DECISIONS: Used Material Dialog for note editing to keep context; Removed `environment` dependency in favor of relative API paths.
+NEXT: Await further instructions (e.g., Quiz implementation).
+BLOCKERS: None.
+

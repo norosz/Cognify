@@ -1,0 +1,25 @@
+<h2 mat-dialog-title>{{ isEditMode ? 'Edit Note' : 'Create Note' }}</h2>
+
+<mat-dialog-content>
+    <form [formGroup]="form">
+        <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Title</mat-label>
+            <input matInput formControlName="title" placeholder="Note Title">
+            <mat-error *ngIf="form.get('title')?.hasError('required')">Title is required</mat-error>
+            <mat-error *ngIf="form.get('title')?.hasError('maxlength')">Max length is 200 characters</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width content-field">
+            <mat-label>Content</mat-label>
+            <textarea matInput formControlName="content" rows="10" placeholder="Write your note here..."></textarea>
+        </mat-form-field>
+    </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close [disabled]="isSaving">Cancel</button>
+    <button mat-raised-button color="primary" (click)="save()" [disabled]="form.invalid || isSaving">
+        <mat-spinner diameter="20" *ngIf="isSaving"></mat-spinner>
+        <span *ngIf="!isSaving">Save</span>
+    </button>
+</mat-dialog-actions>
