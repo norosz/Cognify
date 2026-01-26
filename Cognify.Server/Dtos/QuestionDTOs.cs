@@ -4,6 +4,7 @@ namespace Cognify.Server.DTOs;
 
 public record QuestionDto
 {
+    public Guid? Id { get; init; }
     public string Prompt { get; init; } = string.Empty;
     public string Type { get; init; } = "MultipleChoice"; // MultipleChoice, TrueFalse, OpenEnded
     public List<string> Options { get; init; } = [];

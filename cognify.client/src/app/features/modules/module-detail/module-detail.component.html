@@ -25,12 +25,12 @@
     </mat-tab>
     <mat-tab label="Notes">
         <div class="tab-content">
-            <app-notes-list [moduleId]="m.id"></app-notes-list>
+            <app-notes-list [moduleId]="m.id" (quizGenerated)="onQuizGenerated()"></app-notes-list>
         </div>
     </mat-tab>
     <mat-tab label="Quizzes">
         <div class="tab-content">
-            <p>Generated quizzes will go here.</p>
+            <app-quiz-list [moduleId]="m.id"></app-quiz-list>
         </div>
     </mat-tab>
 </mat-tab-group>

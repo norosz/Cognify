@@ -10,9 +10,7 @@
 
 ### 🤖 AI Generation, Agents & Quizzes
 
-- [ ] **[Frontend]** Build Quiz Generation UI
-- [ ] **[Frontend]** Build Quiz Taking Interface
-- [ ] **[Frontend]** Build Quiz Result/Score View
+
 - [ ] **[Agent]** Implement Handwriting Parsing Agent (OCR)
 - [ ] **[Agent]** Implement Question Generation Agent
 - [ ] **[Agent]** Implement Grading Agent
@@ -53,3 +51,6 @@
 - [x] **[Backend]** Create `AiController` (Generate questions endpoint)
 - [x] **[Backend]** Implement `QuestionService` & `AttemptService`
 - [x] **[Backend]** Create `AttemptsController` (Submit, Score)
+- [x] **[Frontend]** Build Quiz Generation UI
+- [x] **[Frontend]** Build Quiz Taking Interface
+- [x] **[Frontend]** Build Quiz Result/Score View

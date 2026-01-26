@@ -105,6 +105,7 @@ public class QuestionService(ApplicationDbContext context, IUserContextService u
             CreatedAt = qs.CreatedAt,
             Questions = qs.Questions?.Select(q => new QuestionDto
             {
+                Id = q.Id,
                 Prompt = q.Prompt,
                 Type = q.Type.ToString(),
                 Options = TryDeserializeList(q.OptionsJson),
