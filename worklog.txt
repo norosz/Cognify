@@ -118,3 +118,23 @@ DECISIONS: Client-side token decoding provides better UX than assuming validity;
 NEXT: Implement Documents Implementation (File Upload).
 BLOCKERS: None.
 
+[2026-01-26 12:44] Antigravity
+DONE: Learned project structure and rules. Read PROJECT_SPEC.md, PROJECT_RULES.md, and all AGENT_RULES.md files. Verified project status and structure.
+NEXT: Await specific user instruction, likely regarding Documents & Storage implementation.
+BLOCKERS: None.
+
+[2026-01-26 13:08] Antigravity
+DONE: Implemented Blob Storage and Document Upload Backend.
+Detailed:
+- Configured Azurite in `AppHost.cs`.
+- Implemented `BlobStorageService` (Azure Blob SDK).
+- Implemented `DocumentService` (Upload, Delete, Ownership Check).
+- Created `DocumentsController` (POST/GET/DELETE).
+- Created `DocumentsControllerTests` (Integration verified: 5/5 Passed).
+CHANGED: `Cognify.AppHost/AppHost.cs`, `Cognify.Server/Program.cs`, `Cognify.Server/Services/*`, `Cognify.Server/Controllers/DocumentsController.cs`, `Cognify.Tests/Controllers/DocumentsControllerTests.cs`.
+DECISIONS: Used `StatusCode(403)` instead of `Forbid()` to avoid 500 error due to scheme mismatch; Used `MultipartFormData` for uploads.
+NEXT: Frontend Implementation (Service & UI).
+BLOCKERS: None.
+
+
+

@@ -14,6 +14,7 @@ public class Program
 
         // Add services to the container.
         builder.AddSqlServerDbContext<ApplicationDbContext>("sqldata");
+        builder.AddAzureBlobClient("blobs");
 
         // Register Application Services
         builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
@@ -21,6 +22,8 @@ public class Program
         builder.Services.AddScoped<IModuleService, ModuleService>();
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddScoped<IUserContextService, UserContextService>();
+        builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
+        builder.Services.AddScoped<IDocumentService, DocumentService>();
 
         // Register Authentication
         var jwtSettings = builder.Configuration.GetSection("Jwt");
