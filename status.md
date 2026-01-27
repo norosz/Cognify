@@ -72,3 +72,5 @@
 - [x] **[Frontend]** Build Quiz Generation UI
 - [x] **[Frontend]** Build Quiz Taking Interface
 - [x] **[Frontend]** Build Quiz Result/Score View
+- [x] **[Frontend]** UI Fixes & Theme Updates (Light-blue primary, dark mode consistency)
+- [x] **[Frontend]** Frontend Unit Tests for AI Components

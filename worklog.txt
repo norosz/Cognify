@@ -319,3 +319,16 @@ Detailed:
 - Tests passed for all new components (16 specs).
 CHANGED: `cognify.client/src/app/**/*.spec.ts`.
 NEXT: User Knowledge State & Adaptive Quiz Engine.
+
+[2026-01-27 13:50] Antigravity
+DONE: UI Fixes and Theme Updates.
+Detailed:
+- Updated primary color to light-blue (#90caf9) for consistent lighter theme.
+- Fixed register page to match login (dark mode, glassmorphism, transparent background).
+- Fixed quiz-generation component dark mode styling (backgrounds, text colors, borders).
+- Fixed input focus double border issue (removed extra box-shadow).
+- Added red styling for delete menu item in notes list.
+- Fixed failing test specs by adding HttpClient providers.
+- Removed debug console.log statements from test files.
+CHANGED: `styles.scss`, `register.component.*`, `quiz-generation.component.*`, `notes-list.component.*`, `*.spec.ts`.
+NEXT: User Knowledge State & Adaptive Quiz Engine.
