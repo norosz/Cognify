@@ -78,3 +78,8 @@
         }
     }
 }
+
+// Delete menu item styling (red text)
+::ng-deep .delete-item {
+    color: #f44336 !important;
+}

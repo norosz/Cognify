@@ -3,7 +3,8 @@
 @include mat.core();
 
 // Define the palette for your custom theme
-$cognify-primary: mat.m2-define-palette(mat.$m2-indigo-palette);
+// Using light-blue for a lighter primary color (#90caf9)
+$cognify-primary: mat.m2-define-palette(mat.$m2-light-blue-palette, 200, 100, 400);
 $cognify-accent: mat.m2-define-palette(mat.$m2-pink-palette, A200, A100, A400);
 $cognify-warn: mat.m2-define-palette(mat.$m2-red-palette);
 
@@ -136,4 +137,9 @@ body .mat-mdc-form-field {
         border-color: #90caf9 !important;
         border-width: 2px !important;
     }
+}
+
+// Remove the second focus ring/border for outline appearance
+.mat-mdc-form-field.mat-focused .mdc-notched-outline {
+    box-shadow: none !important;
 }

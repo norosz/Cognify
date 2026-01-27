@@ -4,6 +4,8 @@ import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/materia
 import { MatButtonModule } from '@angular/material/button';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormsModule } from '@angular/forms';
 import { QuizService } from '../../services/quiz.service';
 import { QuestionSetDto, SubmitAttemptDto, AttemptDto } from '../../../../core/models/quiz.models';
@@ -17,6 +19,8 @@ import { QuestionSetDto, SubmitAttemptDto, AttemptDto } from '../../../../core/m
     MatButtonModule,
     MatRadioModule,
     MatIconModule,
+    MatInputModule,
+    MatFormFieldModule,
     FormsModule
   ],
   templateUrl: './quiz-taking.component.html',

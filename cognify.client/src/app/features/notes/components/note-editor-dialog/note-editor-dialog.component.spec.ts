@@ -5,6 +5,8 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { ReactiveFormsModule } from '@angular/forms';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 describe('NoteEditorDialogComponent', () => {
     let component: NoteEditorDialogComponent;
@@ -21,7 +23,9 @@ describe('NoteEditorDialogComponent', () => {
             providers: [
                 { provide: NoteService, useValue: noteServiceSpy },
                 { provide: MatDialogRef, useValue: dialogRefSpy },
-                { provide: MAT_DIALOG_DATA, useValue: { moduleId: '123' } }
+                { provide: MAT_DIALOG_DATA, useValue: { moduleId: '123' } },
+                provideHttpClient(),
+                provideHttpClientTesting()
             ]
         }).compileComponents();
 

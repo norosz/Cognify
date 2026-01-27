@@ -1,4 +1,5 @@
-.loading-container {
+.loading-container,
+.error-container {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -7,22 +8,67 @@
     gap: 16px;
 }
 
-.error-container {
-    text-align: center;
-    color: #f44336;
-    padding: 20px;
+.error-text {
+    color: #ff5252;
 }
 
-.question-prompt {
-    font-weight: 500;
+.config-container {
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    margin-bottom: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.config-row {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.count-field {
+    width: 80px;
+}
+
+.regen-btn {
+    height: 48px;
+    margin-bottom: 22px;
+    color: #90caf9 !important;
+    border-color: #90caf9 !important;
+
+    mat-icon {
+        color: #90caf9;
+    }
+}
+
+.slider-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 8px;
+
+    label {
+        font-weight: 500;
+        width: 100px;
+        color: #b0bec5;
+    }
+}
+
+.flex-slider {
+    flex: 1;
+}
+
+.summary-text {
     margin-bottom: 12px;
+    font-weight: 500;
+    color: #aaa;
 }
 
 .options-list {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    margin-bottom: 16px;
+    margin: 16px 0;
 }
 
 .option-item {
@@ -31,17 +77,48 @@
     gap: 8px;
     padding: 8px;
     border-radius: 4px;
-    background-color: #f5f5f5;
+    background-color: rgba(255, 255, 255, 0.08);
+    color: #e0e0e0;
 
     &.correct {
-        background-color: #e8f5e9;
-        color: #2e7d32;
+        background-color: rgba(46, 125, 50, 0.3);
+        color: #81c784;
     }
 }
 
+.question-prompt {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 12px;
+    color: #e0e0e0;
+}
+
 .explanation {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 12px;
+    color: #aaa;
     font-style: italic;
-    color: #666;
-    border-top: 1px solid #eee;
-    padding-top: 8px;
+}
+
+.pairs-list {
+    margin: 16px 0;
+
+    .pair-item {
+        padding: 8px;
+        background: rgba(33, 150, 243, 0.2);
+        margin-bottom: 4px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #90caf9;
+    }
+}
+
+.open-text-preview {
+    padding: 16px;
+    background: rgba(230, 81, 0, 0.2);
+    border-radius: 4px;
+    color: #ffb74d;
+    margin: 16px 0;
 }

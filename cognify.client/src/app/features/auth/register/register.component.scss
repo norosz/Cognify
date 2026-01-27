@@ -3,7 +3,7 @@
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: #f5f5f5;
+    background-color: transparent; // Allow global gradient to show through
 }
 
 mat-card {
@@ -25,7 +25,19 @@ mat-card {
 }
 
 .error-msg {
-    color: red;
+    color: #ff5252; // Lighter red for dark mode
     margin-bottom: 10px;
     text-align: center;
+}
+
+// Darken the input background and labels as requested (Consistent with Login)
+::ng-deep .register-card {
+    height: auto !important;
+    cursor: default !important;
+
+    mat-card-title {
+        color: white !important;
+        text-align: center;
+        margin-bottom: 16px;
+    }
 }

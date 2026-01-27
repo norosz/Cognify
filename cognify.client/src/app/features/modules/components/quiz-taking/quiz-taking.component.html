@@ -18,11 +18,37 @@
                 <div *ngFor="let q of qs.questions; let i = index" class="question-item">
                     <p class="question-prompt"><strong>{{ i + 1 }}.</strong> {{ q.prompt }}</p>
 
-                    <mat-radio-group [(ngModel)]="answers[q.id!]" aria-label="Select an option" class="options-group">
-                        <mat-radio-button *ngFor="let opt of q.options" [value]="opt" class="option-radio">
-                            {{ opt }}
-                        </mat-radio-button>
-                    </mat-radio-group>
+                    <div [ngSwitch]="q.type">
+                        <!-- Open Text -->
+                        <div *ngSwitchCase="'OpenText'">
+                            <mat-form-field appearance="outline" style="width: 100%;">
+                                <mat-label>Your Answer</mat-label>
+                                <textarea matInput [(ngModel)]="answers[q.id!]" rows="3"></textarea>
+                            </mat-form-field>
+                        </div>
+
+                        <!-- Matching (Study View) -->
+                        <div *ngSwitchCase="'Matching'">
+                            <p>Study the following pairs:</p>
+                            <div class="matching-container">
+                                <div *ngFor="let opt of q.options" class="matching-item">
+                                    <mat-icon>compare_arrows</mat-icon> {{opt}}
+                                </div>
+                            </div>
+                            <button mat-button (click)="answers[q.id!] = 'Parsed'" [disabled]="answers[q.id!]">Mark as
+                                Reviewed</button>
+                        </div>
+
+                        <!-- MC/TrueFalse (Default) -->
+                        <div *ngSwitchDefault>
+                            <mat-radio-group [(ngModel)]="answers[q.id!]" aria-label="Select an option"
+                                class="options-group">
+                                <mat-radio-button *ngFor="let opt of q.options" [value]="opt" class="option-radio">
+                                    {{ opt }}
+                                </mat-radio-button>
+                            </mat-radio-group>
+                        </div>
+                    </div>
 
                     <!-- Changing strategy: Use index or better, update frontend model to have ID -->
                     <!-- For now let's assume I fix the model first. -->

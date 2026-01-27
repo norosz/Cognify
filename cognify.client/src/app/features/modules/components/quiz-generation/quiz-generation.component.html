@@ -1,33 +1,61 @@
 <h2 mat-dialog-title>AI Quiz Generation</h2>
 
 <div mat-dialog-content>
+    <!-- Configuration -->
+    <div class="config-container" *ngIf="!loading()">
+        <div class="config-row">
+            <mat-form-field appearance="outline" class="density-compact">
+                <mat-label>Type</mat-label>
+                <mat-select [(ngModel)]="selectedType">
+                    <mat-option *ngFor="let t of questionTypes" [value]="t">{{t}}</mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="density-compact count-field">
+                <mat-label>Count</mat-label>
+                <input matInput type="number" [(ngModel)]="count" min="1" max="10">
+            </mat-form-field>
+
+            <button mat-stroked-button (click)="generate()" class="regen-btn">
+                <mat-icon>refresh</mat-icon> Regenerate
+            </button>
+        </div>
+
+        <div class="slider-row">
+            <label>Difficulty ({{difficulty}})</label>
+            <mat-slider min="1" max="3" step="1" showTickMarks discrete class="flex-slider">
+                <input matSliderThumb [(ngModel)]="difficulty">
+            </mat-slider>
+        </div>
+    </div>
+
     <div *ngIf="loading()" class="loading-container">
         <mat-spinner diameter="40"></mat-spinner>
-        <p>Processing Note...</p>
+        <p>Generating Questions...</p>
     </div>
 
     <div *ngIf="error()" class="error-container">
         <p class="error-text">{{ error() }}</p>
-        <button mat-button color="primary" (click)="generate()">Try Again</button>
     </div>
 
     <div *ngIf="!loading() && !error() && questions().length > 0">
-        <p>Generated {{ questions().length }} questions from your note.</p>
+        <p class="summary-text">Generated {{ questions().length }} questions.</p>
 
-        <mat-accordion>
+        <mat-accordion multi>
             <mat-expansion-panel *ngFor="let q of questions(); let i = index">
                 <mat-expansion-panel-header>
                     <mat-panel-title>
-                        Question {{ i + 1 }}
+                        Q{{ i + 1 }} ({{q.type}})
                     </mat-panel-title>
                     <mat-panel-description>
-                        {{ q.prompt | slice:0:50 }}...
+                        {{ q.prompt | slice:0:40 }}...
                     </mat-panel-description>
                 </mat-expansion-panel-header>
 
                 <p class="question-prompt">{{ q.prompt }}</p>
 
-                <div class="options-list">
+                <!-- Multiple Choice / TrueFalse -->
+                <div class="options-list" *ngIf="q.options && q.options.length">
                     <div *ngFor="let opt of q.options" class="option-item" [class.correct]="opt === q.correctAnswer">
                         <mat-icon *ngIf="opt === q.correctAnswer">check_circle</mat-icon>
                         <mat-icon *ngIf="opt !== q.correctAnswer">radio_button_unchecked</mat-icon>
@@ -35,7 +63,19 @@
                     </div>
                 </div>
 
-                <p class="explanation"><strong>Explanation:</strong> {{ q.explanation }}</p>
+                <!-- Matching -->
+                <div class="pairs-list" *ngIf="q.pairs && q.pairs.length">
+                    <div *ngFor="let pair of q.pairs" class="pair-item">
+                        <mat-icon>compare_arrows</mat-icon> {{ pair }}
+                    </div>
+                </div>
+
+                <!-- OpenText -->
+                <div *ngIf="q.type === 'OpenText'" class="open-text-preview">
+                    <em>Open text answer expected.</em>
+                </div>
+
+                <p class="explanation" *ngIf="q.explanation"><strong>Explanation:</strong> {{ q.explanation }}</p>
             </mat-expansion-panel>
         </mat-accordion>
     </div>

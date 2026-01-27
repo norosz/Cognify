@@ -285,3 +285,37 @@ DECISIONS: Will use GPT-4o for Handwriting OCR to simplify stack (no extra Azure
 NEXT: Implement Backend logic for Handwriting Parsing (AiService, Controller).
 BLOCKERS: None.
 
+[2026-01-27 12:45] Antigravity
+DONE: Implemented Backend AI Agents (OCR, Advanced Questions, Grading).
+Detailed:
+- Added `DownloadStreamAsync` to `IBlobStorageService`.
+- Implemented `ParseHandwritingAsync`, `GenerateQuestionsAsync`, `GradeAnswerAsync` in `AiService` using GPT-4o.
+- Added `AiController` endpoints for extracting text and generating enhanced questions.
+- Validated with integration tests `AiControllerTests` (Passed).
+CHANGED: `Cognify.Server/Services/*`, `Cognify.Server/Controllers/AiController.cs`, `Cognify.Tests/Controllers/AiControllerTests.cs`, `Cognify.Server/Models/Ai/*`.
+DECISIONS: Consolidated `QuestionType` enum into `Cognify.Server.Models` to avoid duplicates; Added Mocks for storage/document services in controller tests.
+NEXT: Implement Frontend AI Features (Note Link, Magic Wand, Quiz Types).
+BLOCKERS: None.
+
+[2026-01-27 13:50] Antigravity
+DONE: Implemented Frontend AI Features fully.
+Detailed:
+- Implemented `AiService` in frontend to consume new endpoints.
+- Created `HandwritingPreviewDialog` for OCR results display and "Save to Note".
+- Updated `DocumentList` with "Magic Wand" button for text extraction.
+- Created `DocumentSelectionDialog` and updated `NoteEditor` to allow importing content from documents.
+- Updated `QuizGenerationComponent` to support all new question types (Matching, OpenText, etc.) and Difficulty slider.
+- Updated `QuizTakingComponent` to render new question types and "Study Mode" for Matching.
+- Verified build with `npm run build`.
+CHANGED: `cognify.client/src/app/features/**/*` (Notes, Modules, Components).
+
+[2026-01-27 13:08] Antigravity
+DONE: Implemented and Verified Frontend Unit Tests.
+Detailed:
+- Created unit tests for `AiService` (100% coverage of new methods).
+- Created unit tests for `HandwritingPreviewDialogComponent` (Spying on MatSnackBar prototype to handle DI nuances).
+- Created unit tests for `QuizGenerationComponent` (Handling expected errors via console spy).
+- Created unit tests for `QuizTakingComponent`.
+- Tests passed for all new components (16 specs).
+CHANGED: `cognify.client/src/app/**/*.spec.ts`.
+NEXT: User Knowledge State & Adaptive Quiz Engine.

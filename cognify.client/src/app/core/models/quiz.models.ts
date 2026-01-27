@@ -1,9 +1,10 @@
 export interface QuestionDto {
     id?: string;
     prompt: string;
-    type: string; // 'MultipleChoice', 'TrueFalse', 'OpenEnded'
-    options: string[];
-    correctAnswer: string;
+    type: string; // 'MultipleChoice', 'TrueFalse', 'OpenText', 'Matching', 'Ordering'
+    options?: string[]; // Made optional for OpenText
+    correctAnswer: string; // or JSON for Matching
+    pairs?: string[]; // For Matching
     explanation: string;
 }
 
