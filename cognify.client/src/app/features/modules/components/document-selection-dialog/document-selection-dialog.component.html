@@ -1,0 +1,16 @@
+<h2 mat-dialog-title>Select Document</h2>
+<mat-dialog-content>
+    <div *ngIf="loading()" class="loading">Loading documents...</div>
+    <div *ngIf="!loading() && documents().length === 0" class="empty">No documents found.</div>
+
+    <mat-list *ngIf="!loading() && documents().length > 0">
+        <mat-list-item *ngFor="let doc of documents()" (click)="select(doc)" class="clickable">
+            <mat-icon matListItemIcon>description</mat-icon>
+            <div matListItemTitle>{{doc.fileName}}</div>
+            <div matListItemLine>{{doc.createdAt | date:'short'}}</div>
+        </mat-list-item>
+    </mat-list>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+    <button mat-button (click)="close()">Cancel</button>
+</mat-dialog-actions>

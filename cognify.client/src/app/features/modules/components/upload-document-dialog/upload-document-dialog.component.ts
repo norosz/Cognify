@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatIconModule } from '@angular/material/icon';
 import { DocumentsService, UploadInitiateResponse } from '../../services/documents.service';
+import { NotificationService } from '../../../../core/services/notification.service';
 
 @Component({
   selector: 'app-upload-document-dialog',
@@ -19,6 +20,7 @@ export class UploadDocumentDialogComponent {
   uploadError: string | null = null;
 
   private documentsService = inject(DocumentsService);
+  private notification = inject(NotificationService);
   private ngZone = inject(NgZone);
 
   constructor(
@@ -62,6 +64,7 @@ export class UploadDocumentDialogComponent {
     this.documentsService.uploadDocument(this.data.moduleId, this.selectedFile).subscribe({
       next: (doc) => {
         this.isUploading = false;
+        this.notification.success('File uploaded successfully.');
         this.dialogRef.close(true);
       },
       error: (err) => {

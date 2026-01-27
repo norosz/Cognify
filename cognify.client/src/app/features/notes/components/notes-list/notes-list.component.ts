@@ -5,11 +5,14 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatMenuModule } from '@angular/material/menu';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { NotificationService } from '../../../../core/services/notification.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { NoteService } from '../../../../core/services/note.service';
 import { Note } from '../../../../core/models/note.model';
+import { PendingService } from '../../../../core/services/pending.service';
+import { Router } from '@angular/router';
 import { NoteEditorDialogComponent } from '../note-editor-dialog/note-editor-dialog.component';
+import { QuizGenerationDialogComponent } from '../../../modules/components/quiz-generation-dialog/quiz-generation-dialog.component';
 
 @Component({
     selector: 'app-notes-list',
@@ -21,7 +24,7 @@ import { NoteEditorDialogComponent } from '../note-editor-dialog/note-editor-dia
         MatIconModule,
         MatDialogModule,
         MatMenuModule,
-        MatSnackBarModule,
+
         MatProgressSpinnerModule
     ],
     templateUrl: './notes-list.component.html',
@@ -35,22 +38,37 @@ export class NotesListComponent implements OnInit {
     isLoading = signal<boolean>(false);
 
     private noteService = inject(NoteService);
+    private pendingService = inject(PendingService);
     private dialog = inject(MatDialog);
-    private snackBar = inject(MatSnackBar);
+    private notification = inject(NotificationService);
+    private router = inject(Router);
 
-    // Lazy loaded via dialog but referenced in logic
     async generateQuiz(note: Note) {
-        const { QuizGenerationComponent } = await import('../../../modules/components/quiz-generation/quiz-generation.component');
-
-        const dialogRef = this.dialog.open(QuizGenerationComponent, {
-            width: '600px',
-            data: { noteId: note.id }
+        const dialogRef = this.dialog.open(QuizGenerationDialogComponent, {
+            width: '550px',
+            data: { noteId: note.id, noteTitle: note.title }
         });
 
         dialogRef.afterClosed().subscribe(result => {
             if (result) {
-                this.snackBar.open('Quiz generated successfully!', 'Close', { duration: 3000 });
-                this.quizGenerated.emit();
+                this.pendingService.initiateQuiz({
+                    noteId: note.id,
+                    title: result.title,
+                    difficulty: result.difficulty,
+                    questionType: result.questionType,
+                    questionCount: result.questionCount
+                }).subscribe({
+                    next: () => {
+                        this.notification.success(
+                            'Quiz generation started.',
+                            ['/pending', { tab: 'quizzes' }],
+                            'View Pending Quizzes'
+                        );
+                        this.pendingService.refreshPendingCount();
+                        // Removed auto-redirect as per user request
+                    },
+                    error: () => this.notification.error('Failed to start quiz generation.')
+                });
             }
         });
     }
@@ -70,7 +88,7 @@ export class NotesListComponent implements OnInit {
             },
             error: (err) => {
                 console.error('Error loading notes:', err);
-                this.snackBar.open('Failed to load notes', 'Close', { duration: 3000 });
+                this.notification.error('Failed to load notes');
                 this.isLoading.set(false);
             }
         });
@@ -85,7 +103,7 @@ export class NotesListComponent implements OnInit {
         dialogRef.afterClosed().subscribe(result => {
             if (result) {
                 this.loadNotes();
-                this.snackBar.open(note ? 'Note updated' : 'Note created', 'Close', { duration: 3000 });
+                this.notification.success(note ? 'Note updated' : 'Note created');
             }
         });
     }
@@ -95,11 +113,11 @@ export class NotesListComponent implements OnInit {
             this.noteService.deleteNote(note.id).subscribe({
                 next: () => {
                     this.loadNotes();
-                    this.snackBar.open('Note deleted', 'Close', { duration: 3000 });
+                    this.notification.success('Note deleted');
                 },
                 error: (err) => {
                     console.error('Error deleting note:', err);
-                    this.snackBar.open('Failed to delete note', 'Close', { duration: 3000 });
+                    this.notification.error('Failed to delete note');
                 }
             });
         }

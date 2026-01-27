@@ -1,0 +1,14 @@
+.clickable {
+    cursor: pointer;
+
+    &:hover {
+        background-color: rgba(0, 0, 0, 0.04);
+    }
+}
+
+.loading,
+.empty {
+    padding: 20px;
+    text-align: center;
+    color: #666;
+}

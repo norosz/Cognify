@@ -16,7 +16,8 @@ export const routes: Routes = [
         children: [
             { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
             { path: 'dashboard', component: DashboardComponent },
-            { path: 'modules/:id', component: ModuleDetailComponent }
+            { path: 'modules/:id', component: ModuleDetailComponent },
+            { path: 'pending', loadComponent: () => import('./features/pending/pending.component').then(m => m.PendingComponent) }
         ]
     },
     { path: '**', redirectTo: 'dashboard' }

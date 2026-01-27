@@ -12,6 +12,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<QuestionSet> QuestionSets => Set<QuestionSet>();
     public DbSet<Question> Questions => Set<Question>();
     public DbSet<Attempt> Attempts => Set<Attempt>();
+    public DbSet<ExtractedContent> ExtractedContents => Set<ExtractedContent>();
+    public DbSet<PendingQuiz> PendingQuizzes => Set<PendingQuiz>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -64,5 +66,43 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .WithMany()
             .HasForeignKey(a => a.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // ExtractedContent Relationships
+        modelBuilder.Entity<ExtractedContent>()
+            .HasOne(e => e.User)
+            .WithMany()
+            .HasForeignKey(e => e.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ExtractedContent>()
+            .HasOne(e => e.Document)
+            .WithMany()
+            .HasForeignKey(e => e.DocumentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ExtractedContent>()
+            .HasOne(e => e.Module)
+            .WithMany()
+            .HasForeignKey(e => e.ModuleId)
+            .OnDelete(DeleteBehavior.NoAction); // Prevent multiple cascade paths
+
+        // PendingQuiz Relationships
+        modelBuilder.Entity<PendingQuiz>()
+            .HasOne(p => p.User)
+            .WithMany()
+            .HasForeignKey(p => p.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PendingQuiz>()
+            .HasOne(p => p.Note)
+            .WithMany()
+            .HasForeignKey(p => p.NoteId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PendingQuiz>()
+            .HasOne(p => p.Module)
+            .WithMany()
+            .HasForeignKey(p => p.ModuleId)
+            .OnDelete(DeleteBehavior.NoAction); // Prevent multiple cascade paths
     }
 }

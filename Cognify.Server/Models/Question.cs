@@ -27,7 +27,10 @@ public class Question
 
 public enum QuestionType
 {
-    MultipleChoice,
-    TrueFalse,
-    OpenEnded
+    Mixed = -1,
+    MultipleChoice = 0,
+    TrueFalse = 1,
+    OpenText = 2,
+    Matching = 3,
+    Ordering = 4
 }

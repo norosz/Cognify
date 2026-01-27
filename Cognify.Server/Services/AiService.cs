@@ -2,8 +2,10 @@ using Azure.AI.OpenAI;
 using OpenAI;
 using OpenAI.Chat;
 using Cognify.Server.Services.Interfaces;
-using Cognify.Server.DTOs;
+using Cognify.Server.Models.Ai;
+using Cognify.Server.Models;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Cognify.Server.Services;
 
@@ -20,36 +22,20 @@ public class AiService : IAiService
         _logger = logger;
     }
 
-    public async Task<List<QuestionDto>> GenerateQuestionsFromNoteAsync(string noteContent, int count = 5)
+    public async Task<List<GeneratedQuestion>> GenerateQuestionsAsync(string content, QuestionType type, int difficulty, int count)
     {
         var model = _configuration["OpenAI:Model"] ?? "gpt-4o";
         var chatClient = _client.GetChatClient(model);
 
-        var prompt = $$"""
-        You are a helpful teaching assistant.
-        Generate {{count}} multiple-choice questions based on the provided note content.
-        
-        The output must be a valid JSON object with a single property "questions" containing an array of question objects.
-        Do not wrap the JSON in markdown code blocks.
-        
-        Each question object must follow this schema:
-        {
-            "prompt": "Question text",
-            "type": "MultipleChoice", 
-            "options": ["Option 1", "Option 2", "Option 3", "Option 4"],
-            "correctAnswer": "exact text of the correct option",
-            "explanation": "Why this is correct"
-        }
-
-        Note Content:
-        {{noteContent}}
-        """;
+        var difficultyPrompt = AiPrompts.GetDifficultySystemPrompt((int)difficulty);
+        var typePrompt = AiPrompts.GetTypeSystemPrompt(type);
+        var prompt = AiPrompts.BuildGenerationPrompt(count, difficultyPrompt, typePrompt, content);
 
         try 
         {
             var completion = await chatClient.CompleteChatAsync(
                 [
-                    new SystemChatMessage("You are a helpful assistant that generates quiz questions in JSON format."),
+                    new SystemChatMessage("You are a strict JSON generator. You always wrap your response in a 'questions' array inside a root object."),
                     new UserChatMessage(prompt)
                 ],
                 new ChatCompletionOptions()
@@ -59,20 +45,110 @@ public class AiService : IAiService
             );
 
             var json = completion.Value.Content[0].Text;
-            
-            // Deserialize
-            var result = JsonSerializer.Deserialize<QuestionResponse>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-            return result?.Questions ?? [];
+            _logger.LogInformation("AI Response received: {Json}", json);
+
+            using var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+
+            // Resilience: Handle both {"questions": [...]} and [...] with case-insensitivity
+            JsonElement questionsArray = default;
+            bool found = false;
+
+            if (root.ValueKind == JsonValueKind.Object)
+            {
+                foreach (var prop in root.EnumerateObject())
+                {
+                    if (string.Equals(prop.Name, "questions", StringComparison.OrdinalIgnoreCase))
+                    {
+                        questionsArray = prop.Value;
+                        found = true;
+                        break;
+                    }
+                }
+
+                // Fallback: If no "questions" property, take the first array property found
+                if (!found)
+                {
+                    foreach (var prop in root.EnumerateObject())
+                    {
+                        if (prop.Value.ValueKind == JsonValueKind.Array)
+                        {
+                            questionsArray = prop.Value;
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            else if (root.ValueKind == JsonValueKind.Array)
+            {
+                questionsArray = root;
+                found = true;
+            }
+
+            if (!found || questionsArray.ValueKind != JsonValueKind.Array)
+            {
+                _logger.LogWarning("AI response did not contain a valid questions array. Root: {Kind}", root.ValueKind);
+                return [];
+            }
+
+            var options = new JsonSerializerOptions 
+            { 
+                PropertyNameCaseInsensitive = true, 
+                Converters = { new JsonStringEnumConverter() } 
+            };
+
+            var questions = JsonSerializer.Deserialize<List<GeneratedQuestion>>(questionsArray.GetRawText(), options);
+            return questions ?? [];
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to generate questions from AI.");
-            throw; // Or return empty list / handle gracefully
+            _logger.LogError(ex, "Failed to generate or parse questions. JSON might be malformed.");
+            return [];
         }
     }
 
-    private class QuestionResponse
+    public async Task<string> ParseHandwritingAsync(Stream imageStream, string contentType)
     {
-        public List<QuestionDto> Questions { get; set; } = [];
+        var model = _configuration["OpenAI:Model"] ?? "gpt-4o";
+        var chatClient = _client.GetChatClient(model);
+
+        using var memoryStream = new MemoryStream();
+        await imageStream.CopyToAsync(memoryStream);
+        var imageBytes = memoryStream.ToArray();
+
+        var message = new UserChatMessage(
+            ChatMessageContentPart.CreateTextPart("Please transcribe this handwritten note into clear, formatted Markdown text. Do not add conversational filler, just the content."),
+            ChatMessageContentPart.CreateImagePart(new BinaryData(imageBytes), contentType)
+        );
+
+        try
+        {
+            var completion = await chatClient.CompleteChatAsync([message]);
+            return completion.Value.Content[0].Text;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to parse handwriting.");
+            throw;
+        }
+    }
+
+    public async Task<string> GradeAnswerAsync(string question, string answer, string context)
+    {
+        var model = _configuration["OpenAI:Model"] ?? "gpt-4o";
+        var chatClient = _client.GetChatClient(model);
+
+        var prompt = $$"""
+        Question: {{question}}
+        Student Answer: {{answer}}
+        Context/Correct Answer Key: {{context}}
+
+        Evaluate the student's answer. Provide a constructive feedback and a score (0-100).
+        Format: "Score: [0-100]\n\nFeedback: [Your feedback here]"
+        """;
+
+        var completion = await chatClient.CompleteChatAsync([new UserChatMessage(prompt)]);
+        return completion.Value.Content[0].Text;
     }
 }

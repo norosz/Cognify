@@ -127,6 +127,13 @@ public class DocumentsControllerTests : IClassFixture<WebApplicationFactory<Prog
         var doc = await response.Content.ReadFromJsonAsync<DocumentDto>();
         doc!.Status.Should().Be(DocumentStatus.Ready);
         doc.DownloadUrl.Should().Be("https://sas-url"); // Should return Read SAS
+        
+        // Verify NO pending extraction was created (Auto-extraction removed)
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            db.ExtractedContents.Should().BeEmpty();
+        }
     }
 
     [Fact]

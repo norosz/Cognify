@@ -99,8 +99,8 @@ public class QuestionServiceTests : IDisposable
         _context.Modules.Add(module);
         _context.Notes.Add(note);
         
-        var qs1 = new QuestionSet { NoteId = noteId, CreatedAt = DateTime.UtcNow.AddMinutes(-5) };
-        var qs2 = new QuestionSet { NoteId = noteId, CreatedAt = DateTime.UtcNow };
+        var qs1 = new QuestionSet { NoteId = noteId, Title = "QS1", CreatedAt = DateTime.UtcNow.AddMinutes(-5) };
+        var qs2 = new QuestionSet { NoteId = noteId, Title = "QS2", CreatedAt = DateTime.UtcNow };
         _context.QuestionSets.AddRange(qs1, qs2);
         
         await _context.SaveChangesAsync();
@@ -120,7 +120,7 @@ public class QuestionServiceTests : IDisposable
         var noteId = Guid.NewGuid();
         var module = new Module { Id = Guid.NewGuid(), OwnerUserId = _userId, Title = "Test Module" };
         var note = new Note { Id = noteId, ModuleId = module.Id, Title = "Note", Content = "Content" };
-        var qs = new QuestionSet { NoteId = noteId };
+        var qs = new QuestionSet { NoteId = noteId, Title = "QS" };
         
         _context.Modules.Add(module);
         _context.Notes.Add(note);
@@ -144,7 +144,7 @@ public class QuestionServiceTests : IDisposable
         var noteId = Guid.NewGuid();
         var module = new Module { Id = Guid.NewGuid(), OwnerUserId = otherUserId, Title = "Other Module" };
         var note = new Note { Id = noteId, ModuleId = module.Id, Title = "Note", Content = "Content" };
-        var qs = new QuestionSet { NoteId = noteId };
+        var qs = new QuestionSet { NoteId = noteId, Title = "QS" };
         
         _context.Modules.Add(module);
         _context.Notes.Add(note);

@@ -126,6 +126,13 @@ Cognify.ServiceDefaults/    # Shared .NET code (extensions, config)
    - Notes creation and management.
    - Quiz attempts and scoring.
 
+6. **Global Notification System**
+   - Toast-style notifications (top-right, stacked).
+   - Support for success, warning, error, and loading states.
+   - Auto-dismiss after 5 seconds (except loading).
+   - Loading notifications with spinner (for async operations).
+   - Extraction state tracking (prevents duplicate operations).
+
 ---
 
 ## 6. Domain Model & Data Schema
@@ -134,11 +141,13 @@ Cognify.ServiceDefaults/    # Shared .NET code (extensions, config)
 - **User**: Authenticated learner
 - **Module**: Learning unit (topic/lesson)
 - **Document**: Uploaded file (stored in Blob Storage)
-- **Note**: Structured learning content
+- **Note**: Structured learning content (can optionally link to a Document)
 - **UserKnowledgeState**: (NEW) AI Persistent memory of the learner.
     - Fields: Topic, MasteryScore (0-1), ConfidenceScore (0-1), MistakePatterns (JSON), ForgettingRisk (Enum), LastReviewedAt, ExamReadinessScore.
     - **Note**: This forms the basis of the "Continuous Learning Loop".
 - **QuestionSet**: AI-generated assessment
+- **Question**: Individual question item.
+    - Types: `MultipleChoice`, `TrueFalse`, `OpenText`, `Matching`, `Ordering` (New types added).
 - **Attempt**: User quiz attempt (Feed for the Knowledge Model)
 
 ### Architecture Changes (v2)
@@ -203,12 +212,24 @@ Cognify.ServiceDefaults/    # Shared .NET code (extensions, config)
 
 ---
 
-## 11. Future AI Agents & Roadmap
+## 11. Expanded AI Agents & Functionality (v2)
 
-The application architecture must support pluggable AI agents for future enhancements:
-1.  **Handwriting Parsing Agent**: A specialized agent/service to process uploaded images (notes/documents) and extract handwritten text into digital Notes (OCR).
-2.  **Question Generation Agent**: An advanced agent to analyze Note content and generate tailored QuestionSets (Multiple Choice, True/False, Open Ended).
-3.  **Grading Agent**: An agent to evaluate free-text answers and provide feedback.
+The application architecture now officially supports advanced AI workflows:
+
+1.  **Handwriting Parsing Agent (OCR)**:
+    -   **Workflow**: User selects an *existing* uploaded document (image/PDF) -> Agent specifically processes it using GPT-4o Vision -> Extracted text is returned for editing/saving as a Note.
+    -   **Optionality**: Parsing is fully optional. Users can create a Note manually or import from a Document.
+
+2.  **Advanced Question Generation Agent**:
+    -   **Workflow**: Agent analyzes Note content -> Generates specific assessment types based on user request.
+    -   **Supported Types**:
+        -   **Quizzes**: Multiple Choice, True/False.
+        -   **Open Questions**: Free-text answers requiring AI grading.
+        -   **Pairing/Matching**: Concept definition matching.
+    -   **Adaptive Logic**: Questions are tailored to difficulty levels (Beginner, Intermediate, Advanced).
+
+3.  **Grading Agent**:
+    -   An agent to evaluate free-text answers and provide structural feedback (not just correct/incorrect).
 
 ---
 

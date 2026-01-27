@@ -64,6 +64,7 @@ public class AttemptServiceTests : IDisposable
         { 
             Id = qsId, 
             NoteId = noteId,
+            Title = "Test Quiz",
             Questions = [question1, question2]
         };
 
@@ -130,7 +131,7 @@ public class AttemptServiceTests : IDisposable
             Explanation = ""
         };
 
-        var questionSet = new QuestionSet { Id = qsId, NoteId = Guid.NewGuid(), Questions = [question] };
+        var questionSet = new QuestionSet { Id = qsId, NoteId = Guid.NewGuid(), Title = "Test Quiz", Questions = [question] };
         _context.QuestionSets.Add(questionSet);
         await _context.SaveChangesAsync();
 

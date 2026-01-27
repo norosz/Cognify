@@ -8,7 +8,7 @@
 </div>
 
 <ng-container *ngIf="questionSet() as qs">
-    <h2 mat-dialog-title>Quiz</h2>
+    <h2 mat-dialog-title class="accent-text">{{qs.title || 'Quiz'}}</h2>
 
     <div mat-dialog-content>
 
@@ -16,13 +16,89 @@
         <ng-container *ngIf="!result()">
             <div class="questions-list">
                 <div *ngFor="let q of qs.questions; let i = index" class="question-item">
-                    <p class="question-prompt"><strong>{{ i + 1 }}.</strong> {{ q.prompt }}</p>
+                    <p class="question-prompt">
+                        <strong>{{ i + 1 }}.</strong>
+                        {{ q.prompt }}
+                        <span *ngIf="!q.prompt" class="text-error">(Missing Question Text)</span>
+                    </p>
 
-                    <mat-radio-group [(ngModel)]="answers[q.id!]" aria-label="Select an option" class="options-group">
-                        <mat-radio-button *ngFor="let opt of q.options" [value]="opt" class="option-radio">
-                            {{ opt }}
-                        </mat-radio-button>
-                    </mat-radio-group>
+                    <div [ngSwitch]="q.type">
+                        <!-- Open Text -->
+                        <div *ngSwitchCase="'OpenText'">
+                            <mat-form-field appearance="outline" style="width: 100%;">
+                                <mat-label>Your Answer</mat-label>
+                                <textarea matInput [(ngModel)]="answers[q.id!]" rows="3"></textarea>
+                            </mat-form-field>
+                        </div>
+
+                        <!-- Matching (Interactive View) -->
+                        <div *ngSwitchCase="'Matching'">
+                            <div class="matching-interaction" *ngIf="matchingState[q.id!] as state">
+                                <p class="text-secondary small">Select a term, then click the corresponding definition.
+                                </p>
+
+                                <div class="matching-columns">
+                                    <!-- Terms Column -->
+                                    <div class="terms-column">
+                                        <div *ngFor="let term of state.terms" class="match-chip term"
+                                            [class.matched]="state.pairs[term]" [class.selected]="selectedTerm === term"
+                                            [ngClass]="getPairColorClass(q.id!, term)"
+                                            (click)="onTermClick(q.id!, term)">
+                                            <span>{{term}}</span>
+                                            <mat-icon *ngIf="state.pairs[term]">link</mat-icon>
+                                        </div>
+                                    </div>
+
+                                    <!-- Vertical Divider -->
+                                    <div class="vertical-divider"></div>
+
+                                    <!-- Definitions Column -->
+                                    <div class="defs-column">
+                                        <div *ngFor="let def of state.definitions" class="match-chip def"
+                                            [class.matched]="isDefMatched(q.id!, def)"
+                                            [class.selected]="selectedDef === def"
+                                            [ngClass]="getPairColorClass(q.id!, def)"
+                                            (click)="onDefinitionClick(q.id!, def)">
+                                            <span>{{def}}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="review-status" *ngIf="answers[q.id!]">
+                                    <mat-icon color="primary">check_circle</mat-icon> {{ getMatchedCount(q.id!) }} / {{
+                                    state.terms.length }} pairs matched
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Ordering (Drag & Drop) -->
+                        <div *ngSwitchCase="'Ordering'">
+                            <p class="text-secondary small">Drag and drop items to arrange them in the correct order:
+                            </p>
+
+                            <div cdkDropList class="ordering-list" (cdkDropListDropped)="drop($event, q.id!)">
+                                <div class="order-box" *ngFor="let item of orderingOptions[q.id!]" cdkDrag>
+                                    <div class="drag-handle">
+                                        <mat-icon>drag_indicator</mat-icon>
+                                    </div>
+                                    {{item}}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- MC/TrueFalse (Default) -->
+                        <div *ngSwitchDefault>
+                            <mat-radio-group [(ngModel)]="answers[q.id!]" aria-label="Select an option"
+                                class="options-group">
+                                <mat-radio-button *ngFor="let opt of q.options" [value]="opt" class="option-radio">
+                                    {{ opt }}
+                                </mat-radio-button>
+                            </mat-radio-group>
+                            <p *ngIf="!q.options || q.options.length === 0" class="text-error">
+                                Warning: No options generated for this question.
+                            </p>
+                        </div>
+                    </div>
 
                     <!-- Changing strategy: Use index or better, update frontend model to have ID -->
                     <!-- For now let's assume I fix the model first. -->

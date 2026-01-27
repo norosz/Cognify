@@ -17,6 +17,10 @@
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
+    <button mat-button type="button" (click)="importFromDocument()" [disabled]="isSaving || isImporting"
+        style="margin-right: auto;">
+        <mat-icon>description</mat-icon> Import Doc
+    </button>
     <button mat-button mat-dialog-close [disabled]="isSaving">Cancel</button>
     <button mat-raised-button color="primary" (click)="save()" [disabled]="form.invalid || isSaving">
         <mat-spinner diameter="20" *ngIf="isSaving"></mat-spinner>

@@ -1,0 +1,26 @@
+<h2 mat-dialog-title>Extracted Content</h2>
+<mat-dialog-content>
+  <p class="instruction">Review the extracted text, add a title, and save as a new note.</p>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Title</mat-label>
+    <input matInput [(ngModel)]="title" placeholder="Enter note title">
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Content</mat-label>
+    <textarea matInput [(ngModel)]="text" rows="12"></textarea>
+  </mat-form-field>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-icon-button (click)="copyToClipboard()" matTooltip="Copy to Clipboard">
+    <mat-icon>content_copy</mat-icon>
+  </button>
+  <span class="spacer"></span>
+  <button mat-button (click)="close()">Cancel</button>
+  <button mat-flat-button color="primary" (click)="saveAsNote()" [disabled]="!title() || !text() || isSaving()">
+    <span *ngIf="!isSaving()">Save as Note</span>
+    <span *ngIf="isSaving()">Saving...</span>
+  </button>
+</mat-dialog-actions>

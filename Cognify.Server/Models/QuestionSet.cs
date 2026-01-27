@@ -8,6 +8,10 @@ public class QuestionSet
 
     public Guid NoteId { get; set; }
 
+    [Required]
+    [MaxLength(200)]
+    public required string Title { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     // Navigation properties

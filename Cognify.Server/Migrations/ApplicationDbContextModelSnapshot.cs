@@ -69,6 +69,10 @@ namespace Cognify.Server.Migrations
                     b.Property<string>("ExtractedText")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<Guid>("ModuleId")
                         .HasColumnType("uniqueidentifier");
 
@@ -80,6 +84,48 @@ namespace Cognify.Server.Migrations
                     b.HasIndex("ModuleId");
 
                     b.ToTable("Documents");
+                });
+
+            modelBuilder.Entity("Cognify.Server.Models.ExtractedContent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("DocumentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ExtractedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsSaved")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("ModuleId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Text")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DocumentId");
+
+                    b.HasIndex("ModuleId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ExtractedContents");
                 });
 
             modelBuilder.Entity("Cognify.Server.Models.Module", b =>
@@ -137,6 +183,61 @@ namespace Cognify.Server.Migrations
                     b.ToTable("Notes");
                 });
 
+            modelBuilder.Entity("Cognify.Server.Models.PendingQuiz", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("ActualQuestionCount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Difficulty")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("ModuleId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("NoteId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("QuestionCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("QuestionType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("QuestionsJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ModuleId");
+
+                    b.HasIndex("NoteId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("PendingQuizzes");
+                });
+
             modelBuilder.Entity("Cognify.Server.Models.Question", b =>
                 {
                     b.Property<Guid>("Id")
@@ -182,6 +283,11 @@ namespace Cognify.Server.Migrations
 
                     b.Property<Guid>("NoteId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.HasKey("Id");
 
@@ -243,6 +349,33 @@ namespace Cognify.Server.Migrations
                     b.Navigation("Module");
                 });
 
+            modelBuilder.Entity("Cognify.Server.Models.ExtractedContent", b =>
+                {
+                    b.HasOne("Cognify.Server.Models.Document", "Document")
+                        .WithMany()
+                        .HasForeignKey("DocumentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Cognify.Server.Models.Module", "Module")
+                        .WithMany()
+                        .HasForeignKey("ModuleId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Cognify.Server.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Document");
+
+                    b.Navigation("Module");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Cognify.Server.Models.Module", b =>
                 {
                     b.HasOne("Cognify.Server.Models.User", "OwnerUser")
@@ -263,6 +396,33 @@ namespace Cognify.Server.Migrations
                         .IsRequired();
 
                     b.Navigation("Module");
+                });
+
+            modelBuilder.Entity("Cognify.Server.Models.PendingQuiz", b =>
+                {
+                    b.HasOne("Cognify.Server.Models.Module", "Module")
+                        .WithMany()
+                        .HasForeignKey("ModuleId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Cognify.Server.Models.Note", "Note")
+                        .WithMany()
+                        .HasForeignKey("NoteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Cognify.Server.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Module");
+
+                    b.Navigation("Note");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Cognify.Server.Models.Question", b =>

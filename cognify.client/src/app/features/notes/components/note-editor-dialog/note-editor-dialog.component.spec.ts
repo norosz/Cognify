@@ -5,23 +5,31 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { ReactiveFormsModule } from '@angular/forms';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { NotificationService } from '../../../../core/services/notification.service';
 
 describe('NoteEditorDialogComponent', () => {
     let component: NoteEditorDialogComponent;
     let fixture: ComponentFixture<NoteEditorDialogComponent>;
     let noteServiceSpy: jasmine.SpyObj<NoteService>;
     let dialogRefSpy: jasmine.SpyObj<MatDialogRef<NoteEditorDialogComponent>>;
+    let notificationSpy: jasmine.SpyObj<NotificationService>;
 
     beforeEach(async () => {
         noteServiceSpy = jasmine.createSpyObj('NoteService', ['createNote', 'updateNote']);
         dialogRefSpy = jasmine.createSpyObj('MatDialogRef', ['close']);
+        notificationSpy = jasmine.createSpyObj('NotificationService', ['success', 'error', 'loading', 'update']);
 
         await TestBed.configureTestingModule({
             imports: [NoteEditorDialogComponent, ReactiveFormsModule, NoopAnimationsModule],
             providers: [
                 { provide: NoteService, useValue: noteServiceSpy },
                 { provide: MatDialogRef, useValue: dialogRefSpy },
-                { provide: MAT_DIALOG_DATA, useValue: { moduleId: '123' } }
+                { provide: MAT_DIALOG_DATA, useValue: { moduleId: '123' } },
+                { provide: NotificationService, useValue: notificationSpy },
+                provideHttpClient(),
+                provideHttpClientTesting()
             ]
         }).compileComponents();
 

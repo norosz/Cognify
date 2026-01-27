@@ -50,6 +50,13 @@ public class BlobStorageService(BlobServiceClient blobServiceClient) : IBlobStor
         return blob.GenerateSasUri(sas).ToString();
     }
 
+    public async Task<Stream> DownloadStreamAsync(string blobName)
+    {
+        var container = blobServiceClient.GetBlobContainerClient(ContainerName);
+        var blob = container.GetBlobClient(blobName);
+        return await blob.OpenReadAsync();
+    }
+
     public async Task DeleteAsync(string blobName)
     {
         var container = blobServiceClient.GetBlobContainerClient(ContainerName);

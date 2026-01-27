@@ -8,4 +8,5 @@ public interface IDocumentService
     Task<DocumentDto> CompleteUploadAsync(Guid documentId);
     Task DeleteDocumentAsync(Guid documentId);
     Task<IEnumerable<DocumentDto>> GetModuleDocumentsAsync(Guid moduleId);
+    Task<DocumentDto?> GetByIdAsync(Guid documentId);
 }

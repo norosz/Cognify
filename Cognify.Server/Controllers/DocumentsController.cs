@@ -12,14 +12,24 @@ public class DocumentsController : ControllerBase
 {
     private readonly IDocumentService _documentService;
     private readonly ILogger<DocumentsController> _logger;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
+    private readonly IUserContextService _userContext;
     private const long MaxFileSize = 10 * 1024 * 1024; // 10 MB
     private static readonly string[] AllowedExtensions = { ".pdf", ".docx", ".txt", ".md", ".png", ".jpg", ".jpeg" };
 
-    public DocumentsController(IDocumentService documentService, ILogger<DocumentsController> logger)
+    public DocumentsController(
+        IDocumentService documentService, 
+        ILogger<DocumentsController> logger,
+        IServiceScopeFactory serviceScopeFactory,
+        IUserContextService userContext)
     {
         _documentService = documentService;
         _logger = logger;
+        _serviceScopeFactory = serviceScopeFactory;
+        _userContext = userContext;
     }
+
+    private Guid GetUserId() => _userContext.GetCurrentUserId();
 
     [HttpPost("modules/{moduleId}/documents/initiate")]
     public async Task<ActionResult<UploadInitiateResponse>> InitiateUpload(Guid moduleId, [FromBody] UploadInitiateRequest request)
@@ -52,6 +62,11 @@ public class DocumentsController : ControllerBase
         try
         {
             var document = await _documentService.CompleteUploadAsync(documentId);
+            var userId = GetUserId();
+
+            // Auto-extraction removed based on user request.
+            // valid document is returned, user can manually trigger extraction.
+
             return Ok(document);
         }
         catch (KeyNotFoundException ex)
