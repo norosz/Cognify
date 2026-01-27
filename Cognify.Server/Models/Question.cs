@@ -29,5 +29,7 @@ public enum QuestionType
 {
     MultipleChoice,
     TrueFalse,
-    OpenEnded
+    OpenText, // Previously OpenEnded
+    Matching,
+    Ordering
 }

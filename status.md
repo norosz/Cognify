@@ -11,8 +11,8 @@
 ### 🤖 AI Generation, Agents & Quizzes
 
 
-- [ ] **[Agent]** Implement Handwriting Parsing Agent (OCR)
-- [ ] **[Agent]** Implement Question Generation Agent
+- [/] **[Agent]** Implement Handwriting Parsing Agent (OCR)
+- [/] **[Agent]** Implement Question Generation Agent
 - [ ] **[Agent]** Implement Grading Agent
 ### 🧠 User Knowledge & AI Feedback
 - [ ] **[Backend]** Create `UserKnowledgeState` Entity (Topic, Mastery, Confidence)

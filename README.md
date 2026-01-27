@@ -19,10 +19,12 @@ Every interaction updates your profile. The system learns from:
 - Document uploads.
 
 ### 🎯 3. Adaptive Quiz Engine
-No more generic tests. The AI generates questions based on:
-- **Low Mastery**: Focus on conceptual understanding.
-- **High Mastery**: Challenge with edge cases and application.
-- **Forgetting Risk**: Spaced repetition to prevent decay.
+No more generic tests. The AI generates diverse assessment types:
+-   **Multiple Choice & True/False**: Quick retrieval practice.
+-   **Open-Ended Questions**: Conceptual explanation (AI Graded).
+-   **Matching/Pairing**: Terminology reinforcement.
+-   **Context**: Tailored to your specific documents and notes.
+-   **Adaptive Difficulty**: Scales from "Recall" to "Application" loops.
 
 ### 📉 4. Learning Decay Prediction
 The system predicts when you are likely to forget a topic and schedules reviews automatically effectively implementing AI-driven Spaced Repetition.

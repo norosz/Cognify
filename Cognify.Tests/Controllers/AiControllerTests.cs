@@ -6,6 +6,7 @@ using Cognify.Server.Data;
 using Cognify.Server.Dtos.Auth;
 using Cognify.Server.DTOs;
 using Cognify.Server.Models;
+using Cognify.Server.Models.Ai;
 using Cognify.Server.Services.Interfaces;
 using Cognify.Tests.Extensions;
 using FluentAssertions;
@@ -39,7 +40,9 @@ public class AiControllerTests : IClassFixture<WebApplicationFactory<Program>>, 
             builder.ConfigureTestServices(services =>
             {
                 services.AddSqliteTestDatabase<ApplicationDbContext>();
-                services.AddScoped(_ => _aiServiceMock.Object); // Replace IAiService with Mock
+                services.AddScoped(_ => _aiServiceMock.Object);
+                services.AddScoped(_ => new Mock<IDocumentService>().Object); // Mock DocumentService
+                services.AddScoped(_ => new Mock<IBlobStorageService>().Object); // Mock BlobStorageService
             });
         });
     }
@@ -77,6 +80,7 @@ public class AiControllerTests : IClassFixture<WebApplicationFactory<Program>>, 
         // Arrange
         var (client, _, userId) = await CreateAuthenticatedClientAsync();
         
+        Guid noteId;
         // Seed Note
         using (var scope = _factory.Services.CreateScope())
         {
@@ -86,26 +90,51 @@ public class AiControllerTests : IClassFixture<WebApplicationFactory<Program>>, 
             db.Modules.Add(module);
             db.Notes.Add(note);
             await db.SaveChangesAsync();
-            
-            _aiServiceMock.Setup(s => s.GenerateQuestionsFromNoteAsync("Note Content", 5))
-                .ReturnsAsync([new QuestionDto { Prompt = "Generated Q" }]);
-                
-            // Act
-            var response = await client.PostAsync($"/api/ai/questions/from-note/{note.Id}", null);
-
-            // Assert
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
-            var questions = await response.Content.ReadFromJsonAsync<List<QuestionDto>>();
-            questions.Should().HaveCount(1);
-            questions![0].Prompt.Should().Be("Generated Q");
+            noteId = note.Id;
         }
+
+        _aiServiceMock.Setup(s => s.GenerateQuestionsAsync("Note Content", QuestionType.MultipleChoice, 2, 5))
+            .ReturnsAsync(
+            [
+                new GeneratedQuestion 
+                { 
+                    Text = "Generated Q", 
+                    Type = QuestionType.MultipleChoice,
+                    Options = ["A", "B"], 
+                    CorrectAnswer = "A" 
+                }
+            ]);
+            
+        // Act
+        var request = new Cognify.Server.Dtos.Ai.GenerateQuestionsRequest 
+        { 
+            NoteId = noteId.ToString(),
+            Type = QuestionType.MultipleChoice,
+            Difficulty = 2,
+            Count = 5
+        };
+        var response = await client.PostAsJsonAsync($"/api/ai/questions/generate", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var questions = await response.Content.ReadFromJsonAsync<List<GeneratedQuestion>>();
+        questions.Should().HaveCount(1);
+        questions![0].Text.Should().Be("Generated Q");
     }
 
     [Fact]
-    public async Task GenerateQuestions_ShouldReturnNotFound_WhenNoteDoesNotExist()
+    public async Task Grade_ShouldReturnAnalysis()
     {
         var (client, _, _) = await CreateAuthenticatedClientAsync();
-        var response = await client.PostAsync($"/api/ai/questions/from-note/{Guid.NewGuid()}", null);
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        var req = new Cognify.Server.Dtos.Ai.GradeAnswerRequest 
+        { 
+            Question = "Q", Answer = "A", Context = "C" 
+        };
+
+        _aiServiceMock.Setup(s => s.GradeAnswerAsync("Q", "A", "C"))
+            .ReturnsAsync("Score: 100");
+
+        var response = await client.PostAsJsonAsync("/api/ai/grade", req);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 }

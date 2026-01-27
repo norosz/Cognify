@@ -2,8 +2,10 @@ using Azure.AI.OpenAI;
 using OpenAI;
 using OpenAI.Chat;
 using Cognify.Server.Services.Interfaces;
-using Cognify.Server.DTOs;
+using Cognify.Server.Models.Ai;
+using Cognify.Server.Models;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Cognify.Server.Services;
 
@@ -20,36 +22,59 @@ public class AiService : IAiService
         _logger = logger;
     }
 
-    public async Task<List<QuestionDto>> GenerateQuestionsFromNoteAsync(string noteContent, int count = 5)
+    public async Task<List<GeneratedQuestion>> GenerateQuestionsAsync(string content, QuestionType type, int difficulty, int count)
     {
         var model = _configuration["OpenAI:Model"] ?? "gpt-4o";
         var chatClient = _client.GetChatClient(model);
 
-        var prompt = $$"""
-        You are a helpful teaching assistant.
-        Generate {{count}} multiple-choice questions based on the provided note content.
-        
-        The output must be a valid JSON object with a single property "questions" containing an array of question objects.
-        Do not wrap the JSON in markdown code blocks.
-        
-        Each question object must follow this schema:
+        var difficultyPrompt = difficulty switch
         {
-            "prompt": "Question text",
-            "type": "MultipleChoice", 
-            "options": ["Option 1", "Option 2", "Option 3", "Option 4"],
-            "correctAnswer": "exact text of the correct option",
-            "explanation": "Why this is correct"
-        }
+            1 => "Beginner level: Focus on basic definitions and recall.",
+            2 => "Intermediate level: Application of concepts and detailed understanding.",
+            3 => "Advanced level: Complex synthesis, edge cases, and deep analysis.",
+            _ => "Standard level."
+        };
 
-        Note Content:
-        {{noteContent}}
+        var typePrompt = type switch
+        {
+            QuestionType.MultipleChoice => """
+                Type: MultipleChoice.
+                Schema: {"text": "question", "options": ["A", "B", "C", "D"], "correctAnswer": "Exact Option Text", "explanation": "reason"}
+                """,
+            QuestionType.TrueFalse => """
+                Type: TrueFalse.
+                Schema: {"text": "Statement", "options": ["True", "False"], "correctAnswer": "True/False", "explanation": "reason"}
+                """,
+            QuestionType.OpenText => """
+                Type: OpenText.
+                Schema: {"text": "Open ended question", "explanation": "Key points expected in the answer"}
+                """,
+            QuestionType.Matching => """
+                Type: Matching.
+                Schema: {"text": "Match the following terms", "pairs": ["Term1:Definition1", "Term2:Definition2"], "explanation": "Context"}
+                """,
+            _ => "Type: MultipleChoice"
+        };
+
+        var prompt = $$"""
+        You are an expert tutor.
+        Generate {{count}} questions based on the provided content.
+        
+        Difficulty: {{difficultyPrompt}}
+        {{typePrompt}}
+
+        The output must be a valid JSON object with a single property "questions" containing an array of objects matching the schema above.
+        Each object must strictly follow the schema and include the "type" property set to "{{type}}".
+        
+        Content:
+        {{content}}
         """;
 
         try 
         {
             var completion = await chatClient.CompleteChatAsync(
                 [
-                    new SystemChatMessage("You are a helpful assistant that generates quiz questions in JSON format."),
+                    new SystemChatMessage("You are a helper that outputs strict JSON."),
                     new UserChatMessage(prompt)
                 ],
                 new ChatCompletionOptions()
@@ -59,20 +84,57 @@ public class AiService : IAiService
             );
 
             var json = completion.Value.Content[0].Text;
-            
-            // Deserialize
-            var result = JsonSerializer.Deserialize<QuestionResponse>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var result = JsonSerializer.Deserialize<AssessmentBundle>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true, Converters = { new JsonStringEnumConverter() } });
             return result?.Questions ?? [];
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to generate questions from AI.");
-            throw; // Or return empty list / handle gracefully
+            _logger.LogError(ex, "Failed to generate questions.");
+            return [];
         }
     }
 
-    private class QuestionResponse
+    public async Task<string> ParseHandwritingAsync(Stream imageStream, string contentType)
     {
-        public List<QuestionDto> Questions { get; set; } = [];
+        var model = _configuration["OpenAI:Model"] ?? "gpt-4o";
+        var chatClient = _client.GetChatClient(model);
+
+        using var memoryStream = new MemoryStream();
+        await imageStream.CopyToAsync(memoryStream);
+        var imageBytes = memoryStream.ToArray();
+
+        var message = new UserChatMessage(
+            ChatMessageContentPart.CreateTextPart("Please transcribe this handwritten note into clear, formatted Markdown text. Do not add conversational filler, just the content."),
+            ChatMessageContentPart.CreateImagePart(new BinaryData(imageBytes), contentType)
+        );
+
+        try
+        {
+            var completion = await chatClient.CompleteChatAsync([message]);
+            return completion.Value.Content[0].Text;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to parse handwriting.");
+            throw;
+        }
+    }
+
+    public async Task<string> GradeAnswerAsync(string question, string answer, string context)
+    {
+        var model = _configuration["OpenAI:Model"] ?? "gpt-4o";
+        var chatClient = _client.GetChatClient(model);
+
+        var prompt = $$"""
+        Question: {{question}}
+        Student Answer: {{answer}}
+        Context/Correct Answer Key: {{context}}
+
+        Evaluate the student's answer. Provide a constructive feedback and a score (0-100).
+        Format: "Score: [0-100]\n\nFeedback: [Your feedback here]"
+        """;
+
+        var completion = await chatClient.CompleteChatAsync([new UserChatMessage(prompt)]);
+        return completion.Value.Content[0].Text;
     }
 }

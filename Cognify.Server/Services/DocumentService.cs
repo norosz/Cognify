@@ -144,6 +144,33 @@ public class DocumentService : IDocumentService
         return dtos;
     }
 
+    public async Task<DocumentDto?> GetByIdAsync(Guid documentId)
+    {
+        var userId = _userContextService.GetCurrentUserId();
+        
+        var document = await _context.Documents
+            .Include(d => d.Module)
+            .FirstOrDefaultAsync(d => d.Id == documentId);
+
+        if (document == null) return null;
+        if (document.Module!.OwnerUserId != userId) return null; // Or throw
+
+        var fileName = ExtractFileName(document.BlobPath);
+        var downloadUrl = document.Status == Models.DocumentStatus.Ready 
+            ? _blobStorageService.GenerateDownloadSasToken(document.BlobPath, DateTimeOffset.UtcNow.AddHours(1), fileName) 
+            : null;
+
+        return new DocumentDto(
+            document.Id, 
+            document.ModuleId, 
+            fileName, 
+            document.BlobPath, 
+            (Dtos.Documents.DocumentStatus)document.Status, 
+            document.CreatedAt, 
+            downloadUrl
+        );
+    }
+
     private string ExtractFileName(string blobPath)
     {
         // format: moduleId/guid_filename

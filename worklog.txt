@@ -278,3 +278,10 @@ DECISIONS: Added explicit rule that frontend components must be consistent (styl
 NEXT: Await further instructions.
 BLOCKERS: None.
 
+[2026-01-27 12:12] Antigravity
+DONE: Created branch `feature/ai-agents`; Created `implementation_plan.md`.
+CHANGED: `status.md`, `implementation_plan.md`.
+DECISIONS: Will use GPT-4o for Handwriting OCR to simplify stack (no extra Azure Vision resource needed).
+NEXT: Implement Backend logic for Handwriting Parsing (AiService, Controller).
+BLOCKERS: None.
+
