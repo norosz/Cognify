@@ -102,6 +102,7 @@ export class QuizGenerationComponent {
     this.loading.set(true);
     const dto = {
       noteId: this.data.noteId,
+      title: 'Generated Quiz',
       questions: this.questions()
     };
 

@@ -126,6 +126,13 @@ Cognify.ServiceDefaults/    # Shared .NET code (extensions, config)
    - Notes creation and management.
    - Quiz attempts and scoring.
 
+6. **Global Notification System**
+   - Toast-style notifications (top-right, stacked).
+   - Support for success, warning, error, and loading states.
+   - Auto-dismiss after 5 seconds (except loading).
+   - Loading notifications with spinner (for async operations).
+   - Extraction state tracking (prevents duplicate operations).
+
 ---
 
 ## 6. Domain Model & Data Schema

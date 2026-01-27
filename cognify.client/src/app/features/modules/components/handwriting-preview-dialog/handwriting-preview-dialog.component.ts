@@ -8,7 +8,8 @@ import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { NoteService } from '../../../../core/services/note.service';
 import { CreateNoteRequest } from '../../../../core/models/note.model';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { NotificationService } from '../../../../core/services/notification.service';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-handwriting-preview-dialog',
@@ -21,21 +22,22 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
     MatFormFieldModule,
     MatInputModule,
     FormsModule,
-    MatSnackBarModule
+    MatTooltipModule
   ],
   templateUrl: './handwriting-preview-dialog.component.html',
   styleUrl: './handwriting-preview-dialog.component.scss'
 })
 export class HandwritingPreviewDialogComponent {
+  title = signal<string>('');
   text = signal<string>('');
   moduleId: string;
   isSaving = signal<boolean>(false);
 
   constructor(
     private dialogRef: MatDialogRef<HandwritingPreviewDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { text: string, moduleId: string },
+    @Inject(MAT_DIALOG_DATA) public data: { text: string, moduleId: string, mode?: 'save' | 'view' },
     private noteService: NoteService,
-    private snackBar: MatSnackBar
+    private notification: NotificationService
   ) {
     this.text.set(data.text);
     this.moduleId = data.moduleId;
@@ -44,30 +46,36 @@ export class HandwritingPreviewDialogComponent {
   async copyToClipboard() {
     try {
       await navigator.clipboard.writeText(this.text());
-      this.snackBar.open('Copied to clipboard!', 'Close', { duration: 2000 });
+      this.notification.success('Copied to clipboard!');
     } catch (err) {
-      this.snackBar.open('Failed to copy.', 'Close', { duration: 2000 });
+      this.notification.error('Failed to copy.');
     }
   }
 
   saveAsNote() {
-    if (!this.text().trim()) return;
+    if (!this.title().trim() || !this.text().trim()) return;
+
+    // If we're just in 'view' mode (from Pending page), we return the title so the caller can save
+    if (this.data.mode === 'view') {
+      this.dialogRef.close({ title: this.title().trim(), text: this.text() });
+      return;
+    }
 
     this.isSaving.set(true);
     const dto: CreateNoteRequest = {
       moduleId: this.moduleId,
-      title: 'Extracted Content ' + new Date().toLocaleString(),
+      title: this.title().trim(),
       content: this.text()
     };
 
     this.noteService.createNote(dto).subscribe({
       next: (note) => {
-        this.snackBar.open('Note created!', 'Close', { duration: 2000 });
+        this.notification.success('Note created!');
         this.dialogRef.close(note);
       },
       error: (err) => {
         console.error(err);
-        this.snackBar.open('Failed to save note.', 'Close', { duration: 2000 });
+        this.notification.error('Failed to save note.');
         this.isSaving.set(false);
       }
     });

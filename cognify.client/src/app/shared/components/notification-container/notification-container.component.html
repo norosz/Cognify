@@ -1,0 +1,5 @@
+<div class="notification-container">
+    <app-notification-toast *ngFor="let notification of notifications$ | async; trackBy: trackById"
+        [notification]="notification" (dismissEvent)="dismiss(notification)">
+    </app-notification-toast>
+</div>

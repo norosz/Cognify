@@ -1,20 +1,39 @@
-<mat-toolbar color="primary">
-  <button mat-button routerLink="/dashboard" class="brand-button">
-    <mat-icon>school</mat-icon>
-    <span>Cognify</span>
-  </button>
-  
-  <span class="spacer"></span>
+<div class="layout-wrapper">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <mat-icon class="logo-icon">school</mat-icon>
+      <span class="logo-text">Cognify</span>
+    </div>
 
-  @if (authService.currentUser(); as user) {
-    <span class="user-email">{{ user.email }}</span>
-  }
-  
-  <button mat-icon-button (click)="logout()" aria-label="Logout">
-    <mat-icon>logout</mat-icon>
-  </button>
-</mat-toolbar>
+    <nav class="sidebar-nav">
+      <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
+        <mat-icon>dashboard</mat-icon>
+        <span>Dashboard</span>
+      </a>
+      <a routerLink="/pending" routerLinkActive="active" class="nav-item">
+        <mat-icon>history_edu</mat-icon>
+        <span>Pending</span>
+        <span class="custom-badge" *ngIf="pendingService.pendingCount() > 0">
+          {{ pendingService.pendingCount() }}
+        </span>
+      </a>
+    </nav>
 
-<div class="content-container">
-  <router-outlet></router-outlet>
+    <div class="spacer"></div>
+
+    <div class="sidebar-footer">
+      @if (authService.currentUser(); as user) {
+      <div class="user-info">
+        <span class="user-email">{{ user.email }}</span>
+      </div>
+      }
+      <button mat-icon-button (click)="logout()" matTooltip="Logout">
+        <mat-icon>logout</mat-icon>
+      </button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <router-outlet></router-outlet>
+  </main>
 </div>

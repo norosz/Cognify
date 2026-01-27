@@ -2,144 +2,155 @@
 
 @include mat.core();
 
+// Leetify-inspired Color Palette
+:root {
+    --bg-primary: #0d0d0d;
+    --bg-secondary: #1a1a1e;
+    --bg-tertiary: #252529;
+    --border: rgba(255, 255, 255, 0.08);
+    --text-primary: #ffffff;
+    --text-secondary: #a0a0a8;
+    --accent-violet: #a855f7;
+    --accent-blue: #3b82f6;
+    --success: #22c55e;
+    --warning: #eab308;
+    --error: #ef4444;
+}
+
 // Define the palette for your custom theme
-// Using light-blue for a lighter primary color (#90caf9)
-$cognify-primary: mat.m2-define-palette(mat.$m2-light-blue-palette, 200, 100, 400);
-$cognify-accent: mat.m2-define-palette(mat.$m2-pink-palette, A200, A100, A400);
+$cognify-primary: mat.m2-define-palette(mat.$m2-blue-palette, 600, 400, 800);
+$cognify-accent: mat.m2-define-palette(mat.$m2-deep-purple-palette, A200, A100, A400);
 $cognify-warn: mat.m2-define-palette(mat.$m2-red-palette);
 
-// Create the theme object. A dark theme works best with the requested background.
 $cognify-theme: mat.m2-define-dark-theme((color: (primary: $cognify-primary,
                 accent: $cognify-accent,
                 warn: $cognify-warn,
             )));
 
-// Include theme styles for core and each component used in your app.
+// Include theme styles
 @include mat.all-component-themes($cognify-theme);
 
 html,
 body {
     height: 100%;
+    background-color: var(--bg-primary);
 }
 
 body {
     margin: 0;
-    font-family: Roboto, "Helvetica Neue", sans-serif;
-
-    // Darker Violet to Blue Gradient
-    background: linear-gradient(135deg, #2a0845 0%, #1e3c72 100%);
-    background-attachment: fixed; // Keeps gradient fixed during scroll
-    color: #e0e0e0; // Light text for readability
+    font-family: 'Inter', Roboto, "Helvetica Neue", sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
 }
 
-// Override Toolbar to be darker
-mat-toolbar.mat-primary {
-    background: rgba(0, 0, 0, 0.4) !important; // Transparent dark background
-    backdrop-filter: blur(10px); // Glassmorphism effect
-}
-
-// Global Glassmorphism Card Style
+// Global Card Styles
 .cognify-glass-card {
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    height: 100%;
-
-    // Glassmorphism Look
-    background: rgba(40, 44, 52, 0.4); // Dark semi-transparent
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 16px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    color: #e0e0e0;
-
-    // Remove default mat-card background if needed (Material usually handles this, but overriding ensures custom look)
-    &.mat-mdc-card {
-        background-color: rgba(40, 44, 52, 0.6);
-    }
-
-    mat-card-header {
-        padding: 16px 16px 0 16px;
-
-        mat-card-title {
-            font-size: 1.25rem;
-            font-weight: 500;
-            color: #ffffff;
-            margin-bottom: 8px;
-        }
-
-        mat-card-subtitle {
-            color: #aaaaaa;
-        }
-    }
-
-    mat-card-content {
-        margin-top: 12px;
-        padding: 0 16px 16px 16px;
-
-        p {
-            color: #cccccc;
-            line-height: 1.5;
-        }
-    }
+    background: var(--bg-secondary) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 12px !important;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+    /* Global purple shadow as requested */
+    box-shadow: 0 4px 12px rgba(118, 75, 162, 0.15) !important;
+    color: var(--text-primary);
 
     &:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.2) inset;
-        background: rgba(40, 44, 52, 0.8);
-        border-color: rgba(255, 255, 255, 0.3);
+        transform: translateY(-4px);
+        border-color: rgba(168, 85, 247, 0.3) !important; // Violet accent on hover
+        background: var(--bg-tertiary) !important;
+    }
+
+    &.mat-mdc-card {
+        background: var(--bg-secondary);
     }
 }
 
-// Global Material Form Field Overrides (Dark & Beautiful Blue)
-// Global Material Form Field Overrides (Dark & Beautiful Blue)
-body .mat-mdc-form-field {
+// Toolbar Override
+mat-toolbar.mat-primary {
+    background: var(--bg-secondary) !important;
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(10px);
+}
 
-    // Input Background
+// Form Field Overrides
+body .mat-mdc-form-field {
     .mat-mdc-text-field-wrapper {
-        background-color: rgba(0, 0, 0, 0.6) !important;
+        background-color: var(--bg-tertiary) !important;
     }
 
-    // Default Label Color (Grey/White when not focused)
     .mat-mdc-form-field-label,
     .mdc-floating-label {
-        color: #b0bec5 !important;
+        color: var(--text-secondary) !important;
     }
 
-    // Input Text & Caret
     .mat-mdc-input-element {
-        color: #e0e0e0 !important;
-        caret-color: #90caf9 !important;
+        color: var(--text-primary) !important;
+        caret-color: var(--accent-blue) !important;
     }
 
-    // Focused Label (Beautiful Blue ONLY on focus)
-    &.mat-focused .mat-mdc-form-field-label,
-    &.mat-focused .mdc-floating-label,
-    &:focus-within .mdc-floating-label {
-        color: #90caf9 !important;
-        font-weight: 500;
+    &.mat-focused .mdc-floating-label {
+        color: var(--accent-violet) !important;
     }
 
-    // Focus Overlay (Ripple effect) - Optional, kept low opacity
-    .mat-mdc-form-field-focus-overlay {
-        background-color: #90caf9 !important;
-        opacity: 0.05;
-    }
-
-    // Bottom Line (For Fill appearance)
     .mdc-line-ripple::after {
-        border-bottom-color: #90caf9 !important;
+        border-bottom-color: var(--accent-violet) !important;
     }
 
-    // Outline Border (For Outline appearance)
     &.mat-focused .mdc-notched-outline__leading,
     &.mat-focused .mdc-notched-outline__notch,
     &.mat-focused .mdc-notched-outline__trailing {
-        border-color: #90caf9 !important;
-        border-width: 2px !important;
+        border-color: var(--accent-violet) !important;
     }
 }
 
-// Remove the second focus ring/border for outline appearance
-.mat-mdc-form-field.mat-focused .mdc-notched-outline {
-    box-shadow: none !important;
+// Custom Badge Styles
+.custom-badge {
+    background-color: var(--accent-violet);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+// Utility Classes
+.w-full {
+    width: 100%;
+}
+
+.text-secondary {
+    color: var(--text-secondary);
+}
+
+.accent-text {
+    color: var(--accent-violet);
+}
+
+.blue-text {
+    color: var(--accent-blue);
+}
+
+// Global Scrollbar
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--bg-tertiary);
+    border-radius: 4px;
+
+    &:hover {
+        background: var(--text-secondary);
+    }
 }

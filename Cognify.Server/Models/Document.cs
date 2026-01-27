@@ -9,6 +9,9 @@ public class Document
     public Guid ModuleId { get; set; }
 
     [Required]
+    public required string FileName { get; set; }
+
+    [Required]
     public required string BlobPath { get; set; }
 
     public DocumentStatus Status { get; set; } = DocumentStatus.Processing;

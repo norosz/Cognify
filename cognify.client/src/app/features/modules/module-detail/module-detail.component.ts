@@ -38,8 +38,10 @@ export class ModuleDetailComponent implements OnInit {
   private documentsService = inject(DocumentsService);
 
   module = signal<ModuleDto | null>(null);
+  selectedTabIndex = signal<number>(0);
 
   @ViewChild(DocumentListComponent) documentList!: DocumentListComponent;
+  @ViewChild(NotesListComponent) notesList!: NotesListComponent;
   @ViewChild(QuizListComponent) quizList!: QuizListComponent;
 
   ngOnInit() {
@@ -50,11 +52,24 @@ export class ModuleDetailComponent implements OnInit {
         error: (err) => console.error('Failed to load module', err)
       });
     }
+
+    this.route.params.subscribe(params => {
+      const tab = params['tab'];
+      if (tab === 'notes') this.selectedTabIndex.set(1);
+      else if (tab === 'quizzes') this.selectedTabIndex.set(2);
+      else if (tab === 'documents') this.selectedTabIndex.set(0);
+    });
   }
 
   onQuizGenerated() {
     if (this.quizList) {
       this.quizList.loadQuizzes();
+    }
+  }
+
+  onNoteCreated() {
+    if (this.notesList) {
+      this.notesList.loadNotes();
     }
   }
 

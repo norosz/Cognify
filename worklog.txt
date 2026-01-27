@@ -332,3 +332,56 @@ Detailed:
 - Removed debug console.log statements from test files.
 CHANGED: `styles.scss`, `register.component.*`, `quiz-generation.component.*`, `notes-list.component.*`, `*.spec.ts`.
 NEXT: User Knowledge State & Adaptive Quiz Engine.
+
+[2026-01-27 14:10] Antigravity
+DONE: Global Notification System & Extraction Flow Improvements.
+Detailed:
+- Created `NotificationService` with show/update/dismiss, success/error/warning/loading convenience methods.
+- Created `NotificationContainerComponent` (top-right toast stack, glassmorphism, slide-in animation).
+- Auto-close after 5 seconds for non-loading notifications.
+- Added extraction state tracking in `DocumentListComponent` (spinner on button, prevents duplicate extractions).
+- Added title input to `HandwritingPreviewDialogComponent` (required before saving as note).
+- Replaced `MatSnackBar` with `NotificationService` across all components.
+- Created `notification.service.spec.ts` with 10 comprehensive tests.
+- Updated tests for components using notifications.
+- All 63 tests passing.
+CHANGED: `notification.service.ts`, `notification-container.component.*`, `document-list.component.*`, `handwriting-preview-dialog.component.*`, `notes-list.component.*`, `note-editor-dialog.component.*`, `app.component.*`.
+NEXT: User Knowledge State & Adaptive Quiz Engine.
+
+[2026-01-27 19:30] Antigravity
+DONE: Refactored Extraction Pipeline to Async/Pending System.
+Detailed:
+- Created `ExtractedContent` model with `Status` enum (Processing/Ready/Error).
+- Created `PendingQuiz` model with `Status` enum (Generating/Ready/Failed).
+- Implemented `ExtractedContentService` (CreatePending, Update, MarkAsError, SaveAsNote).
+- Implemented `PendingQuizService` (CreateAsync with background AI task, SaveAsQuizAsync).
+- Created `PendingController` with endpoints for extractions and quizzes.
+- Updated `AiController.ExtractText` to return 202 Accepted with pending ID instead of blocking.
+- Removed auto-extraction from `DocumentsController.CompleteUpload`.
+- Applied database migration for new entities.
+- Built `PendingComponent` (frontend) with polling, tab routing, status cards.
+- Integrated notifications for extraction/quiz completion.
+- Fixed multiple compilation errors during refactoring.
+CHANGED: `Cognify.Server/Models/*`, `Cognify.Server/Services/*`, `Cognify.Server/Controllers/*`, `cognify.client/src/app/features/pending/*`, `cognify.client/src/app/core/services/pending.service.ts`.
+DECISIONS: Async extraction allows users to continue working while AI processes; Pending items are user-owned and reviewable before saving.
+NEXT: Fix and improve test coverage.
+BLOCKERS: None.
+
+[2026-01-27 20:43] Antigravity
+DONE: Improved Test Coverage for Backend and Frontend.
+Detailed:
+- Created `PendingQuizServiceTests` (4 unit tests: CreateAsync, SaveAsQuizAsync, authorization checks).
+- Created `NoteServiceTests` (6 unit tests: CRUD with ownership validation).
+- Fixed `AiControllerTests` (endpoint URL, JSON deserialization, enum values).
+- Created `pending.service.spec.ts` (9 HTTP mock tests).
+- Created `pending.component.spec.ts` (12 component tests: lifecycle, polling, tab routing).
+- Fixed `quiz-generation.component.ts` (missing `title` in DTO).
+- Fixed `quiz-taking.component.spec.ts` (missing `title` in mock).
+- Fixed `notes-list.component.spec.ts` (added missing `PendingService` mock).
+- Fixed `notification.service.spec.ts` (corrected invalid auto-close test).
+- Made `QuestionDto.explanation` optional in `quiz.models.ts`.
+- Backend: 37 tests passing. Frontend: 85 tests passing. Total: 122 tests.
+CHANGED: `Cognify.Tests/Services/*`, `Cognify.Tests/Controllers/AiControllerTests.cs`, `cognify.client/**/*.spec.ts`, `cognify.client/**/quiz.models.ts`, `cognify.client/**/quiz-generation.component.ts`.
+DECISIONS: Focused unit tests on new Pending system (PendingQuiz, ExtractedContent) and NoteService to increase coverage of newly implemented features.
+NEXT: User Knowledge State & Adaptive Quiz Engine.
+BLOCKERS: None.

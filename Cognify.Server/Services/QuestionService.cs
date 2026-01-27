@@ -23,6 +23,7 @@ public class QuestionService(ApplicationDbContext context, IUserContextService u
         var questionSet = new QuestionSet
         {
             NoteId = dto.NoteId,
+            Title = dto.Title,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -102,6 +103,7 @@ public class QuestionService(ApplicationDbContext context, IUserContextService u
         {
             Id = qs.Id,
             NoteId = qs.NoteId,
+            Title = qs.Title,
             CreatedAt = qs.CreatedAt,
             Questions = qs.Questions?.Select(q => new QuestionDto
             {

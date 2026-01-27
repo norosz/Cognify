@@ -16,6 +16,7 @@ public record QuestionSetDto
 {
     public Guid Id { get; init; }
     public Guid NoteId { get; init; }
+    public string Title { get; init; } = string.Empty;
     public List<QuestionDto> Questions { get; init; } = [];
     public DateTime CreatedAt { get; init; }
 }
@@ -23,5 +24,6 @@ public record QuestionSetDto
 public record CreateQuestionSetDto
 {
     public Guid NoteId { get; init; }
+    public string Title { get; init; } = string.Empty;
     public List<QuestionDto> Questions { get; init; } = [];
 }

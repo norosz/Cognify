@@ -44,8 +44,7 @@ public class DocumentService : IDocumentService
         {
             Id = documentId,
             ModuleId = moduleId,
-            // FileName and ContentType are not in DB currently. 
-            // We rely on BlobPath extraction for FileName.
+            FileName = fileName,
             BlobPath = blobName,
             CreatedAt = DateTime.UtcNow,
             Status = Models.DocumentStatus.Processing 

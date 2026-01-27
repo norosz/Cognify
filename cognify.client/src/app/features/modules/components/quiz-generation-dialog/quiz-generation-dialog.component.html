@@ -1,0 +1,52 @@
+<h2 mat-dialog-title class="accent-text">Generate New Quiz</h2>
+
+<mat-dialog-content class="dialog-content">
+    <p class="text-secondary">Configure your AI-powered quiz generation based on "<strong>{{data.noteTitle}}</strong>".
+    </p>
+
+    <form [formGroup]="quizForm" class="quiz-form">
+        <!-- Title -->
+        <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Quiz Title</mat-label>
+            <input matInput formControlName="title" placeholder="Enter quiz title">
+            <mat-error *ngIf="quizForm.get('title')?.hasError('required')">Title is required</mat-error>
+        </mat-form-field>
+
+        <div class="form-row">
+            <!-- Difficulty -->
+            <mat-form-field appearance="outline" class="flex-1">
+                <mat-label>Difficulty Level</mat-label>
+                <mat-select formControlName="difficulty">
+                    <mat-option *ngFor="let d of difficulties" [value]="d">{{d}}</mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            <!-- Question Count -->
+            <div class="count-container">
+                <label class="text-secondary">Number of Questions: {{quizForm.get('questionCount')?.value}}</label>
+                <mat-slider min="1" max="20" step="1" discrete>
+                    <input matSliderThumb formControlName="questionCount">
+                </mat-slider>
+            </div>
+        </div>
+
+        <!-- Question Type Selection -->
+        <label class="section-label text-secondary">Question Type</label>
+        <mat-button-toggle-group formControlName="questionType" class="type-toggle-group">
+            <mat-button-toggle *ngFor="let type of questionTypes" [value]="type.value">
+                <div class="toggle-content">
+                    <mat-icon>{{type.icon}}</mat-icon>
+                    <span>{{type.label}}</span>
+                </div>
+            </mat-button-toggle>
+        </mat-button-toggle-group>
+    </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+    <button mat-button (click)="onCancel()">Cancel</button>
+    <button mat-flat-button color="accent" (click)="onGenerate()" [disabled]="quizForm.invalid">
+        <mat-icon>auto_awesome</mat-icon>
+        Generate
+    </button>
+</mat-dialog-actions>

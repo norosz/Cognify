@@ -74,3 +74,11 @@
 - [x] **[Frontend]** Build Quiz Result/Score View
 - [x] **[Frontend]** UI Fixes & Theme Updates (Light-blue primary, dark mode consistency)
 - [x] **[Frontend]** Frontend Unit Tests for AI Components
+- [x] **[Frontend]** Global Notification System (Toast stack, extraction state tracking)
+- [x] **[Backend]** Implement Pending Items System (ExtractedContent, PendingQuiz)
+- [x] **[Backend]** Async AI Task Persistence & Fix Build Errors
+- [x] **[Frontend]** New Dashboard Layout (Leetify-inspired, Side-navigation)
+- [x] **[Frontend]** Build Pending Management UI (Review, Save, Delete)
+- [x] **[Frontend]** Integrated Background Quiz Generation Flow
+- [x] **[Test]** Improved Backend Test Coverage (PendingQuizService, NoteService - 37 tests)
+- [x] **[Test]** Improved Frontend Test Coverage (PendingService, PendingComponent - 85 tests)

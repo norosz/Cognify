@@ -2,6 +2,7 @@ using Cognify.Server.Dtos.Ai;
 using Cognify.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Cognify.Server.Controllers;
 
@@ -14,14 +15,29 @@ public class AiController : ControllerBase
     private readonly INoteService _noteService;
     private readonly IDocumentService _documentService;
     private readonly IBlobStorageService _blobStorageService;
+    private readonly IExtractedContentService _extractedContentService;
+    private readonly IUserContextService _userContext;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
 
-    public AiController(IAiService aiService, INoteService noteService, IDocumentService documentService, IBlobStorageService blobStorageService)
+    public AiController(
+        IAiService aiService, 
+        INoteService noteService, 
+        IDocumentService documentService, 
+        IBlobStorageService blobStorageService,
+        IExtractedContentService extractedContentService,
+        IUserContextService userContext,
+        IServiceScopeFactory serviceScopeFactory)
     {
         _aiService = aiService;
         _noteService = noteService;
         _documentService = documentService;
         _blobStorageService = blobStorageService;
+        _extractedContentService = extractedContentService;
+        _userContext = userContext;
+        _serviceScopeFactory = serviceScopeFactory;
     }
+
+    private Guid GetUserId() => _userContext.GetCurrentUserId();
 
     [HttpPost("extract-text/{documentId}")]
     public async Task<IActionResult> ExtractText(Guid documentId)
@@ -34,33 +50,68 @@ public class AiController : ControllerBase
         if (string.IsNullOrEmpty(document.BlobPath))
             return BadRequest("Invalid document path.");
 
+        // Basic extension check
+        var extension = Path.GetExtension(document.FileName).ToLowerInvariant();
+        var contentType = extension switch
+        {
+            ".png" => "image/png",
+            ".jpg" => "image/jpeg",
+            ".jpeg" => "image/jpeg",
+            ".webp" => "image/webp",
+            ".gif" => "image/gif",
+            ".pdf" => "application/pdf", 
+            _ => "application/octet-stream"
+        };
+        
+        if (!contentType.StartsWith("image/"))
+        {
+            return BadRequest("Only image files are currently supported for handwriting extraction.");
+        }
+
         try
         {
-            var stream = await _blobStorageService.DownloadStreamAsync(document.BlobPath);
-            var extension = Path.GetExtension(document.FileName).ToLowerInvariant();
-            var contentType = extension switch
+            // 1. Create Pending Record Immediately (Synchronous to current request)
+            var userId = GetUserId();
+            var extractedContent = await _extractedContentService.CreatePendingAsync(userId, documentId, document.ModuleId);
+            
+            // 2. Update with Text (Fire-and-Forget)
+            _ = Task.Run(async () => 
             {
-                ".png" => "image/png",
-                ".jpg" => "image/jpeg",
-                ".jpeg" => "image/jpeg",
-                ".webp" => "image/webp",
-                ".gif" => "image/gif",
-                ".pdf" => "application/pdf", // GPT-4o Vision might support PDF pages? No, mostly images.
-                _ => "application/octet-stream"
-            };
+                try 
+                {
+                    using var scope = _serviceScopeFactory.CreateScope();
+                    var aiService = scope.ServiceProvider.GetRequiredService<IAiService>();
+                    var blobService = scope.ServiceProvider.GetRequiredService<IBlobStorageService>();
+                    var extractionService = scope.ServiceProvider.GetRequiredService<IExtractedContentService>();
 
-            // Basic check to ensure it's an image for vision model
-            if (!contentType.StartsWith("image/"))
-            {
-                return BadRequest("Only image files are currently supported for handwriting extraction.");
-            }
+                    // Re-download stream in background
+                    // We cannot re-use the 'document' variable safely if context is disposed? 
+                    // 'document' is a DTO/POCO from Service so it should be fine, but let's be safe.
+                    // The path string is safe.
+                    var stream = await blobService.DownloadStreamAsync(document.BlobPath);
+                    
+                    var text = await aiService.ParseHandwritingAsync(stream, contentType);
+                    
+                    await extractionService.UpdateAsync(extractedContent.Id, text);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Background Extraction Failed: {ex.Message}");
+                    try 
+                    {
+                        using var scope = _serviceScopeFactory.CreateScope();
+                        var extractionService = scope.ServiceProvider.GetRequiredService<IExtractedContentService>();
+                        await extractionService.MarkAsErrorAsync(extractedContent.Id, "AI Extraction failed. Please try again.");
+                    } 
+                    catch { /* Swallow error logging failure */ }
+                }
+            });
 
-            var text = await _aiService.ParseHandwritingAsync(stream, contentType);
-            return Ok(new { text });
+            return Accepted(new { extractedContentId = extractedContent.Id, status = "Processing" });
         }
         catch (Exception ex)
         {
-             return StatusCode(500, new { error = "AI Processing failed.", details = ex.Message });
+             return StatusCode(500, new { error = "Failed to initiate extraction.", details = ex.Message });
         }
     }
 

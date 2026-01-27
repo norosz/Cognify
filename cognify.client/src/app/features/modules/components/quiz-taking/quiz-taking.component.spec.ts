@@ -15,6 +15,7 @@ describe('QuizTakingComponent', () => {
   const mockQuestionSet: QuestionSetDto = {
     id: 'qs-1',
     noteId: 'note-1',
+    title: 'Test Quiz',
     createdAt: new Date().toISOString(),
     questions: [{ id: 'q1', prompt: 'Q1', type: 'MultipleChoice', options: ['A', 'B'], correctAnswer: 'A', explanation: '' }]
   };

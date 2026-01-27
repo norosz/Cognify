@@ -9,7 +9,7 @@
     </div>
 </div>
 
-<mat-tab-group>
+<mat-tab-group [selectedIndex]="selectedTabIndex()" (selectedIndexChange)="selectedTabIndex.set($event)">
     <mat-tab label="Documents">
         <div class="tab-content">
             <div class="actions-bar">
@@ -20,7 +20,7 @@
 
 
 
-            <app-document-list [moduleId]="m.id"></app-document-list>
+            <app-document-list [moduleId]="m.id" (noteCreated)="onNoteCreated()"></app-document-list>
         </div>
     </mat-tab>
     <mat-tab label="Notes">

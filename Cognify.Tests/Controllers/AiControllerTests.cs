@@ -1,4 +1,7 @@
 using System.Net;
+using System.Text.Json;
+
+using System.IO;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Cognify.Server;
@@ -23,10 +26,14 @@ public class AiControllerTests : IClassFixture<WebApplicationFactory<Program>>, 
 {
     private readonly WebApplicationFactory<Program> _factory;
     private readonly Mock<IAiService> _aiServiceMock;
+    private readonly Mock<IDocumentService> _documentServiceMock;
+    private readonly Mock<IBlobStorageService> _blobStorageMock;
 
     public AiControllerTests(WebApplicationFactory<Program> factory)
     {
         _aiServiceMock = new Mock<IAiService>();
+        _documentServiceMock = new Mock<IDocumentService>();
+        _blobStorageMock = new Mock<IBlobStorageService>();
 
         _factory = factory.WithWebHostBuilder(builder =>
         {
@@ -41,8 +48,8 @@ public class AiControllerTests : IClassFixture<WebApplicationFactory<Program>>, 
             {
                 services.AddSqliteTestDatabase<ApplicationDbContext>();
                 services.AddScoped(_ => _aiServiceMock.Object);
-                services.AddScoped(_ => new Mock<IDocumentService>().Object); // Mock DocumentService
-                services.AddScoped(_ => new Mock<IBlobStorageService>().Object); // Mock BlobStorageService
+                services.AddScoped(_ => _documentServiceMock.Object);
+                services.AddScoped(_ => _blobStorageMock.Object);
             });
         });
     }
@@ -136,5 +143,50 @@ public class AiControllerTests : IClassFixture<WebApplicationFactory<Program>>, 
 
         var response = await client.PostAsJsonAsync("/api/ai/grade", req);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+    [Fact]
+    public async Task ExtractText_ShouldReturnAccepted_AndCreatePending_WhenValid()
+    {
+        // Arrange
+        var (client, _, userId) = await CreateAuthenticatedClientAsync();
+        
+        Guid documentId;
+        Guid moduleId;
+        
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var module = new Module { Id = Guid.NewGuid(), OwnerUserId = userId, Title = "M", Description = "D" };
+            var doc = new Document { Id = Guid.NewGuid(), ModuleId = module.Id, FileName = "test.png", BlobPath = "path", Status = Cognify.Server.Models.DocumentStatus.Ready, CreatedAt = DateTime.UtcNow };
+            db.Modules.Add(module);
+            db.Documents.Add(doc);
+            await db.SaveChangesAsync();
+            documentId = doc.Id;
+            moduleId = module.Id;
+        }
+
+        // Mock Blob Download
+        _blobStorageMock.Setup(x => x.DownloadStreamAsync(It.IsAny<string>())).ReturnsAsync(new MemoryStream());
+
+        // Mock Document Service
+        var docDto = new Cognify.Server.Dtos.Documents.DocumentDto(documentId, moduleId, "test.png", "path", Cognify.Server.Dtos.Documents.DocumentStatus.Ready, DateTime.UtcNow);
+        _documentServiceMock.Setup(dx => dx.GetByIdAsync(documentId)).ReturnsAsync(docDto);
+
+        // Act
+        var response = await client.PostAsync($"/api/ai/extract-text/{documentId}", null);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Accepted);
+        var content = await response.Content.ReadFromJsonAsync<JsonElement>();
+        var pendingId = content.GetProperty("extractedContentId").GetGuid();
+        
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var pending = db.ExtractedContents.FirstOrDefault(x => x.Id == pendingId);
+            pending.Should().NotBeNull();
+            pending!.Status.Should().Be("Processing");
+            pending.DocumentId.Should().Be(documentId);
+        }
     }
 }

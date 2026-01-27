@@ -5,7 +5,7 @@ import { QuizService } from '../../services/quiz.service';
 import { AiService } from '../../../../core/services/ai.service';
 import { of, throwError } from 'rxjs';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { QuestionType } from '../../../../core/models/ai.models';
+import { QuestionType, GeneratedQuestion } from '../../../../core/models/ai.models';
 
 describe('QuizGenerationComponent', () => {
   let component: QuizGenerationComponent;
@@ -30,7 +30,7 @@ describe('QuizGenerationComponent', () => {
     }).compileComponents();
 
     // Default behavior for generate
-    mockAiService.generateQuestions.and.returnValue(of([{ text: 'Q1', type: QuestionType.MultipleChoice, options: ['A'], correctAnswer: 'A' }]));
+    mockAiService.generateQuestions.and.returnValue(of([{ text: 'Q1', type: QuestionType.MultipleChoice, options: ['A', 'B'], correctAnswer: 'A', explanation: 'Explanation' } as GeneratedQuestion]));
 
     fixture = TestBed.createComponent(QuizGenerationComponent);
     component = fixture.componentInstance;

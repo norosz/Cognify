@@ -27,54 +27,15 @@ public class AiService : IAiService
         var model = _configuration["OpenAI:Model"] ?? "gpt-4o";
         var chatClient = _client.GetChatClient(model);
 
-        var difficultyPrompt = difficulty switch
-        {
-            1 => "Beginner level: Focus on basic definitions and recall.",
-            2 => "Intermediate level: Application of concepts and detailed understanding.",
-            3 => "Advanced level: Complex synthesis, edge cases, and deep analysis.",
-            _ => "Standard level."
-        };
-
-        var typePrompt = type switch
-        {
-            QuestionType.MultipleChoice => """
-                Type: MultipleChoice.
-                Schema: {"text": "question", "options": ["A", "B", "C", "D"], "correctAnswer": "Exact Option Text", "explanation": "reason"}
-                """,
-            QuestionType.TrueFalse => """
-                Type: TrueFalse.
-                Schema: {"text": "Statement", "options": ["True", "False"], "correctAnswer": "True/False", "explanation": "reason"}
-                """,
-            QuestionType.OpenText => """
-                Type: OpenText.
-                Schema: {"text": "Open ended question", "explanation": "Key points expected in the answer"}
-                """,
-            QuestionType.Matching => """
-                Type: Matching.
-                Schema: {"text": "Match the following terms", "pairs": ["Term1:Definition1", "Term2:Definition2"], "explanation": "Context"}
-                """,
-            _ => "Type: MultipleChoice"
-        };
-
-        var prompt = $$"""
-        You are an expert tutor.
-        Generate {{count}} questions based on the provided content.
-        
-        Difficulty: {{difficultyPrompt}}
-        {{typePrompt}}
-
-        The output must be a valid JSON object with a single property "questions" containing an array of objects matching the schema above.
-        Each object must strictly follow the schema and include the "type" property set to "{{type}}".
-        
-        Content:
-        {{content}}
-        """;
+        var difficultyPrompt = AiPrompts.GetDifficultySystemPrompt((int)difficulty);
+        var typePrompt = AiPrompts.GetTypeSystemPrompt(type);
+        var prompt = AiPrompts.BuildGenerationPrompt(count, difficultyPrompt, typePrompt, content);
 
         try 
         {
             var completion = await chatClient.CompleteChatAsync(
                 [
-                    new SystemChatMessage("You are a helper that outputs strict JSON."),
+                    new SystemChatMessage("You are a strict JSON generator. You always wrap your response in a 'questions' array inside a root object."),
                     new UserChatMessage(prompt)
                 ],
                 new ChatCompletionOptions()
@@ -84,12 +45,65 @@ public class AiService : IAiService
             );
 
             var json = completion.Value.Content[0].Text;
-            var result = JsonSerializer.Deserialize<AssessmentBundle>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true, Converters = { new JsonStringEnumConverter() } });
-            return result?.Questions ?? [];
+            _logger.LogInformation("AI Response received: {Json}", json);
+
+            using var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+
+            // Resilience: Handle both {"questions": [...]} and [...] with case-insensitivity
+            JsonElement questionsArray = default;
+            bool found = false;
+
+            if (root.ValueKind == JsonValueKind.Object)
+            {
+                foreach (var prop in root.EnumerateObject())
+                {
+                    if (string.Equals(prop.Name, "questions", StringComparison.OrdinalIgnoreCase))
+                    {
+                        questionsArray = prop.Value;
+                        found = true;
+                        break;
+                    }
+                }
+
+                // Fallback: If no "questions" property, take the first array property found
+                if (!found)
+                {
+                    foreach (var prop in root.EnumerateObject())
+                    {
+                        if (prop.Value.ValueKind == JsonValueKind.Array)
+                        {
+                            questionsArray = prop.Value;
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            else if (root.ValueKind == JsonValueKind.Array)
+            {
+                questionsArray = root;
+                found = true;
+            }
+
+            if (!found || questionsArray.ValueKind != JsonValueKind.Array)
+            {
+                _logger.LogWarning("AI response did not contain a valid questions array. Root: {Kind}", root.ValueKind);
+                return [];
+            }
+
+            var options = new JsonSerializerOptions 
+            { 
+                PropertyNameCaseInsensitive = true, 
+                Converters = { new JsonStringEnumConverter() } 
+            };
+
+            var questions = JsonSerializer.Deserialize<List<GeneratedQuestion>>(questionsArray.GetRawText(), options);
+            return questions ?? [];
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to generate questions.");
+            _logger.LogError(ex, "Failed to generate or parse questions. JSON might be malformed.");
             return [];
         }
     }
