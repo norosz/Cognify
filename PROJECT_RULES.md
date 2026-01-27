@@ -39,3 +39,6 @@ You must keep the project documentation up-to-date **in real-time**.
 
 ## 4. Communication
 - **Clarification First**: Always ask the user if a request or question is not clear enough. Do not make assumptions.
+
+## 5. Tool Usage Restrictions
+- **No PowerShell for File Content Extension**: You **MUST NOT** use PowerShell commands (like `Add-Content`, `Out-File -Append`, or `>>`) to append text to files or extend their content. Always use the provided agent tools (e.g., `replace_file_content`) to modify files.

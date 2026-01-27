@@ -72,6 +72,7 @@ These rules are **hard constraints** for agents working on the Angular frontend.
 
 ### 4.1 Consistency
 - Reuse existing components and styles before creating new ones.
+- **Frontend components must be consistent (styling, scss, etc.) with the already existing components.**
 - Keep spacing/typography consistent with the project’s design system (Material/Tailwind/custom).
 
 ### 4.2 Accessibility

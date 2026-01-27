@@ -263,3 +263,18 @@ CHANGED: `styles.scss`, `dashboard.component.scss`, `notes-list.component.scss`,
 DECISIONS: Enforced styles globally in `styles.scss` with high specificity to override Angular Material defaults reliably.
 NEXT: Await further instructions.
 BLOCKERS: None.
+
+[2026-01-27 12:05] Antigravity
+DONE: Updated PROJECT_RULES.md to forbid using PowerShell for extending file content.
+CHANGED: PROJECT_RULES.md
+DECISIONS: Added explicit tool usage restriction to prevent potential encoding/formatting issues with PowerShell file appending.
+NEXT: Await further instructions.
+BLOCKERS: None.
+
+[2026-01-27 12:08] Antigravity
+DONE: Updated FRONTEND_AGENT_RULES.md to enforce styling consistency.
+CHANGED: FRONTEND_AGENT_RULES.md
+DECISIONS: Added explicit rule that frontend components must be consistent (styling, scss) with existing ones.
+NEXT: Await further instructions.
+BLOCKERS: None.
+
