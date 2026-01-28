@@ -34,8 +34,8 @@
 - [ ] **[Frontend]** Build Concept Weakness List
 
 ### 💾 File Management Enhancements
-- [ ] **[Backend]** Add `FileSizeBytes` to Document Entity/DTO
-- [ ] **[Frontend]** Display File Size in Document Card in MB
+- [x] **[Backend]** Add `FileSizeBytes` to Document Entity/DTO
+- [x] **[Frontend]** Display File Size in Document Card in MB
 
 ## 🏗️ In Progress
 
@@ -102,3 +102,6 @@
 - [x] **[UI/UX]** Refactor Empty States to use `mat-card` with proper Elevation
 - [x] **[Bug Fix]** Fixed Password Form Validation Error on Reset
 - [x] **[Testing]** Updated & Created Tests for Auth, Profile, and Register Features
+- [x] **[Frontend]** Implement `MultiSelect` (Checkbox) Quiz Type & UI
+- [x] **[Backend]** Implement Strict File Extension & Size Validation
+- [x] **[Test]** Verified File Size & Quiz Type Changes (Frontend/Backend)
