@@ -22,8 +22,8 @@
 
     .notes-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 16px;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 20px;
     }
 
     .empty-state {
@@ -52,7 +52,7 @@
 
     .note-card {
         // Layout overrides
-        height: 200px;
+        height: 240px;
         display: flex;
         flex-direction: column;
 
@@ -65,8 +65,8 @@
 
         .note-preview {
             display: -webkit-box;
-            -webkit-line-clamp: 4;
-            line-clamp: 4;
+            -webkit-line-clamp: 6;
+            line-clamp: 6;
             -webkit-box-orient: vertical;
             overflow: hidden;
             text-overflow: ellipsis;

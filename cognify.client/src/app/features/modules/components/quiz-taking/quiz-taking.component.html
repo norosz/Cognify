@@ -18,7 +18,7 @@
                 <div *ngFor="let q of qs.questions; let i = index" class="question-item">
                     <p class="question-prompt">
                         <strong>{{ i + 1 }}.</strong>
-                        {{ q.prompt }}
+                        <span [innerHTML]="q.prompt | markdownLatex"></span>
                         <span *ngIf="!q.prompt" class="text-error">(Missing Question Text)</span>
                     </p>
 
@@ -44,7 +44,7 @@
                                             [class.matched]="state.pairs[term]" [class.selected]="selectedTerm === term"
                                             [ngClass]="getPairColorClass(q.id!, term)"
                                             (click)="onTermClick(q.id!, term)">
-                                            <span>{{term}}</span>
+                                            <span [innerHTML]="term | markdownLatex"></span>
                                             <mat-icon *ngIf="state.pairs[term]">link</mat-icon>
                                         </div>
                                     </div>
@@ -59,7 +59,7 @@
                                             [class.selected]="selectedDef === def"
                                             [ngClass]="getPairColorClass(q.id!, def)"
                                             (click)="onDefinitionClick(q.id!, def)">
-                                            <span>{{def}}</span>
+                                            <span [innerHTML]="def | markdownLatex"></span>
                                         </div>
                                     </div>
                                 </div>
@@ -81,7 +81,7 @@
                                     <div class="drag-handle">
                                         <mat-icon>drag_indicator</mat-icon>
                                     </div>
-                                    {{item}}
+                                    <span [innerHTML]="item | markdownLatex"></span>
                                 </div>
                             </div>
                         </div>
@@ -91,7 +91,7 @@
                             <mat-radio-group [(ngModel)]="answers[q.id!]" aria-label="Select an option"
                                 class="options-group">
                                 <mat-radio-button *ngFor="let opt of q.options" [value]="opt" class="option-radio">
-                                    {{ opt }}
+                                    <span [innerHTML]="opt | markdownLatex"></span>
                                 </mat-radio-button>
                             </mat-radio-group>
                             <p *ngIf="!q.options || q.options.length === 0" class="text-error">

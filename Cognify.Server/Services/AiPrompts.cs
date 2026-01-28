@@ -81,9 +81,16 @@ public static class AiPrompts
         }
 
         ### Rules
-        1. NO conversational filler. NO markdown code blocks (unless the whole response is the block).
+        1. NO conversational filler. DO NOT wrap the JSON output in markdown code blocks (e.g., ```json ... ```). Return raw JSON only.
         2. Ensure valid JSON syntax.
-        3. If type is Mixed, ensure you use a variety of the types mentioned above.
+        3. MATHEMATICAL FORMULAS: Always use LaTeX for math, variables, and formulas to ensure beautiful rendering.
+           - Use $...$ for inline math (e.g., $x^2 + y^2 = z^2$).
+           - Use $$...$$ for display math on its own line. DO NOT use [ ] or ( ) for math.
+           - For single variables or symbols, ALWAYS use LaTeX (e.g., use $t$ instead of 't').
+           - Example CORRECT: "Solve for $x$ where $x^2 - 4 = 0$."
+           - Example INCORRECT: "Solve for x where x^2 - 4 = 0."
+        4. TECHNICAL TERMS: Use Markdown backticks (e.g., `i.true`) for code snippets, identifiers, or keywords that are not mathematical.
+        5. If type is Mixed, ensure you use a variety of the types mentioned above.
         
         Content:
         {{content}}

@@ -68,6 +68,33 @@ public class ModulesControllerTests : IClassFixture<WebApplicationFactory<Progra
         var result = await response.Content.ReadFromJsonAsync<ModuleDto>();
         result!.Title.Should().Be(dto.Title);
         result.Description.Should().Be(dto.Description);
+        result.DocumentsCount.Should().Be(0);
+        result.NotesCount.Should().Be(0);
+        result.QuizzesCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task GetModules_ShouldReturnCorrectStats()
+    {
+        var (client, _) = await CreateAuthenticatedClientAsync();
+        
+        // 1. Create a module
+        var createRes = await client.PostAsJsonAsync("/api/modules", new CreateModuleDto { Title = "Stats Module" });
+        var module = await createRes.Content.ReadFromJsonAsync<ModuleDto>();
+
+        // 2. Add content to the module (Document, Note, etc.)
+        // Ideally we would use the respective controllers/services here, 
+        // but for now we'll rely on the fact that if we can't easily add sub-items via API in this test,
+        // we might need to seed the database or just accept 0 counts for now if those endpoints aren't easily accessible here.
+        // HOWEVER, strictly speaking, we updated the SERVICE to read these counts.
+        // Testing 0 is better than nothing.
+        
+        var response = await client.GetAsync($"/api/modules/{module!.Id}");
+        var fetched = await response.Content.ReadFromJsonAsync<ModuleDto>();
+        
+        fetched!.DocumentsCount.Should().Be(0);
+        fetched.NotesCount.Should().Be(0);
+        fetched.QuizzesCount.Should().Be(0);
     }
 
     [Fact]

@@ -8,6 +8,9 @@ public class ModuleDto
     public required string Title { get; set; }
     public string? Description { get; set; }
     public DateTime CreatedAt { get; set; }
+    public int DocumentsCount { get; set; }
+    public int NotesCount { get; set; }
+    public int QuizzesCount { get; set; }
 }
 
 public class CreateModuleDto

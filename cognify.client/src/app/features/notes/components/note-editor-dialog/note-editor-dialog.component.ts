@@ -1,4 +1,4 @@
-import { Component, Inject, inject } from '@angular/core';
+import { Component, Inject, inject, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule, MatDialog } from '@angular/material/dialog';
@@ -7,11 +7,15 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { NoteService } from '../../../../core/services/note.service';
 import { AiService } from '../../../../core/services/ai.service';
 import { DocumentSelectionDialogComponent } from '../../../modules/components/document-selection-dialog/document-selection-dialog.component';
 import { Note } from '../../../../core/models/note.model';
+import { MarkdownLatexPipe } from '../../../../shared/pipes/markdown-latex.pipe';
+
+const PREVIEW_VISIBLE_KEY = 'cognify_note_preview_visible';
 
 @Component({
     selector: 'app-note-editor-dialog',
@@ -25,16 +29,23 @@ import { Note } from '../../../../core/models/note.model';
         MatInputModule,
         MatProgressSpinnerModule,
         MatIconModule,
-
+        MatTooltipModule,
+        MarkdownLatexPipe
     ],
     templateUrl: './note-editor-dialog.component.html',
     styleUrls: ['./note-editor-dialog.component.scss']
 })
-export class NoteEditorDialogComponent {
+export class NoteEditorDialogComponent implements OnInit {
+    @ViewChild('editorTextarea') editorTextarea!: ElementRef<HTMLTextAreaElement>;
+    @ViewChild('previewContent') previewContent!: ElementRef<HTMLDivElement>;
+
     form: FormGroup;
     isEditMode = false;
     isSaving = false;
     isImporting = false;
+    showPreview = true;
+
+    private isSyncingScroll = false;
 
     private noteService = inject(NoteService);
     private aiService = inject(AiService);
@@ -52,6 +63,61 @@ export class NoteEditorDialogComponent {
             title: [data.note?.title || '', [Validators.required, Validators.maxLength(200)]],
             content: [data.note?.content || '']
         });
+    }
+
+    ngOnInit(): void {
+        // Load preview visibility preference from localStorage
+        const savedPreference = localStorage.getItem(PREVIEW_VISIBLE_KEY);
+        if (savedPreference !== null) {
+            this.showPreview = savedPreference === 'true';
+        }
+    }
+
+    togglePreview(): void {
+        this.showPreview = !this.showPreview;
+        localStorage.setItem(PREVIEW_VISIBLE_KEY, String(this.showPreview));
+    }
+
+    get contentValue(): string {
+        return this.form.get('content')?.value || '';
+    }
+
+    /**
+     * Sync scroll from editor to preview
+     */
+    onEditorScroll(event: Event): void {
+        if (this.isSyncingScroll || !this.showPreview || !this.previewContent) return;
+
+        this.isSyncingScroll = true;
+        const editor = event.target as HTMLTextAreaElement;
+        const preview = this.previewContent.nativeElement;
+
+        // Calculate scroll percentage
+        const scrollPercentage = editor.scrollTop / (editor.scrollHeight - editor.clientHeight);
+
+        // Apply percentage to preview
+        preview.scrollTop = scrollPercentage * (preview.scrollHeight - preview.clientHeight);
+
+        setTimeout(() => this.isSyncingScroll = false, 10);
+    }
+
+    /**
+     * Sync scroll from preview to editor
+     */
+    onPreviewScroll(event: Event): void {
+        if (this.isSyncingScroll || !this.editorTextarea) return;
+
+        this.isSyncingScroll = true;
+        const preview = event.target as HTMLDivElement;
+        const editor = this.editorTextarea.nativeElement;
+
+        // Calculate scroll percentage
+        const scrollPercentage = preview.scrollTop / (preview.scrollHeight - preview.clientHeight);
+
+        // Apply percentage to editor
+        editor.scrollTop = scrollPercentage * (editor.scrollHeight - editor.clientHeight);
+
+        setTimeout(() => this.isSyncingScroll = false, 10);
     }
 
     importFromDocument() {
