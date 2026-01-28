@@ -118,7 +118,15 @@ public class AiService : IAiService
         var imageBytes = memoryStream.ToArray();
 
         var message = new UserChatMessage(
-            ChatMessageContentPart.CreateTextPart("Please transcribe this handwritten note into clear, formatted Markdown text. Do not add conversational filler, just the content."),
+            ChatMessageContentPart.CreateTextPart("""
+                Please transcribe this handwritten note into clear, formatted Markdown text. 
+                
+                RULES:
+                1. Always use LaTeX for mathematical formulas or variables (e.g., $x=2$, $\int f(x)dx$).
+                2. Use Markdown formatting (**bold**, *italic*, headers, lists).
+                3. Use Markdown backticks for code-like identifiers (`identifier`).
+                4. Do not add conversational filler, just the content.
+                """),
             ChatMessageContentPart.CreateImagePart(new BinaryData(imageBytes), contentType)
         );
 
@@ -144,8 +152,13 @@ public class AiService : IAiService
         Student Answer: {{answer}}
         Context/Correct Answer Key: {{context}}
 
-        Evaluate the student's answer. Provide a constructive feedback and a score (0-100).
-        Format: "Score: [0-100]\n\nFeedback: [Your feedback here]"
+        Evaluate the student's answer based on the context.
+        Provide constructive feedback and a score (0-100).
+        
+        FORMATTING RULES:
+        1. Use LaTeX for math/formulas ($...$).
+        2. Use Markdown for emphasis and structure.
+        3. Format: "Score: [0-100]\n\nFeedback: [Your feedback here]"
         """;
 
         var completion = await chatClient.CompleteChatAsync([new UserChatMessage(prompt)]);

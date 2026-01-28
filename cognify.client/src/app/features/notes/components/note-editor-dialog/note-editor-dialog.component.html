@@ -1,18 +1,51 @@
-<h2 mat-dialog-title>{{ isEditMode ? 'Edit Note' : 'Create Note' }}</h2>
+<h2 mat-dialog-title>
+    {{ isEditMode ? 'Edit Note' : 'Create Note' }}
+    <button mat-button class="preview-toggle" (click)="togglePreview()"
+        [matTooltip]="showPreview ? 'Hide Preview' : 'Show Preview'">
+        <mat-icon>{{ showPreview ? 'visibility_off' : 'visibility' }}</mat-icon>
+        <span>{{ showPreview ? 'Hide Preview' : 'Show Preview' }}</span>
+    </button>
+</h2>
 
 <mat-dialog-content>
     <form [formGroup]="form">
-        <mat-form-field appearance="outline" class="full-width">
+        <mat-form-field appearance="outline" class="full-width title-field">
             <mat-label>Title</mat-label>
             <input matInput formControlName="title" placeholder="Note Title">
             <mat-error *ngIf="form.get('title')?.hasError('required')">Title is required</mat-error>
             <mat-error *ngIf="form.get('title')?.hasError('maxlength')">Max length is 200 characters</mat-error>
         </mat-form-field>
 
-        <mat-form-field appearance="outline" class="full-width content-field">
-            <mat-label>Content</mat-label>
-            <textarea matInput formControlName="content" rows="10" placeholder="Write your note here..."></textarea>
-        </mat-form-field>
+        <div class="editor-container" [class.with-preview]="showPreview">
+            <!-- Editor Pane -->
+            <div class="editor-pane">
+                <div class="pane-header">
+                    <mat-icon>edit</mat-icon>
+                    <span>Markdown + LaTeX</span>
+                </div>
+                <mat-form-field appearance="outline" class="content-field">
+                    <mat-label>Content</mat-label>
+                    <textarea #editorTextarea matInput formControlName="content" rows="15"
+                        placeholder="Write your note here...&#10;&#10;Supports **Markdown** and $LaTeX$ math!"
+                        (scroll)="onEditorScroll($event)"></textarea>
+                </mat-form-field>
+            </div>
+
+            <!-- Preview Pane -->
+            <div class="preview-pane" *ngIf="showPreview">
+                <div class="pane-header">
+                    <mat-icon>preview</mat-icon>
+                    <span>Preview</span>
+                </div>
+                <div #previewContent class="preview-content markdown-body" [innerHTML]="contentValue | markdownLatex"
+                    (scroll)="onPreviewScroll($event)"></div>
+            </div>
+        </div>
+
+        <p class="syntax-hint">
+            <mat-icon>info</mat-icon>
+            Use **bold**, *italic*, # headers, `code`, and math: $inline$ or $$block$$
+        </p>
     </form>
 </mat-dialog-content>
 

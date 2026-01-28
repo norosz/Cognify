@@ -8,14 +8,43 @@
 
 <div class="modules-grid">
     @for (module of modules(); track module.id) {
-    <mat-card class="module-card cognify-glass-card" [routerLink]="['/modules', module.id]">
+    <mat-card class="module-card cognify-glass-card cursor-pointer" [routerLink]="['/modules', module.id]">
         <mat-card-header>
             <mat-card-title>{{ module.title }}</mat-card-title>
-            <mat-card-subtitle>{{ module.createdAt | date }}</mat-card-subtitle>
+            <mat-card-subtitle>Created {{ module.createdAt | date }}</mat-card-subtitle>
         </mat-card-header>
         <mat-card-content>
             <p>{{ module.description || 'No description provided.' }}</p>
+
+            <div class="stats-row">
+                <div class="stat-item" matTooltip="Documents">
+                    <mat-icon>description</mat-icon>
+                    <span>{{ module.documentsCount || 0 }}</span>
+                </div>
+                <div class="stat-item" matTooltip="Notes">
+                    <mat-icon>event_note</mat-icon>
+                    <span>{{ module.notesCount || 0 }}</span>
+                </div>
+                <div class="stat-item" matTooltip="Quizzes">
+                    <mat-icon>school</mat-icon>
+                    <span>{{ module.quizzesCount || 0 }}</span>
+                </div>
+            </div>
+
         </mat-card-content>
+        <mat-card-actions align="end" (click)="$event.stopPropagation()">
+            <button mat-icon-button [matMenuTriggerFor]="menu">
+                <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #menu="matMenu">
+                <button mat-menu-item (click)="openEditModuleDialog($event, module)">
+                    <mat-icon>edit</mat-icon> Edit
+                </button>
+                <button mat-menu-item class="delete-item" (click)="deleteModule($event, module.id)">
+                    <mat-icon color="warn">delete</mat-icon> Delete
+                </button>
+            </mat-menu>
+        </mat-card-actions>
     </mat-card>
     } @empty {
     <div class="empty-state">

@@ -6,6 +6,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatCardModule } from '@angular/material/card';
+import { MatMenuModule } from '@angular/material/menu';
 import { DocumentsService, DocumentDto } from '../../services/documents.service';
 import { AiService } from '../../../../core/services/ai.service';
 import { NotificationService } from '../../../../core/services/notification.service';
@@ -15,9 +17,19 @@ import { HandwritingPreviewDialogComponent } from '../handwriting-preview-dialog
 @Component({
   selector: 'app-document-list',
   standalone: true,
-  imports: [CommonModule, MatTableModule, MatButtonModule, MatIconModule, MatDialogModule, MatTooltipModule, MatProgressSpinnerModule],
+  imports: [
+    CommonModule,
+    MatTableModule,
+    MatButtonModule,
+    MatIconModule,
+    MatDialogModule,
+    MatTooltipModule,
+    MatProgressSpinnerModule,
+    MatCardModule,
+    MatMenuModule
+  ],
   templateUrl: './document-list.component.html',
-  styleUrl: './document-list.component.css'
+  styleUrl: './document-list.component.scss'
 })
 export class DocumentListComponent implements OnInit {
   @Input() moduleId!: string;
@@ -117,9 +129,31 @@ export class DocumentListComponent implements OnInit {
   getStatusLabel(status: number): string {
     switch (status) {
       case 0: return 'Processing';
-      case 1: return 'Ready';
+      case 1: return 'Uploaded';
       case 2: return 'Error';
       default: return 'Unknown';
     }
+  }
+
+  getFileIcon(fileName: string): string {
+    const ext = fileName.split('.').pop()?.toLowerCase();
+    switch (ext) {
+      case 'pdf': return 'picture_as_pdf';
+      case 'doc':
+      case 'docx': return 'description';
+      case 'xls':
+      case 'xlsx': return 'table_chart';
+      case 'ppt':
+      case 'pptx': return 'slideshow';
+      case 'txt': return 'article';
+      case 'jpg':
+      case 'jpeg':
+      case 'png': return 'image';
+      default: return 'insert_drive_file';
+    }
+  }
+
+  getFileExtension(fileName: string): string {
+    return (fileName.split('.').pop() || '').toUpperCase();
   }
 }

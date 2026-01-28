@@ -2,7 +2,7 @@
 
 ## 📋 To Do
 
-### � Notes
+###  Notes
 - [x] **[Backend]** Implement `NoteService` (CRUD)
 - [x] **[Backend]** Create `NotesController`
 - [x] **[Frontend]** Build Note List Component
@@ -32,6 +32,10 @@
 - [ ] **[Frontend]** Build Knowledge Map Visualization
 - [ ] **[Frontend]** Build Memory Decay Chart
 - [ ] **[Frontend]** Build Concept Weakness List
+
+### 💾 File Management Enhancements
+- [ ] **[Backend]** Add `FileSizeBytes` to Document Entity/DTO
+- [ ] **[Frontend]** Display File Size in Document Card in MB
 
 ## 🏗️ In Progress
 
@@ -82,3 +86,5 @@
 - [x] **[Frontend]** Integrated Background Quiz Generation Flow
 - [x] **[Test]** Improved Backend Test Coverage (PendingQuizService, NoteService - 37 tests)
 - [x] **[Test]** Improved Frontend Test Coverage (PendingService, PendingComponent - 85 tests)
+- [x] **[Frontend]** Refactor Document Cards (Header Status, Icons, Watermark Data)
+- [x] **[Test]** Verified Document Card Refactor (96 tests pass)

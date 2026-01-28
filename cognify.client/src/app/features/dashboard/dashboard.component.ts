@@ -4,6 +4,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatMenuModule } from '@angular/material/menu';
 import { RouterLink } from '@angular/router';
 import { ModuleService } from '../../core/modules/module.service';
 import { ModuleDto } from '../../core/modules/module.models';
@@ -18,7 +19,8 @@ import { CreateModuleDialogComponent } from '../modules/create-module-dialog/cre
     MatButtonModule,
     MatIconModule,
     MatDialogModule,
-    RouterLink
+    RouterLink,
+    MatMenuModule
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
@@ -49,5 +51,33 @@ export class DashboardComponent implements OnInit {
         this.loadModules();
       }
     });
+  }
+
+  openEditModuleDialog(event: Event, module: ModuleDto) {
+    event.stopPropagation();
+    event.preventDefault();
+
+    const dialogRef = this.dialog.open(CreateModuleDialogComponent, {
+      width: '500px',
+      data: { module }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadModules();
+      }
+    });
+  }
+
+  deleteModule(event: Event, id: string) {
+    event.stopPropagation();
+    event.preventDefault();
+
+    if (confirm('Are you sure you want to delete this module? All associated documents and notes will be deleted.')) {
+      this.moduleService.deleteModule(id).subscribe({
+        next: () => this.loadModules(),
+        error: (err) => console.error('Failed to delete module', err)
+      });
+    }
   }
 }

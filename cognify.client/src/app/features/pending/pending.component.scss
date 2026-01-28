@@ -88,8 +88,8 @@
 
 .items-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); // Balanced width
-    gap: 20px; // Increased gap to prevent visual crowding
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); // Increased width
+    gap: 24px; // Increased gap
     align-items: stretch; // Ensure equal height
     padding-bottom: 24px; // Safe spacing at bottom
 }
@@ -97,7 +97,8 @@
 .pending-card {
     display: flex;
     flex-direction: column;
-    padding: 16px;
+    padding: 20px; // Increased padding
+    min-height: 220px; // Added min-height
     // height: 100%; // Removed explicit height, let Grid align-items: stretch handle it.
     // This prevents potential overflow if the container is constrained.
     background: var(--bg-secondary); // Fallback if glass-card invalid
@@ -113,12 +114,12 @@
     .card-header {
         display: flex;
         gap: 12px; // Reduced from 16px
-        margin-bottom: 12px; // Reduced from 16px
+        margin-bottom: 16px; // Increased margin
 
         .type-icon {
-            font-size: 24px; // Reduced from 32px
-            width: 24px;
-            height: 24px;
+            font-size: 28px; // Increased icon
+            width: 28px;
+            height: 28px;
             color: var(--text-secondary);
 
             &.ready {
@@ -165,13 +166,13 @@
         flex-direction: column;
 
         .preview-text {
-            font-size: 13px; // Reduced
-            line-height: 1.4;
+            font-size: 14px; // Increased font size slightly
+            line-height: 1.5;
             color: var(--text-secondary);
-            margin: 0 0 12px; // Reduced
+            margin: 0 0 16px; // Increased margin
             display: -webkit-box;
-            -webkit-line-clamp: 3;
-            line-clamp: 3;
+            -webkit-line-clamp: 5; // Increased lines
+            line-clamp: 5;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }

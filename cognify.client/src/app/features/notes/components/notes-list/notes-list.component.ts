@@ -13,6 +13,7 @@ import { PendingService } from '../../../../core/services/pending.service';
 import { Router } from '@angular/router';
 import { NoteEditorDialogComponent } from '../note-editor-dialog/note-editor-dialog.component';
 import { QuizGenerationDialogComponent } from '../../../modules/components/quiz-generation-dialog/quiz-generation-dialog.component';
+import { MarkdownLatexPipe } from '../../../../shared/pipes/markdown-latex.pipe';
 
 @Component({
     selector: 'app-notes-list',
@@ -24,8 +25,8 @@ import { QuizGenerationDialogComponent } from '../../../modules/components/quiz-
         MatIconModule,
         MatDialogModule,
         MatMenuModule,
-
-        MatProgressSpinnerModule
+        MatProgressSpinnerModule,
+        MarkdownLatexPipe
     ],
     templateUrl: './notes-list.component.html',
     styleUrls: ['./notes-list.component.scss']
@@ -96,7 +97,8 @@ export class NotesListComponent implements OnInit {
 
     openEditor(note?: Note): void {
         const dialogRef = this.dialog.open(NoteEditorDialogComponent, {
-            width: '600px',
+            width: '900px',
+            maxWidth: '95vw',
             data: { moduleId: this.moduleId, note: note }
         });
 

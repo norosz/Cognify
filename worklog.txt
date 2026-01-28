@@ -385,3 +385,18 @@ CHANGED: `Cognify.Tests/Services/*`, `Cognify.Tests/Controllers/AiControllerTest
 DECISIONS: Focused unit tests on new Pending system (PendingQuiz, ExtractedContent) and NoteService to increase coverage of newly implemented features.
 NEXT: User Knowledge State & Adaptive Quiz Engine.
 BLOCKERS: None.
+
+[2026-01-28 01:12] Antigravity
+DONE: Refactored Document Card UI to match Notes and improved layout.
+Detailed:
+- **Card Structure**: Refactored `DocumentListComponent` to use `MatCard` grid (240px) matching `NotesListComponent`.
+- **Layout Logic**:
+    - **Header**: Contains Filename (Truncated) and Upload Status Badge (Green/Right).
+    - **Subtitle**: Contains "Created [Date]" and a new Mini File Icon.
+    - **Content**: Displays the File Extension (e.g., PDF) as a centered, watermark-style label.
+- **Styling**: Applied Glassmorphism (`.cognify-glass-card`), pointer cursors, hover elevation, and flex alignments.
+- **Testing**: Updated unit tests to query `mat-card-title` instead of custom classes. Verified all 96 tests pass.
+CHANGED: `document-list.component.html`, `document-list.component.scss`, `document-list.component.ts`, `document-list.component.spec.ts`.
+DECISIONS: Moved from table-based to card-based layout for visual consistency with Note and Module cards; Implemented specific "Icon in Header / Watermark in Body" design per user request.
+NEXT: Implement File Size Metadata (Backend + Frontend).
+BLOCKERS: None.

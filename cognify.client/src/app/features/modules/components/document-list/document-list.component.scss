@@ -1,0 +1,152 @@
+.documents-container {
+    padding: 16px;
+
+    .documents-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); // Match Notes grid
+        gap: 20px;
+    }
+
+    .document-card {
+        height: 240px;
+        display: flex;
+        flex-direction: column;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+
+        &:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        mat-card-header {
+            ::ng-deep .mat-mdc-card-header-text {
+                width: 100%;
+            }
+
+            mat-card-title {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-size: 1rem;
+                margin-bottom: 4px;
+                width: 100%;
+
+                span:first-child {
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    max-width: 65%; // Leave room for badge
+                }
+            }
+        }
+
+        mat-card-subtitle.subtitle-with-icon {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 4px;
+
+            .mini-icon {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 32px;
+                height: 32px;
+                background: rgba(255, 255, 255, 0.05);
+                border-radius: 8px;
+
+                mat-icon {
+                    font-size: 20px;
+                    width: 20px;
+                    height: 20px;
+                    color: var(--primary-color);
+                }
+            }
+        }
+
+        mat-card-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 16px;
+            margin-top: 0;
+            margin-bottom: 0;
+        }
+
+        .doc-data {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            width: 100%;
+
+            .data-label {
+                font-size: 2rem; // Larger font
+                font-weight: 700;
+                color: rgba(255, 255, 255, 0.05); // Watermark style
+                letter-spacing: 4px;
+                text-transform: uppercase;
+            }
+        }
+    }
+}
+
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 0.8rem;
+    font-weight: 500;
+
+    &.status-uploaded {
+        background: rgba(var(--success-rgb), 0.1);
+        color: var(--success);
+    }
+
+    &.status-processing {
+        background: rgba(var(--warning-rgb), 0.1);
+        color: var(--warning);
+    }
+
+    &.status-error {
+        background: rgba(var(--error-rgb), 0.1);
+        color: var(--error);
+    }
+
+    &.status-unknown {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-secondary);
+    }
+}
+
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 48px;
+    color: var(--text-secondary);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+
+    .huge-icon {
+        font-size: 64px;
+        width: 64px;
+        height: 64px;
+        opacity: 0.2;
+        color: var(--text-primary);
+    }
+
+    p {
+        font-size: 1.1rem;
+        margin: 0;
+    }
+}
+
+// Global override for menu items if needed (ensure delete is red)
+::ng-deep .delete-item {
+    color: #f44336 !important;
+}

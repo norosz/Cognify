@@ -18,11 +18,11 @@
 
         <mat-card *ngFor="let note of notes()" class="note-card cognify-glass-card" (click)="openEditor(note)">
             <mat-card-header>
-                <mat-card-title>{{ note.title }}</mat-card-title>
-                <mat-card-subtitle>{{ note.createdAt | date:'medium' }}</mat-card-subtitle>
+                <mat-card-title><span [innerHTML]="note.title | markdownLatex"></span></mat-card-title>
+                <mat-card-subtitle>Created {{ note.createdAt | date:'MMM d, y, h:mm a' }}</mat-card-subtitle>
             </mat-card-header>
             <mat-card-content>
-                <p class="note-preview">{{ note.content }}</p>
+                <p class="note-preview" [innerHTML]="note.content | markdownLatex"></p>
             </mat-card-content>
             <mat-card-actions align="end" (click)="$event.stopPropagation()">
                 <button mat-icon-button (click)="generateQuiz(note); $event.stopPropagation()"

@@ -12,6 +12,7 @@ import { QuizService } from '../../services/quiz.service';
 import { QuestionSetDto, SubmitAttemptDto, AttemptDto } from '../../../../core/models/quiz.models';
 
 import { DragDropModule } from '@angular/cdk/drag-drop';
+import { MarkdownLatexPipe } from '../../../../shared/pipes/markdown-latex.pipe';
 
 @Component({
   selector: 'app-quiz-taking',
@@ -25,7 +26,8 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
     MatInputModule,
     MatFormFieldModule,
     FormsModule,
-    DragDropModule
+    DragDropModule,
+    MarkdownLatexPipe
   ],
   templateUrl: './quiz-taking.component.html',
   styleUrl: './quiz-taking.component.scss'

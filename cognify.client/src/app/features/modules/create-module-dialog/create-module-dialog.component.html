@@ -1,4 +1,4 @@
-<h2 mat-dialog-title>Create New Module</h2>
+<h2 mat-dialog-title>{{ isEditMode ? 'Edit Module' : 'Create New Module' }}</h2>
 <mat-dialog-content>
     <form [formGroup]="form" class="create-module-form">
         <mat-form-field appearance="outline" class="full-width">
@@ -17,5 +17,7 @@
 </mat-dialog-content>
 <mat-dialog-actions align="end">
     <button mat-button (click)="onCancel()">Cancel</button>
-    <button mat-raised-button color="primary" [disabled]="form.invalid" (click)="onSubmit()">Create</button>
+    <button mat-raised-button color="primary" [disabled]="form.invalid" (click)="onSubmit()">
+        {{ isEditMode ? 'Save' : 'Create' }}
+    </button>
 </mat-dialog-actions>

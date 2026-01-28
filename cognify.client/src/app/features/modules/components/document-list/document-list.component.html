@@ -1,54 +1,54 @@
 <div class="documents-container">
-    <table mat-table [dataSource]="documents" class="mat-elevation-z0 w-full" *ngIf="documents.length > 0; else noDocs">
-
-        <!-- Name Column -->
-        <ng-container matColumnDef="fileName">
-            <th mat-header-cell *matHeaderCellDef> Name </th>
-            <td mat-cell *matCellDef="let doc">
-                <a *ngIf="doc.downloadUrl" [href]="doc.downloadUrl" target="_blank"
-                    class="document-link">{{doc.fileName}}</a>
-                <span *ngIf="!doc.downloadUrl">{{doc.fileName}}</span>
-            </td>
-        </ng-container>
-
-        <!-- Created At Column -->
-        <ng-container matColumnDef="createdAt">
-            <th mat-header-cell *matHeaderCellDef> Date </th>
-            <td mat-cell *matCellDef="let doc"> {{doc.createdAt | date:'short'}} </td>
-        </ng-container>
-
-        <!-- Status Column -->
-        <ng-container matColumnDef="status">
-            <th mat-header-cell *matHeaderCellDef> Status </th>
-            <td mat-cell *matCellDef="let doc">
-                <span [class]="'status-badge status-' + getStatusLabel(doc.status).toLowerCase()">
-                    {{getStatusLabel(doc.status)}}
-                </span>
-            </td>
-        </ng-container>
-
-        <!-- Actions Column -->
-        <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef> Actions </th>
-            <td mat-cell *matCellDef="let doc">
-                <button mat-icon-button color="primary" (click)="extractText(doc)"
-                    [disabled]="doc.status !== 1 || isExtracting(doc.id)" matTooltip="Extract Text with AI">
-                    <mat-spinner *ngIf="isExtracting(doc.id)" diameter="20"></mat-spinner>
-                    <mat-icon *ngIf="!isExtracting(doc.id)">auto_fix_high</mat-icon>
+    <div class="documents-grid" *ngIf="documents.length > 0; else noDocs">
+        <mat-card *ngFor="let doc of documents" class="document-card cognify-glass-card cursor-pointer"
+            (click)="openDocument(doc)">
+            <mat-card-header>
+                <mat-card-title>
+                    <span [matTooltip]="doc.fileName">{{ doc.fileName }}</span>
+                    <span class="header-spacer"></span>
+                    <span [class]="'status-badge status-' + getStatusLabel(doc.status).toLowerCase()">
+                        {{ getStatusLabel(doc.status) }}
+                    </span>
+                </mat-card-title>
+                <mat-card-subtitle class="subtitle-with-icon">
+                    <span>Created {{ doc.createdAt | date:'MMM d, y, h:mm a' }}</span>
+                    <div class="mini-icon">
+                        <mat-icon>{{ getFileIcon(doc.fileName) }}</mat-icon>
+                    </div>
+                </mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+                <div class="doc-data">
+                    <span class="data-label">{{ getFileExtension(doc.fileName) }}</span>
+                </div>
+            </mat-card-content>
+            <mat-card-actions align="end" (click)="$event.stopPropagation()">
+                <button mat-icon-button [matMenuTriggerFor]="menu">
+                    <mat-icon>more_vert</mat-icon>
                 </button>
-                <button mat-icon-button color="warn" (click)="deleteDocument(doc)">
-                    <mat-icon>delete</mat-icon>
-                </button>
-            </td>
-        </ng-container>
-
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-    </table>
+                <mat-menu #menu="matMenu">
+                    <button mat-menu-item (click)="extractText(doc)"
+                        [disabled]="doc.status !== 1 || isExtracting(doc.id)">
+                        <mat-icon *ngIf="!isExtracting(doc.id)">auto_fix_high</mat-icon>
+                        <mat-spinner *ngIf="isExtracting(doc.id)" diameter="20"></mat-spinner>
+                        <span>Extract Text</span>
+                    </button>
+                    <a mat-menu-item *ngIf="doc.downloadUrl" [href]="doc.downloadUrl" target="_blank"
+                        (click)="$event.stopPropagation()">
+                        <mat-icon>download</mat-icon> Download
+                    </a>
+                    <button mat-menu-item class="delete-item" (click)="deleteDocument(doc)">
+                        <mat-icon color="warn">delete</mat-icon> Delete
+                    </button>
+                </mat-menu>
+            </mat-card-actions>
+        </mat-card>
+    </div>
 
     <ng-template #noDocs>
         <div class="empty-state">
-            <p>No documents uploaded yet.</p>
+            <mat-icon class="huge-icon">folder_open</mat-icon>
+            <p>No documents uploaded yet. Upload one to get started!</p>
         </div>
     </ng-template>
 </div>

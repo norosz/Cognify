@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CreateModuleDialogComponent } from './create-module-dialog.component';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('CreateModuleDialogComponent', () => {
@@ -15,7 +15,8 @@ describe('CreateModuleDialogComponent', () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
-        { provide: MatDialogRef, useValue: { close: () => { } } }
+        { provide: MatDialogRef, useValue: { close: () => { } } },
+        { provide: MAT_DIALOG_DATA, useValue: {} } // Default to empty data (Create mode)
       ]
     })
       .compileComponents();
@@ -27,5 +28,10 @@ describe('CreateModuleDialogComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should initialize empty form in create mode', () => {
+    expect(component.isEditMode).toBeFalse();
+    expect(component.form.get('title')?.value).toBe('');
   });
 });
