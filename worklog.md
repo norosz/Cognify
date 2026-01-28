@@ -1141,3 +1141,39 @@
 - None
 
 ---
+
+## ENTRY
+**Timestamp:** 2026-01-28 13:58  
+**Author:** Antigravity  
+
+**DONE**
+- Refactored File Display and Quiz Types
+- **Backend File Size**: Added `FileSize` property to `Document` entity and DTOs. Updated `DocumentService` to validate file extensions and store size. Updated `DocumentsController`.
+- **Frontend File Size**: Updated `DocumentListComponent` to display file size in card subtitle. Updated `DocumentsService` to handle size metadata.
+- **Quiz Types**: Added `MultiSelect` (Checkbox) support to `QuestionType` enum and `QuizTakingComponent`. Implemented interactive UI for MultiSelect.
+- **Verification**: Updated `DocumentsControllerTests` (Backend) and `document-list.component.spec.ts` (Frontend). Verified all 107 frontend tests pass.
+
+**CHANGED FILES**
+- Cognify.Server/Models/Document.cs
+- Cognify.Server/Models/Question.cs
+- Cognify.Server/Dtos/Documents/DocumentDto.cs
+- Cognify.Server/Services/DocumentService.cs
+- Cognify.Server/Controllers/DocumentsController.cs
+- Cognify.Server/Migrations/*AddFileSize*
+- cognify.client/src/app/features/modules/services/documents.service.ts
+- cognify.client/src/app/features/modules/components/document-list/*
+- cognify.client/src/app/features/modules/components/quiz-taking/*
+- cognify.client/src/app/core/models/quiz.models.ts
+
+**DECISIONS**
+- Implemented `MultiSelect` as a distinct question type (ID 5) to support "multiple pick".
+- Persisted `FileSize` in database to allow listing without Blob Storage calls.
+- Enforced strict file extension validation in Backend (`AllowedExtensions`).
+
+**NEXT**
+- Await further instructions
+
+**BLOCKERS**
+- None
+
+---

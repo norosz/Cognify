@@ -20,6 +20,8 @@ public class Document
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+    public long FileSize { get; set; }
+
     // Navigation properties
     public Module? Module { get; set; }
 }

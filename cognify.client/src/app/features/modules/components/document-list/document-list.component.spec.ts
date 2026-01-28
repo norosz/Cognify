@@ -29,7 +29,8 @@ describe('DocumentListComponent', () => {
             blobPath: 'modules/123/test.pdf',
             status: 1, // Ready
             createdAt: new Date().toISOString(),
-            downloadUrl: 'http://example.com/test.pdf'
+            downloadUrl: 'http://example.com/test.pdf',
+            fileSize: 1024 * 1024 * 2.5 // 2.5 MB
         },
         {
             id: '2',
@@ -37,7 +38,8 @@ describe('DocumentListComponent', () => {
             moduleId: '123',
             blobPath: 'modules/123/image.png',
             status: 0, // Processing
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            fileSize: 500 // 500 B
         }
     ];
 
@@ -102,6 +104,13 @@ describe('DocumentListComponent', () => {
         expect(component.getFileIcon('test.pdf')).toBe('picture_as_pdf');
         expect(component.getFileIcon('image.png')).toBe('image');
         expect(component.getFileIcon('unknown.xyz')).toBe('insert_drive_file');
+    });
+
+    it('should format file size correctly', () => {
+        expect(component.formatFileSize(0)).toBe('0 B');
+        expect(component.formatFileSize(500)).toBe('500 B');
+        expect(component.formatFileSize(1024)).toBe('1 KB');
+        expect(component.formatFileSize(1024 * 1024 * 2.5)).toBe('2.5 MB');
     });
 
     it('should display document name', () => {

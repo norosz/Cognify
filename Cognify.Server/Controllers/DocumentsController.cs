@@ -14,9 +14,6 @@ public class DocumentsController : ControllerBase
     private readonly ILogger<DocumentsController> _logger;
     private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly IUserContextService _userContext;
-    private const long MaxFileSize = 10 * 1024 * 1024; // 10 MB
-    private static readonly string[] AllowedExtensions = { ".pdf", ".docx", ".txt", ".md", ".png", ".jpg", ".jpeg" };
-
     public DocumentsController(
         IDocumentService documentService, 
         ILogger<DocumentsController> logger,
@@ -36,7 +33,7 @@ public class DocumentsController : ControllerBase
     {
         try
         {
-            var response = await _documentService.InitiateUploadAsync(moduleId, request.FileName, request.ContentType);
+            var response = await _documentService.InitiateUploadAsync(moduleId, request.FileName, request.ContentType, request.FileSize);
             return Ok(response);
         }
         catch (KeyNotFoundException ex)

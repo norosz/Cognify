@@ -1,7 +1,7 @@
 export interface QuestionDto {
     id?: string;
     prompt: string;
-    type: string; // 'MultipleChoice', 'TrueFalse', 'OpenText', 'Matching', 'Ordering'
+    type: 'MultipleChoice' | 'TrueFalse' | 'OpenText' | 'Matching' | 'Ordering' | 'MultiSelect'; // 'Mixed' used in generation only
     options?: string[]; // Made optional for OpenText
     correctAnswer: string; // or JSON for Matching
     pairs?: string[]; // For Matching

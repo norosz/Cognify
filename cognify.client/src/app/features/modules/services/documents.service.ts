@@ -9,12 +9,14 @@ export interface DocumentDto {
     fileName: string;
     status: number;
     createdAt: string;
+    fileSize: number;
     downloadUrl?: string;
 }
 
 export interface UploadInitiateRequest {
     fileName: string;
     contentType: string;
+    fileSize: number;
 }
 
 export interface UploadInitiateResponse {
@@ -55,7 +57,8 @@ export class DocumentsService {
     public initiateUpload(moduleId: string, file: File): Observable<UploadInitiateResponse> {
         const initReq: UploadInitiateRequest = {
             fileName: file.name,
-            contentType: file.type
+            contentType: file.type,
+            fileSize: file.size
         };
 
         const url = `${this.apiUrl}/modules/${moduleId}/documents/initiate`;

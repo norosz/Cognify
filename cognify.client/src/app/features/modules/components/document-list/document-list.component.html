@@ -11,7 +11,10 @@
                     </span>
                 </mat-card-title>
                 <mat-card-subtitle class="subtitle-with-icon">
-                    <span>Created {{ doc.createdAt | date:'MMM d, y, h:mm a' }}</span>
+                    <div class="subtitle-text">
+                        <span>{{ doc.createdAt | date:'MMM d, y, h:mm a' }}</span>
+                        <span class="file-size" *ngIf="doc.fileSize > 0">• {{ formatFileSize(doc.fileSize) }}</span>
+                    </div>
                     <div class="mini-icon">
                         <mat-icon>{{ getFileIcon(doc.fileName) }}</mat-icon>
                     </div>
