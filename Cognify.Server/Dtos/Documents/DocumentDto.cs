@@ -28,6 +28,6 @@ public record DocumentDto(
 public enum DocumentStatus
 {
     Pending = 0,
-    Ready = 1,
+    Uploaded = 1,
     Error = 2
 }

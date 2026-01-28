@@ -88,6 +88,7 @@ public class PendingQuizServiceTests : IDisposable
             Title = "Saved Quiz",
             Status = PendingQuizStatus.Ready,
             QuestionsJson = questionsJson,
+            QuestionType = (int)QuestionType.MultipleChoice,
             QuestionCount = 1,
             Difficulty = QuizDifficulty.Beginner
         };
@@ -105,6 +106,7 @@ public class PendingQuizServiceTests : IDisposable
 
         var dbQs = await _context.QuestionSets.Include(q => q.Questions).FirstOrDefaultAsync(q => q.Id == result.Id);
         dbQs.Should().NotBeNull();
+        dbQs!.Type.Should().Be(QuestionType.MultipleChoice);
         dbQs!.Questions.Should().HaveCount(1);
         dbQs.Questions.First().Prompt.Should().Be("Q1");
 

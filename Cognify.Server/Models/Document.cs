@@ -29,6 +29,6 @@ public class Document
 public enum DocumentStatus
 {
     Processing,
-    Ready,
+    Uploaded,
     Error
 }

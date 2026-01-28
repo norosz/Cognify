@@ -54,6 +54,7 @@ Cognify.ServiceDefaults/    # Shared .NET code (extensions, config)
 - Microsoft.AspNetCore.OpenApi (OpenAPI/Swagger)
 - Microsoft.Extensions.Http.Resilience, ServiceDiscovery (from ServiceDefaults)
 - OpenTelemetry (instrumentation, tracing)
+- **UglyToad.PdfPig** (PDF Parsing)
 
 ### Frontend (Angular 19)
 - @angular/core, @angular/material, @angular/forms, @angular/router, etc.
@@ -113,7 +114,7 @@ Cognify.ServiceDefaults/    # Shared .NET code (extensions, config)
 3. **AI Learning Dashboard**
    - **Knowledge Map**: Heatmap of mastery.
    - **Decay Forecast**: Prediction of when topics will be forgotten.
-   - **Weakness Visualization**: Pinpointing conceptual gaps.
+   - **Weakness Visualization**: Pinpoint conceptual gaps.
    - **Exam Readiness Score**: AI-estimated preparedness.
 
 4. **Mistake Intelligence**
@@ -135,119 +136,160 @@ Cognify.ServiceDefaults/    # Shared .NET code (extensions, config)
 
 ---
 
-## 6. Domain Model & Data Schema
+## 6. AI Agents – Pipeline & Contracts Spec (v2)
 
-### Entities
-- **User**: Authenticated learner
-- **Module**: Learning unit (topic/lesson)
-- **Document**: Uploaded file (stored in Blob Storage)
-- **Note**: Structured learning content (can optionally link to a Document)
-- **UserKnowledgeState**: (NEW) AI Persistent memory of the learner.
-    - Fields: Topic, MasteryScore (0-1), ConfidenceScore (0-1), MistakePatterns (JSON), ForgettingRisk (Enum), LastReviewedAt, ExamReadinessScore.
-    - **Note**: This forms the basis of the "Continuous Learning Loop".
-- **QuestionSet**: AI-generated assessment
-- **Question**: Individual question item.
-    - Types: `MultipleChoice`, `TrueFalse`, `OpenText`, `Matching`, `Ordering` (New types added).
-- **Attempt**: User quiz attempt (Feed for the Knowledge Model)
+The core logic is implemented via three backend AI agents with strict contracts:
 
-### Architecture Changes (v2)
-- **KnowledgeStateService**: Manages the cognitive model.
-- **LearningAnalyticsService**: Aggregates performance data.
-- **AdaptiveQuizService**: generating optimal next questions.
-- **DecayPredictionService**: Spaced repetition logic.
-- **MistakeAnalysisService**: Error classification.
+### 1. OCR Agent
+- **Function**: Extracts text and layout from Images/PDFs.
+- **Input**: `MaterialBlobUri`, `Language`, `Hints`
+- **Output**: `ExtractedText`, `BlocksJson` (layout), `Confidence`
+- **Idempotency**: Reprocessing same materialId overwrites/no-ops safely.
 
----
+### 2. Question Generation Agent (Advanced)
+- **Function**: Generates adaptive quizzes based on notes and user knowledge state.
+- **Input**: `NoteContent`, `UserKnowledgeState`, `Difficulty`, `MistakeFocus`
+- **Output**: `QuizQuestions` (Prompt, Options, Key), `QuizRubric`
+- **Features**: Deterministic output seeded by input context where feasible.
 
-## 7. API Endpoints (High-Level)
+### 3. Grading Agent
+- **Function**: Evaluates answers against a rubric and detects mistakes.
+- **Input**: `QuestionPrompt`, `UserAnswer`, `AnswerKey`, `Rubric`, `KnownMistakePatterns`
+- **Output**: `Score`, `Feedback`, `DetectedMistakes`
+- **Correlation**: Logs `AnswerEvaluationId` and update signals.
 
-- **Authentication**
-  - POST /api/auth/register
-  - POST /api/auth/login
-- **Modules**
-  - GET /api/modules
-  - POST /api/modules
-  - GET /api/modules/{id}
-- **Documents**
-  - POST /api/modules/{id}/documents
-  - GET /api/modules/{id}/documents
-  - POST /api/documents/{id}/set-text
-- **Notes**
-  - POST /api/modules/{id}/notes
-  - GET /api/modules/{id}/notes
-  - GET /api/notes/{id}
-- **AI**
-  - POST /api/ai/questions/from-note/{noteId}
-- **Attempts**
-  - POST /api/question-sets/{id}/attempts
-  - GET /api/question-sets/{id}/attempts/me
+### 4. Learning Analytics Agent (Statistical Engine)
+- **Function**: Aggregates interaction data to provide high-level learning insights.
+- **Input**: `LearningInteractions`, `AttemptHistory`, `KnowledgeStates`
+- **Output**: `PerformanceTrends` (Time series), `TopicDistribution`, `RetentionHeatmap`, `LearningVelocity`.
+- **Metrics**: Calculates AI-estimated readiness and predicts optimal review windows.
 
 ---
 
-## 8. Security & Authorization
+## 7. End-to-End Pipelines
 
-- JWT-based authentication
-- Users can only access their own modules
-- All child entities inherit module ownership
-- Policy-based authorization (`OwnerOnly`)
+### Pipeline A2 — Document Upload → Extract Text + Extract Images
+**Trigger**: User uploads a file (PDF, Office, HTML, E-book) to a module.
+
+**Steps**:
+1.  **Store Blob**: Save raw file to `materials/{userId}/{materialId}/source/{filename}`.
+2.  **Create Material**: DB record `Material` with `Status = Uploaded`, `HasEmbeddedImages = unknown`.
+3.  **Run Extraction**:
+    -   **Text**: Extract pure text content where possible (e.g., PDF Text layer).
+    -   **Images**: Extract embedded images as separate binary assets (e.g., Figures, Charts).
+    -   Store image blobs: `materials/{userId}/{materialId}/images/{imageId}.png`.
+4.  **Create Extraction Record**:
+    -   `ExtractedMarkdown` (Text + inline LaTeX).
+    -   `Images[]` metadata (list of extracted images + page references).
+5.  **Create Note Draft**: Convert `ExtractedMarkdown` to a Note.
+    -   *(Optional)* Embed image references: `![Figure](blob://...)`.
+6.  **Update Status**: `Material.Status = Processed`, `HasEmbeddedImages = true/false`.
+
+### Pipeline B — Generate Adaptive Quiz
+**Trigger**: User requests quiz.
+
+**Steps**:
+1.  **Resolve Context**: Notes, Extracted Texts, Module Summary.
+2.  **Load Knowledge**: Fetch `UserKnowledgeState` (Mastery, Confidence, Forgetting Risk).
+3.  **Call Agent**: Send `QuizGenRequest` to Question Generation Agent.
+4.  **Persist**:
+    -   `Quiz` entity.
+    -   `QuizQuestions`: (Prompt, Type, Difficulty, TargetsMistake).
+    -   `QuizRubric`: Structured scoring rules.
+5.  **Return**: Adaptive quiz tailored to user state.
+
+### Pipeline C — Submit Answer → Grade → Update Model
+**Trigger**: User answers a question.
+
+**Steps**:
+1.  **Save Interaction**: `LearningInteraction` (Answer, TimeAdjusted).
+2.  **Call Agent**: Send `GradeRequest` (Answer, Rubric, MistakePatterns) to Grading Agent.
+3.  **Persist**:
+    -   `AnswerEvaluation`: Score, Feedback, MatchedRubricItems.
+    -   `DetectedMistakes`: Categories + Descriptions.
+4.  **Update Knowledge Model**:
+    -   Apply Mastery Delta (Correctness + Difficulty + Confidence).
+    -   Increment Mistake Pattern Occurrences.
+    -   Update Forgetting Risk & Next Review Date.
+5.  **Return**: Evaluation feedback to frontend.
 
 ---
 
-## 9. Containerization & Orchestration
+## 8. Domain Model & Data Schema (v2)
 
-- **Docker**: Multi-stage builds for backend and frontend
-- **.NET Aspire**: Service discovery, environment config, container lifecycle
-- **Azurite**: Local blob storage for development
-- **OpenAI API**: External AI provider
-
----
-
-## 10. Success Criteria
-
-- Aspire launches all services successfully
-- Containers communicate correctly
-- AI functionality demonstrably works
-- Clean separation of concerns
-- Stable demo for presentation
-
----
-
-## 11. Expanded AI Agents & Functionality (v2)
-
-The application architecture now officially supports advanced AI workflows:
-
-1.  **Handwriting Parsing Agent (OCR)**:
-    -   **Workflow**: User selects an *existing* uploaded document (image/PDF) -> Agent specifically processes it using GPT-4o Vision -> Extracted text is returned for editing/saving as a Note.
-    -   **Optionality**: Parsing is fully optional. Users can create a Note manually or import from a Document.
-
-2.  **Advanced Question Generation Agent**:
-    -   **Workflow**: Agent analyzes Note content -> Generates specific assessment types based on user request.
-    -   **Supported Types**:
-        -   **Quizzes**: Multiple Choice, True/False.
-        -   **Open Questions**: Free-text answers requiring AI grading.
-        -   **Pairing/Matching**: Concept definition matching.
-    -   **Adaptive Logic**: Questions are tailored to difficulty levels (Beginner, Intermediate, Advanced).
-
-3.  **Grading Agent**:
-    -   An agent to evaluate free-text answers and provide structural feedback (not just correct/incorrect).
+### Tables
+- **Material**
+    - `Id`, `UserId`, `FileName`, `ContentType`, `BlobPath`
+    - `Status` (Uploaded/Processed/Failed), `CreatedAt`, `UpdatedAt`
+- **MaterialExtraction**
+    - `Id`, `MaterialId`, `ExtractedText`, `BlocksJson`, `OverallConfidence`
+    - `ImagesJson` (List of extracted image references)
+- **Note**
+    - `Id`, `UserId`, `Title`, `Content` (Markdown + LaTeX)
+    - `SourceMaterialId` (nullable)
+- **Quiz**
+    - `Id`, `UserId`, `Topic`, `Title`, `CreatedAt`
+- **QuizQuestion**
+    - `Id`, `QuizId`, `Type`, `Prompt`, `ChoicesJson` (nullable)
+    - `AnswerKeyJson`, `Explanation`
+    - `Difficulty`, `TargetsMistakeCategory` (nullable)
+- **QuizRubricItem**
+    - `Id`, `QuestionId`, `Points`, `RequiresText`
+- **LearningInteraction**
+    - `Id`, `UserId`, `Topic`, `Type` (QuizAnswer/SelfEval/NoteReview)
+    - `QuestionId` (nullable), `UserAnswer`, `IsCorrect`, `TimeSpentSeconds`
+- **AnswerEvaluation**
+    - `Id`, `InteractionId`, `Score`, `MaxScore`
+    - `MatchedRubricJson`, `MissedRubricJson`, `Feedback`
+    - `DetectedMistakesJson`, `ConfidenceEstimate`
+- **UserKnowledgeState**
+    - `Id`, `UserId`, `Topic`
+    - `MasteryScore`, `ConfidenceScore`
+    - `ForgettingRisk`, `NextReviewAt`, `LastReviewedAt`
+    - `MistakePatternsJson`, `PerformanceTrend`
 
 ---
 
-## 12. Not in Scope (v1)
+## 9. Implementation Rules
 
-- Real-time collaboration
-- Multi-language support
-- Complex role-based access control (RBAC) beyond 'Owner'
+- **Controller → Service split**: Controllers are thin; Services handle orchestration and DB updates.
+- **Strict DTOs**: No "dynamic" JSON handling outside a single serialization boundary.
+- **Idempotency**: OCR/Agents safe to retry.
+- **Auditability**: Store `AgentRun` logs (Provider, Model, Usage, Duration).
+- **Error Handling**: Fail gracefully; map exceptions to `ProblemDetails` and store failure status.
+- **Testing**: Unit tests for orchestration; Contract tests for JSON shape.
+
+---
+
+## 10. Document Processing Extensions – Supported Formats
+
+### A) Formats with Embedded Images (Must extract both)
+- **PDF**: `.pdf` (Text layer + Raster images + Vector figures)
+- **Office**: `.docx`, `.pptx`, `.xlsx`
+- **Web**: `.html`, `.htm`, `.mhtml`
+- **E-books**: `.epub`
+
+### B) Image-only Formats (OCR Required)
+- `.png`, `.jpg`, `.jpeg`, `.webp`, `.bmp`, `.tiff`
+
+### C) Text-only Formats
+- `.txt`, `.md` (Direct read)
+
+---
+
+## 11. Security & Authorization
+
+- **JWT-based authentication**
+- **Owner-Only Access**: Users can only access their own modules/materials.
 
 ---
 
 ## 12. References
 
-- See `Cognify.Server/Dockerfile` for backend containerization
-- See `cognify.client/package.json` for Angular dependencies
-- See `Cognify.AppHost/Cognify.AppHost.csproj` for Aspire orchestration
-- See `Cognify.ServiceDefaults/` for shared .NET code
+- See `Cognify.Server/Dockerfile` for backend containerization.
+- See `cognify.client/package.json` for Angular dependencies.
+- See `Cognify.ServiceDefaults/` for shared .NET code.
 
 ---
 
-*Generated January 25, 2026 – based on current project structure and dependencies.*
+*Updated January 28, 2026 – v2 Specification.*

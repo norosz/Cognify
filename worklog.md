@@ -1177,3 +1177,108 @@
 - None
 
 ---
+---
+
+## ENTRY
+**Timestamp:** 2026-01-28 15:00  
+**Author:** Antigravity  
+
+**DONE**
+- Fixed **Multiple Select** Quiz Generation (Backend & Frontend)
+    - Added `MultipleSelect` support to `AiPrompts.cs` instructions and schema.
+    - Updated `PendingController.cs` to correctly map `QuestionType.MultipleSelect` from requests.
+    - Fixed TypeScript assignment error (TS2322) in `quiz-generation.component.ts`.
+    - Updated `QuizGenerationDialogComponent` layout to 4-column grid for 7 question types.
+- Enabled global **JSON String Enum Conversion**
+    - Configured `JsonStringEnumConverter` in `Program.cs`.
+    - Created `TestConstants.JsonOptions` in test project to fix `JsonException` during response deserialization.
+- Renamed Document Status **Ready -> Uploaded**
+    - Updated `DocumentStatus` enum in Models and DTOs.
+    - Adjusted `DocumentService.cs` and all integration tests.
+    - Migrated frontend `DocumentDto` and components to handle string-based statuses and new "Uploaded" label.
+- Verified all **56 backend tests** and **109 frontend tests** pass.
+
+**CHANGED FILES**
+- Cognify.Server/Program.cs
+- Cognify.Server/Services/AiPrompts.cs
+- Cognify.Server/Controllers/PendingController.cs
+- Cognify.Server/Models/Document.cs
+- Cognify.Server/Services/DocumentService.cs
+- Cognify.Tests/TestConstants.cs
+- Cognify.Tests/Controllers/*.cs
+- cognify.client/src/app/features/modules/components/quiz-generation/*
+- cognify.client/src/app/features/modules/components/document-list/*
+- cognify.client/src/app/features/modules/services/documents.service.ts
+
+**DECISIONS**
+- Used string-based Enums globally for better API readability and frontend alignment.
+- Updated UI to "Multiple Select" instead of "Multiple Pick" for standard terminology.
+
+**NEXT**
+- Implement PDF & Text Content Extraction (Pipeline A2)
+
+**BLOCKERS**
+- None
+---
+
+## ENTRY
+**Timestamp:** 2026-01-28 19:00  
+**Author:** Antigravity  
+
+**DONE**
+- **Enhanced Quiz Card UI**:
+    - Added `Type` property to backend `QuestionSet` model and DTOs.
+    - Updated `PendingQuizService` and `QuestionService` to persist quiz type.
+    - Updated `QuizListComponent` to display quiz types with beautiful glassmorphic badges and icons.
+    - Updated `QuizTakingComponent` header to show quiz type.
+    - Refactored `QuizTakingComponent` to remove code duplication.
+- **Fixed Frontend Tests**:
+    - Resolved `TS2741` error in `quiz-taking.component.spec.ts` by updating mock objects.
+    - Verified all frontend tests are passing.
+
+**CHANGED FILES**
+- Cognify.Server/Models/QuestionSet.cs
+- Cognify.Server/Dtos/QuestionDTOs.cs
+- Cognify.Server/Services/QuestionService.cs
+- Cognify.Server/Services/PendingQuizService.cs
+- cognify.client/src/app/core/models/quiz.models.ts
+- cognify.client/src/app/features/modules/components/quiz-list/*
+- cognify.client/src/app/features/modules/components/quiz-taking/*
+
+**DECISIONS**
+- Used distinct icons and colors for different quiz types to improve UX.
+
+**NEXT**
+- Proceed with PDF/Text Extraction (Pipeline A2).
+
+**BLOCKERS**
+- None
+
+## ENTRY
+**Timestamp:** 2026-01-28 22:45
+**Author:** Antigravity
+
+**DONE**
+- Enhanced Quiz Card UI: Moved quiz type badge above question count
+- Implemented Global Notification System: Added PendingService polling
+- Improved Notification UX: Redirect links now open specific tabs (/pending;tab=extractions, /pending;tab=quizzes)
+- Fixed Test Suite: Mocked PendingService in AppComponent tests to resolve NullInjectorError
+- Verified overall build and test health
+
+**CHANGED FILES**
+- cognify.client/src/app/features/modules/components/quiz-list/quiz-list.component.html
+- cognify.client/src/app/core/services/pending.service.ts
+- cognify.client/src/app/app.component.ts
+- cognify.client/src/app/app.component.spec.ts
+
+**DECISIONS**
+- Moved polling logic to a global service (PendingService) initiated in AppComponent to ensure notifications work across the entire application
+- Used Matrix Parameters for route redirection to maintain clean URLs while supporting deep linking into tabs
+
+**NEXT**
+- Await further instructions
+
+**BLOCKERS**
+- None
+
+---

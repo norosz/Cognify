@@ -7,7 +7,7 @@ export interface DocumentDto {
     moduleId: string;
     blobPath: string;
     fileName: string;
-    status: number;
+    status: string;
     createdAt: string;
     fileSize: number;
     downloadUrl?: string;

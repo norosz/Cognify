@@ -54,6 +54,14 @@ describe('QuizGenerationComponent', () => {
     expect(args.count).toBe(3);
   });
 
+  it('should handle MultipleSelect type', () => {
+    component.selectedType = QuestionType.MultipleSelect;
+    component.generate();
+
+    const args = mockAiService.generateQuestions.calls.mostRecent().args[0];
+    expect(args.type).toBe(QuestionType.MultipleSelect);
+  });
+
   it('should handle generation error', () => {
     spyOn(console, 'error');
     mockAiService.generateQuestions.and.returnValue(throwError(() => new Error('Error')));

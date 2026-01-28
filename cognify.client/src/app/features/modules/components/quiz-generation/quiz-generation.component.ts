@@ -80,7 +80,7 @@ export class QuizGenerationComponent {
 
           return {
             prompt: g.text,
-            type: g.type,
+            type: g.type as any, // Cast to any to satisfy the complex string union mapping
             options: options, // Saved to DB
             correctAnswer: g.correctAnswer || '',
             explanation: g.explanation || '',

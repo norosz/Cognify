@@ -85,7 +85,7 @@ export class DocumentListComponent implements OnInit {
   }
 
   extractText(doc: DocumentDto): void {
-    if (doc.status !== 1) return;
+    if (doc.status !== 'Uploaded') return;
     if (this.isExtracting(doc.id)) return;
 
     const newSet = new Set(this.extractingDocIds());
@@ -126,13 +126,8 @@ export class DocumentListComponent implements OnInit {
 
   // Removed openExtractedText and hasExtractedText methods as they are no longer used
 
-  getStatusLabel(status: number): string {
-    switch (status) {
-      case 0: return 'Processing';
-      case 1: return 'Uploaded';
-      case 2: return 'Error';
-      default: return 'Unknown';
-    }
+  getStatusLabel(status: string): string {
+    return status;
   }
 
   getFileIcon(fileName: string): string {

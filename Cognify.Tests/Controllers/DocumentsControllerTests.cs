@@ -63,7 +63,7 @@ public class DocumentsControllerTests : IClassFixture<WebApplicationFactory<Prog
         };
 
         var response = await client.PostAsJsonAsync("/api/auth/register", registerDto);
-        var authResponse = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
+        var authResponse = await response.Content.ReadFromJsonAsync<AuthResponseDto>(TestConstants.JsonOptions);
         
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResponse!.Token);
 
@@ -74,7 +74,7 @@ public class DocumentsControllerTests : IClassFixture<WebApplicationFactory<Prog
     {
         var dto = new CreateModuleDto { Title = "Test Module", Description = "For Docs" };
         var res = await client.PostAsJsonAsync("/api/modules", dto);
-        return (await res.Content.ReadFromJsonAsync<ModuleDto>())!;
+        return (await res.Content.ReadFromJsonAsync<ModuleDto>(TestConstants.JsonOptions))!;
     }
 
     [Fact]
@@ -95,13 +95,13 @@ public class DocumentsControllerTests : IClassFixture<WebApplicationFactory<Prog
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var result = await response.Content.ReadFromJsonAsync<UploadInitiateResponse>();
+        var result = await response.Content.ReadFromJsonAsync<UploadInitiateResponse>(TestConstants.JsonOptions);
         result!.SasUrl.Should().Contain("sas=token");
         result.BlobName.Should().Contain("test.txt");
     }
 
     [Fact]
-    public async Task CompleteUpload_ShouldReturnReady_WhenValid()
+    public async Task CompleteUpload_ShouldReturnUploaded_WhenValid()
     {
         // Arrange
         var (client, _) = await CreateAuthenticatedClientAsync();
@@ -117,15 +117,15 @@ public class DocumentsControllerTests : IClassFixture<WebApplicationFactory<Prog
         // Initiate
         var request = new UploadInitiateRequest("test.txt", "text/plain", 1024);
         var initRes = await client.PostAsJsonAsync($"/api/modules/{module.Id}/documents/initiate", request);
-        var initData = await initRes.Content.ReadFromJsonAsync<UploadInitiateResponse>();
+        var initData = await initRes.Content.ReadFromJsonAsync<UploadInitiateResponse>(TestConstants.JsonOptions);
 
         // Act
         var response = await client.PostAsync($"/api/documents/{initData!.DocumentId}/complete", null);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var doc = await response.Content.ReadFromJsonAsync<DocumentDto>();
-        doc!.Status.Should().Be(DocumentStatus.Ready);
+        var doc = await response.Content.ReadFromJsonAsync<DocumentDto>(TestConstants.JsonOptions);
+        doc!.Status.Should().Be(DocumentStatus.Uploaded);
         doc.DownloadUrl.Should().Be("https://sas-url"); // Should return Read SAS
         
         // Verify NO pending extraction was created (Auto-extraction removed)
@@ -161,9 +161,9 @@ public class DocumentsControllerTests : IClassFixture<WebApplicationFactory<Prog
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var list = await response.Content.ReadFromJsonAsync<List<DocumentDto>>();
+        var list = await response.Content.ReadFromJsonAsync<List<DocumentDto>>(TestConstants.JsonOptions);
         list.Should().HaveCount(1);
-        list![0].Status.Should().Be(DocumentStatus.Ready);
+        list![0].Status.Should().Be(DocumentStatus.Uploaded);
         list[0].DownloadUrl.Should().Be("https://sas-url");
     }
 
@@ -190,7 +190,7 @@ public class DocumentsControllerTests : IClassFixture<WebApplicationFactory<Prog
         
         // Verify list is empty
         var listRes = await client.GetAsync($"/api/modules/{module.Id}/documents");
-        var list = await listRes.Content.ReadFromJsonAsync<List<DocumentDto>>();
+        var list = await listRes.Content.ReadFromJsonAsync<List<DocumentDto>>(TestConstants.JsonOptions);
         list.Should().BeEmpty();
     }
 }

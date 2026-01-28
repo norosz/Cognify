@@ -13,7 +13,6 @@
                 <mat-card-subtitle class="subtitle-with-icon">
                     <div class="subtitle-text">
                         <span>{{ doc.createdAt | date:'MMM d, y, h:mm a' }}</span>
-                        <span class="file-size" *ngIf="doc.fileSize > 0">• {{ formatFileSize(doc.fileSize) }}</span>
                     </div>
                     <div class="mini-icon">
                         <mat-icon>{{ getFileIcon(doc.fileName) }}</mat-icon>
@@ -23,6 +22,7 @@
             <mat-card-content>
                 <div class="doc-data">
                     <span class="data-label">{{ getFileExtension(doc.fileName) }}</span>
+                    <span class="file-size-tag" *ngIf="doc.fileSize > 0">{{ formatFileSize(doc.fileSize) }}</span>
                 </div>
             </mat-card-content>
             <mat-card-actions align="end" (click)="$event.stopPropagation()">
@@ -31,7 +31,7 @@
                 </button>
                 <mat-menu #menu="matMenu">
                     <button mat-menu-item (click)="extractText(doc)"
-                        [disabled]="doc.status !== 1 || isExtracting(doc.id)">
+                        [disabled]="doc.status !== 'Uploaded' || isExtracting(doc.id)">
                         <mat-icon *ngIf="!isExtracting(doc.id)">auto_fix_high</mat-icon>
                         <mat-spinner *ngIf="isExtracting(doc.id)" diameter="20"></mat-spinner>
                         <span>Extract Text</span>

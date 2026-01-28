@@ -2,11 +2,18 @@ import { TestBed } from '@angular/core/testing';
 import { AppComponent } from './app.component';
 import { provideRouter } from '@angular/router';
 
+import { PendingService } from './core/services/pending.service';
+
 describe('AppComponent', () => {
   beforeEach(async () => {
+    const pendingServiceSpy = jasmine.createSpyObj('PendingService', ['startPolling']);
+
     await TestBed.configureTestingModule({
       imports: [AppComponent],
-      providers: [provideRouter([])]
+      providers: [
+        provideRouter([]),
+        { provide: PendingService, useValue: pendingServiceSpy }
+      ]
     }).compileComponents();
   });
 

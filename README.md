@@ -34,6 +34,7 @@ Visualize your brain:
 - **Knowledge Map**: Heatmap of your mastery.
 - **Decay Forecast**: When to review what.
 - **Weakness Visualization**: Pinpoint conceptual gaps.
+- **Statistical Analytics**: Performance trends, topic distribution, and learning velocity metrics.
 
 ### ♻️ Continuous Learning Loop
 Cognify operates as a closed-loop AI system:
@@ -42,6 +43,12 @@ Cognify operates as a closed-loop AI system:
 The AI is not a one-time generator but a persistent decision engine that evolves with every interaction. Unlike stateless AI chat systems, Cognify maintains a persistent cognitive state for each learner, allowing long-term adaptation and memory modeling.
 
 - **Exam Readiness Score**: AI-estimated preparedness based on mastery distribution and decay prediction.
+
+### 🤖 6. AI Agents (v2)
+- **OCR Agent**: PDF/Image extraction with embedded image support.
+- **Question Gen Agent**: Adaptive quiz creation based on knowledge state.
+- **Grading Agent**: Deterministic rubric-based grading with feedback.
+- **Learning Analytics Agent**: Aggregated statistical engine for performance trends.
 
 ### ❌ Mistake Intelligence
 AI classifies recurring conceptual errors and builds a learner-specific misconception profile to drive targeted remediation.

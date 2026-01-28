@@ -18,6 +18,7 @@ public record QuestionSetDto
     public Guid NoteId { get; init; }
     public string Title { get; init; } = string.Empty;
     public List<QuestionDto> Questions { get; init; } = [];
+    public string Type { get; init; } = "MultipleChoice";
     public DateTime CreatedAt { get; init; }
 }
 

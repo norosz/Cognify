@@ -27,7 +27,7 @@ describe('DocumentListComponent', () => {
             fileName: 'test.pdf',
             moduleId: '123',
             blobPath: 'modules/123/test.pdf',
-            status: 1, // Ready
+            status: 'Uploaded',
             createdAt: new Date().toISOString(),
             downloadUrl: 'http://example.com/test.pdf',
             fileSize: 1024 * 1024 * 2.5 // 2.5 MB
@@ -37,7 +37,7 @@ describe('DocumentListComponent', () => {
             fileName: 'image.png',
             moduleId: '123',
             blobPath: 'modules/123/image.png',
-            status: 0, // Processing
+            status: 'Processing',
             createdAt: new Date().toISOString(),
             fileSize: 500 // 500 B
         }
@@ -131,9 +131,9 @@ describe('DocumentListComponent', () => {
         expect(mockDocumentsService.getDocuments).toHaveBeenCalledTimes(2); // Init + Delete Reload
     });
 
-    it('should show extraction option for ready documents', () => {
+    it('should show extraction option for uploaded documents', () => {
         // Check if extract logic is sound
-        const canExtract = mockDocuments[0].status === 1;
+        const canExtract = mockDocuments[0].status === 'Uploaded';
         expect(canExtract).toBeTrue();
     });
 });

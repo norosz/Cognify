@@ -1,7 +1,7 @@
 export interface QuestionDto {
     id?: string;
     prompt: string;
-    type: 'MultipleChoice' | 'TrueFalse' | 'OpenText' | 'Matching' | 'Ordering' | 'MultiSelect'; // 'Mixed' used in generation only
+    type: 'MultipleChoice' | 'TrueFalse' | 'OpenText' | 'Matching' | 'Ordering' | 'MultipleSelect'; // 'Mixed' used in generation only
     options?: string[]; // Made optional for OpenText
     correctAnswer: string; // or JSON for Matching
     pairs?: string[]; // For Matching
@@ -13,6 +13,7 @@ export interface QuestionSetDto {
     noteId: string;
     title: string;
     questions: QuestionDto[];
+    type: string;
     createdAt: string;
 }
 

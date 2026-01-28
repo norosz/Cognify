@@ -26,8 +26,8 @@ export class DocumentSelectionDialogComponent implements OnInit {
   ngOnInit() {
     this.documentsService.getDocuments(this.data.moduleId).subscribe({
       next: (docs) => {
-        // Filter only Ready documents (status = 1)
-        this.documents.set(docs.filter(d => d.status === 1));
+        // Filter only Ready documents (status = Uploaded)
+        this.documents.set(docs.filter(d => d.status === 'Uploaded'));
         this.loading.set(false);
       },
       error: (err) => {

@@ -1,9 +1,11 @@
 export enum QuestionType {
+  Mixed = 'Mixed',
   MultipleChoice = 'MultipleChoice',
   TrueFalse = 'TrueFalse',
   OpenText = 'OpenText',
   Matching = 'Matching',
-  Ordering = 'Ordering'
+  Ordering = 'Ordering',
+  MultipleSelect = 'MultipleSelect'
 }
 
 export interface GeneratedQuestion {

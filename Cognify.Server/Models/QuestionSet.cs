@@ -12,6 +12,8 @@ public class QuestionSet
     [MaxLength(200)]
     public required string Title { get; set; }
 
+    public QuestionType Type { get; set; } = QuestionType.MultipleChoice;
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     // Navigation properties

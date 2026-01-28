@@ -1,3 +1,35 @@
+.dialog-header-flush {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px !important;
+}
+
+.header-icon {
+    color: #90caf9;
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+}
+
+.title-text {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.type-badge-mini {
+    background: rgba(144, 202, 249, 0.1);
+    color: #90caf9;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    border: 1px solid rgba(144, 202, 249, 0.3);
+    white-space: nowrap;
+}
+
 .error-container {
     padding: 24px;
     text-align: center;

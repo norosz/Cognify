@@ -39,8 +39,12 @@ public static class AiPrompts
                 Type: Ordering.
                 Schema: {"text": "Put these events in chronological order", "type": "Ordering", "options": ["Event 1", "Event 2", "Event 3"], "correctAnswer": "Event 1|Event 2|Event 3", "explanation": "Sequence logic"}
                 """,
+            QuestionType.MultipleSelect => """
+                Type: MultipleSelect.
+                Schema: {"text": "Select all that apply", "type": "MultipleSelect", "options": ["Option 1", "Option 2", "Option 3", "Option 4"], "correctAnswer": "Option 1|Option 3", "explanation": "Multiple options are correct"}
+                """,
             QuestionType.Mixed => """
-                Type: Mixed. Use a variety of MultipleChoice, TrueFalse, Matching, and Ordering.
+                Type: Mixed. Use a variety of MultipleChoice, TrueFalse, Matching, Ordering, and MultipleSelect.
                 Schema: Use the appropriate schema for each type. Ensure "type" property reflects the chosen type.
                 """,
             _ => """
@@ -70,8 +74,8 @@ public static class AiPrompts
           "questions": [
             {
               "text": "The prompt or question content",
-              "type": "MultipleChoice" | "TrueFalse" | "OpenText" | "Matching" | "Ordering",
-              "options": ["Option A", "Option B", ...], (Only for MC/TF/Ordering)
+              "type": "MultipleChoice" | "TrueFalse" | "OpenText" | "Matching" | "Ordering" | "MultipleSelect",
+              "options": ["Option A", "Option B", ...], (For MC/TF/Ordering/MultipleSelect)
               "pairs": ["Term:Definition", ...], (Only for Matching)
               "correctAnswer": "The correct response or key",
               "explanation": "Why this is correct",

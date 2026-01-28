@@ -64,3 +64,45 @@
     color: #aaaaaa;
     margin-top: 8px;
 }
+
+.subtitle-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-top: 4px;
+}
+
+.type-badge {
+    background: rgba(144, 202, 249, 0.1);
+    color: #90caf9;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border: 1px solid rgba(144, 202, 249, 0.3);
+    backdrop-filter: blur(4px);
+    white-space: nowrap;
+}
+
+mat-card-title.accent-text {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #ffffff;
+}
+
+.question-count {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    margin-top: 12px;
+    color: #e0e0e0;
+
+    mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        color: #90caf9;
+    }
+}

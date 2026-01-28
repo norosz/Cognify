@@ -89,4 +89,17 @@ export class QuizListComponent implements OnInit {
       this.quizService.deleteQuestionSet(quiz.id).subscribe(() => this.loadQuizzes());
     }
   }
+
+  getQuizTypeInfo(type: string) {
+    switch (type) {
+      case 'MultipleChoice': return { label: 'Multiple Choice', icon: 'list' };
+      case 'TrueFalse': return { label: 'True / False', icon: 'flaky' };
+      case 'OpenText': return { label: 'Open Ended', icon: 'short_text' };
+      case 'Matching': return { label: 'Matching', icon: 'unite' };
+      case 'Ordering': return { label: 'Ordering', icon: 'low_priority' };
+      case 'MultipleSelect': return { label: 'Multiple Select', icon: 'checklist' };
+      case 'Mixed': return { label: 'Mixed', icon: 'auto_awesome' };
+      default: return { label: type, icon: 'quiz' };
+    }
+  }
 }

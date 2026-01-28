@@ -16,6 +16,7 @@ describe('QuizTakingComponent', () => {
     id: 'qs-1',
     noteId: 'note-1',
     title: 'Test Quiz',
+    type: 'MultipleChoice',
     createdAt: new Date().toISOString(),
     questions: [{ id: 'q1', prompt: 'Q1', type: 'MultipleChoice', options: ['A', 'B'], correctAnswer: 'A', explanation: '' }]
   };
@@ -60,5 +61,17 @@ describe('QuizTakingComponent', () => {
     expect(component.getScoreColor(90)).toBe('green');
     expect(component.getScoreColor(60)).toBe('orange');
     expect(component.getScoreColor(20)).toBe('red');
+  });
+
+  it('should handle MultipleSelect answers', () => {
+    const questionId = 'q_multi';
+    component.onMultipleSelectChange(questionId, 'Opt 1', true);
+    expect(component.answers[questionId]).toBe('Opt 1');
+
+    component.onMultipleSelectChange(questionId, 'Opt 2', true);
+    expect(component.answers[questionId]).toBe('Opt 1|Opt 2');
+
+    component.onMultipleSelectChange(questionId, 'Opt 1', false);
+    expect(component.answers[questionId]).toBe('Opt 2');
   });
 });

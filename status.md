@@ -33,6 +33,16 @@
 - [ ] **[Frontend]** Build Memory Decay Chart
 - [ ] **[Frontend]** Build Concept Weakness List
 
+### 🤖 AI Agents & Pipelines (v2)
+- [ ] **[Backend]** Implement `Material`, `MaterialExtraction`, `Note` (Updated) Entities
+- [ ] **[Backend]** Implement `Quiz`, `QuizQuestion`, `QuizRubric` Entities
+- [ ] **[Backend]** Implement `LearningInteraction`, `AnswerEvaluation`, `UserKnowledgeState` Entities
+- [ ] **[Backend]** Migrate DB to v2 Schema
+- [ ] **[Agent]** Implement OCR Agent (Pipe A2 - PDF/Images/Text + Asset Extraction)
+- [ ] **[Agent]** Implement Question Generation Agent (Pipe B)
+- [ ] **[Agent]** Implement Grading Agent (Pipe C)
+- [ ] **[Agent]** Implement Learning Analytics Agent (Statistical Engine)
+
 ### 💾 File Management Enhancements
 - [x] **[Backend]** Add `FileSizeBytes` to Document Entity/DTO
 - [x] **[Frontend]** Display File Size in Document Card in MB
@@ -104,4 +114,9 @@
 - [x] **[Testing]** Updated & Created Tests for Auth, Profile, and Register Features
 - [x] **[Frontend]** Implement `MultiSelect` (Checkbox) Quiz Type & UI
 - [x] **[Backend]** Implement Strict File Extension & Size Validation
-- [x] **[Test]** Verified File Size & Quiz Type Changes (Frontend/Backend)
+- [x] **[Bug Fix]** Fixed `MultipleSelect` quiz generation fallback & mapping
+- [x] **[Refactor]** Global JSON String Enum Converter for Backend & Tests
+- [x] **[UI/UX]** Renamed Document Status `Ready` -> `Uploaded`
+- [x] **[UI/UX]** Enhanced Quiz Cards & Taking UI with Type Indicators
+- [x] **[Testing]** Verified all 56 Backend & 109 Frontend tests pass
+

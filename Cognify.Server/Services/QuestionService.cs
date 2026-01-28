@@ -24,6 +24,7 @@ public class QuestionService(ApplicationDbContext context, IUserContextService u
         {
             NoteId = dto.NoteId,
             Title = dto.Title,
+            Type = Enum.TryParse<QuestionType>(dto.Questions.FirstOrDefault()?.Type ?? "MultipleChoice", true, out var qt) ? qt : QuestionType.MultipleChoice,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -104,6 +105,7 @@ public class QuestionService(ApplicationDbContext context, IUserContextService u
             Id = qs.Id,
             NoteId = qs.NoteId,
             Title = qs.Title,
+            Type = qs.Type.ToString(),
             CreatedAt = qs.CreatedAt,
             Questions = qs.Questions?.Select(q => new QuestionDto
             {

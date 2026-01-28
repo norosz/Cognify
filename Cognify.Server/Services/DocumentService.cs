@@ -85,7 +85,7 @@ public class DocumentService : IDocumentService
         // Ideally verify blob exists here?
         // For now, assume client succeeded if they called complete.
         
-        document.Status = Models.DocumentStatus.Ready;
+        document.Status = Models.DocumentStatus.Uploaded;
         await _context.SaveChangesAsync();
 
         var fileName = ExtractFileName(document.BlobPath);
@@ -102,7 +102,7 @@ public class DocumentService : IDocumentService
             document.ModuleId, 
             fileName, 
             document.BlobPath, 
-            Dtos.Documents.DocumentStatus.Ready, 
+            Dtos.Documents.DocumentStatus.Uploaded, 
             document.CreatedAt,
             document.FileSize,
             downloadUrl
@@ -130,7 +130,7 @@ public class DocumentService : IDocumentService
         {
             var fileName = ExtractFileName(doc.BlobPath);
             string? downloadUrl = null;
-            if (doc.Status == Models.DocumentStatus.Ready)
+            if (doc.Status == Models.DocumentStatus.Uploaded)
             {
                 downloadUrl = _blobStorageService.GenerateDownloadSasToken(
                     doc.BlobPath,
@@ -168,7 +168,7 @@ public class DocumentService : IDocumentService
         if (document.Module!.OwnerUserId != userId) return null; // Or throw
 
         var fileName = ExtractFileName(document.BlobPath);
-        var downloadUrl = document.Status == Models.DocumentStatus.Ready 
+        var downloadUrl = document.Status == Models.DocumentStatus.Uploaded 
             ? _blobStorageService.GenerateDownloadSasToken(document.BlobPath, DateTimeOffset.UtcNow.AddHours(1), fileName) 
             : null;
 

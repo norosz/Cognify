@@ -69,7 +69,7 @@ public class AiControllerTests : IClassFixture<WebApplicationFactory<Program>>, 
         };
 
         var response = await client.PostAsJsonAsync("/api/auth/register", registerDto);
-        var authResponse = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
+        var authResponse = await response.Content.ReadFromJsonAsync<AuthResponseDto>(TestConstants.JsonOptions);
         
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResponse!.Token);
         
@@ -121,10 +121,10 @@ public class AiControllerTests : IClassFixture<WebApplicationFactory<Program>>, 
             Count = 5
         };
         var response = await client.PostAsJsonAsync($"/api/ai/questions/generate", request);
-
+        
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var questions = await response.Content.ReadFromJsonAsync<List<GeneratedQuestion>>();
+        var questions = await response.Content.ReadFromJsonAsync<List<GeneratedQuestion>>(TestConstants.JsonOptions);
         questions.Should().HaveCount(1);
         questions![0].Text.Should().Be("Generated Q");
     }
@@ -157,7 +157,7 @@ public class AiControllerTests : IClassFixture<WebApplicationFactory<Program>>, 
         {
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             var module = new Module { Id = Guid.NewGuid(), OwnerUserId = userId, Title = "M", Description = "D" };
-            var doc = new Document { Id = Guid.NewGuid(), ModuleId = module.Id, FileName = "test.png", BlobPath = "path", Status = Cognify.Server.Models.DocumentStatus.Ready, CreatedAt = DateTime.UtcNow };
+            var doc = new Document { Id = Guid.NewGuid(), ModuleId = module.Id, FileName = "test.png", BlobPath = "path", Status = Cognify.Server.Models.DocumentStatus.Uploaded, CreatedAt = DateTime.UtcNow };
             db.Modules.Add(module);
             db.Documents.Add(doc);
             await db.SaveChangesAsync();
@@ -169,7 +169,7 @@ public class AiControllerTests : IClassFixture<WebApplicationFactory<Program>>, 
         _blobStorageMock.Setup(x => x.DownloadStreamAsync(It.IsAny<string>())).ReturnsAsync(new MemoryStream());
 
         // Mock Document Service
-        var docDto = new Cognify.Server.Dtos.Documents.DocumentDto(documentId, moduleId, "test.png", "path", Cognify.Server.Dtos.Documents.DocumentStatus.Ready, DateTime.UtcNow, 1024);
+        var docDto = new Cognify.Server.Dtos.Documents.DocumentDto(documentId, moduleId, "test.png", "path", Cognify.Server.Dtos.Documents.DocumentStatus.Uploaded, DateTime.UtcNow, 1024);
         _documentServiceMock.Setup(dx => dx.GetByIdAsync(documentId)).ReturnsAsync(docDto);
 
         // Act

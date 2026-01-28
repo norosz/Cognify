@@ -118,7 +118,8 @@ public class PendingQuizService(ApplicationDbContext db, IServiceProvider servic
         var questionSet = new QuestionSet
         {
             NoteId = pending.NoteId,
-            Title = pending.Title
+            Title = pending.Title,
+            Type = (QuestionType)pending.QuestionType
         };
 
         db.QuestionSets.Add(questionSet);

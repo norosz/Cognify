@@ -58,11 +58,13 @@ public class QuestionServiceTests : IDisposable
 
         // Assert
         result.Should().NotBeNull();
+        result.Type.Should().Be("MultipleChoice");
         result.Questions.Should().HaveCount(1);
         result.Questions[0].Prompt.Should().Be("Q1");
         
         var saved = await _context.QuestionSets.Include(q => q.Questions).FirstOrDefaultAsync(q => q.Id == result.Id);
         saved.Should().NotBeNull();
+        saved!.Type.Should().Be(QuestionType.MultipleChoice);
         saved!.Questions.Should().HaveCount(1);
     }
 

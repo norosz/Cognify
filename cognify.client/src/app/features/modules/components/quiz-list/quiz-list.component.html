@@ -15,13 +15,23 @@
             <mat-card *ngFor="let item of quizzes()" class="quiz-card cognify-glass-card">
                 <mat-card-header>
                     <div mat-card-avatar>
-                        <mat-icon>school</mat-icon>
+                        <mat-icon>{{ getQuizTypeInfo(item.quiz.type).icon }}</mat-icon>
                     </div>
-                    <mat-card-title class="accent-text">{{ item.quiz.title || item.quiz.title || 'Untitled Quiz'
-                        }}</mat-card-title>
-                    <mat-card-subtitle>From note: {{ item.noteTitle }}</mat-card-subtitle>
+                    <mat-card-title class="accent-text">
+                        {{ item.quiz.title || 'Untitled Quiz' }}
+                    </mat-card-title>
+                    <mat-card-subtitle>
+                        <div class="subtitle-content">
+                            <span>From note: {{ item.noteTitle }}</span>
+                        </div>
+                    </mat-card-subtitle>
                 </mat-card-header>
                 <mat-card-content>
+                    <div class="type-badge-container">
+                        <span class="type-badge">
+                            {{ getQuizTypeInfo(item.quiz.type).label }}
+                        </span>
+                    </div>
                     <p class="question-count">
                         <mat-icon>format_list_numbered</mat-icon>
                         <span *ngIf="item.quiz.questions">{{ item.quiz.questions.length }} Questions</span>

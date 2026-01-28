@@ -152,6 +152,7 @@ public class PendingController(
             "opentext" => 2,
             "matching" => 3,
             "ordering" => 4,
+            "multipleselect" => 5,
             _ => 0
         };
 
@@ -268,6 +269,7 @@ public class PendingController(
         2 => "OpenText",
         3 => "Matching",
         4 => "Ordering",
+        5 => "MultipleSelect",
         _ => "Unknown"
     };
 }

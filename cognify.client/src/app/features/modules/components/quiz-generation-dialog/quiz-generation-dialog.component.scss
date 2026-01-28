@@ -46,16 +46,30 @@
     width: 100%;
     border-color: var(--border) !important;
     background: transparent !important;
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    border: none !important;
 
     ::ng-deep {
         .mat-button-toggle {
-            flex: 1;
             background: rgba(255, 255, 255, 0.03);
-            border-color: var(--border);
+            border: 1px solid var(--border) !important;
+            border-radius: 8px !important;
+
+            .mat-button-toggle-label-content {
+                line-height: normal;
+                padding: 0;
+            }
 
             &.mat-button-toggle-checked {
                 background: rgba(168, 85, 247, 0.15) !important;
                 color: var(--accent-violet) !important;
+                border-color: var(--accent-violet) !important;
+            }
+
+            .mat-button-toggle-button {
+                border-radius: 8px;
             }
         }
     }

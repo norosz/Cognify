@@ -41,7 +41,10 @@ export class QuizGenerationDialogComponent {
     { value: 'Mixed', label: 'Mixed', icon: 'auto_awesome' },
     { value: 'MultipleChoice', label: 'Multiple Choice', icon: 'list' },
     { value: 'TrueFalse', label: 'True / False', icon: 'flaky' },
-    { value: 'OpenText', label: 'Open Ended', icon: 'short_text' }
+    { value: 'OpenText', label: 'Open Ended', icon: 'short_text' },
+    { value: 'Matching', label: 'Matching', icon: 'unite' },
+    { value: 'Ordering', label: 'Ordering', icon: 'low_priority' },
+    { value: 'MultipleSelect', label: 'Multiple Select', icon: 'checklist' }
   ];
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: { noteId: string; noteTitle: string }) {
