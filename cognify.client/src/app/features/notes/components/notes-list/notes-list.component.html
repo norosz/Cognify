@@ -11,10 +11,12 @@
     </div>
 
     <div *ngIf="!isLoading()" class="notes-grid">
-        <div *ngIf="notes().length === 0" class="empty-state">
-            <mat-icon>note_add</mat-icon>
-            <p>No notes yet. Create one to get started!</p>
-        </div>
+        <mat-card *ngIf="notes().length === 0" class="empty-state cognify-glass-card">
+            <mat-card-content class="empty-state-content">
+                <mat-icon>note_add</mat-icon>
+                <p>No notes yet. Create one to get started!</p>
+            </mat-card-content>
+        </mat-card>
 
         <mat-card *ngFor="let note of notes()" class="note-card cognify-glass-card" (click)="openEditor(note)">
             <mat-card-header>

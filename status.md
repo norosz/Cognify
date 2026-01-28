@@ -88,3 +88,17 @@
 - [x] **[Test]** Improved Frontend Test Coverage (PendingService, PendingComponent - 85 tests)
 - [x] **[Frontend]** Refactor Document Cards (Header Status, Icons, Watermark Data)
 - [x] **[Test]** Verified Document Card Refactor (96 tests pass)
+- [x] **[Backend]** Implement Token Validation (`/auth/me`) & Profile Management
+- [x] **[Frontend]** Implement Startup Token Validation (Modern `provideAppInitializer`)
+- [x] **[Frontend]** Build Profile Management UI (Update Profile, Change Password)
+- [x] **[Refactor]** Modernize Angular Config & Backend Patterns
+- [x] **[Bug Fix]** Fixed `NG0203` Injection Error in App Initializer
+- [x] **[Frontend]** Added Profile Link to Sidebar Navigation
+- [x] **[Backend]** Implement Optional Username (Dto, Service, JWT Claim)
+- [x] **[Frontend]** Implement Optional Username in Register UI & Sidebar Display
+- [x] **[UI/UX]** Style Profile Component (Glassmorphism) & Add Notifications
+- [x] **[UI/UX]** Refine Empty States (Shadows & Borders) for Modules/Quizzes/Notes
+- [x] **[UI/UX]** Standardize Empty State Backgrounds & Consistency
+- [x] **[UI/UX]** Refactor Empty States to use `mat-card` with proper Elevation
+- [x] **[Bug Fix]** Fixed Password Form Validation Error on Reset
+- [x] **[Testing]** Updated & Created Tests for Auth, Profile, and Register Features

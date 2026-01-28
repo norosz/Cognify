@@ -12,4 +12,21 @@ export interface LoginRequest {
 export interface RegisterRequest {
     email: string;
     password: string;
+    username?: string;
+}
+
+export interface UserProfile {
+    id: string;
+    email: string;
+    username?: string;
+}
+
+export interface ChangePasswordRequest {
+    currentPassword: string;
+    newPassword: string;
+}
+
+export interface UpdateProfileRequest {
+    email: string;
+    username?: string;
 }

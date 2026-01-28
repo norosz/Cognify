@@ -17,6 +17,10 @@
           {{ pendingService.pendingCount() }}
         </span>
       </a>
+      <a routerLink="/profile" routerLinkActive="active" class="nav-item">
+        <mat-icon>person</mat-icon>
+        <span>Profile</span>
+      </a>
     </nav>
 
     <div class="spacer"></div>
@@ -24,7 +28,8 @@
     <div class="sidebar-footer">
       @if (authService.currentUser(); as user) {
       <div class="user-info">
-        <span class="user-email">{{ user.email }}</span>
+        <span class="user-email" *ngIf="user.username">{{ user.username }}</span>
+        <span class="user-email" *ngIf="!user.username">{{ user.email }}</span>
       </div>
       }
       <button mat-icon-button (click)="logout()" matTooltip="Logout">

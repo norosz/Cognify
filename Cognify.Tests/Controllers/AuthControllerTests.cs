@@ -110,4 +110,46 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Program>>
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
+    [Fact]
+    public async Task UpdateProfile_ShouldReturnOk_WhenAuthorized()
+    {
+        // Arrange
+        var client = _factory.CreateClient();
+        var registerDto = new RegisterDto { Email = "profileuser@example.com", Password = "password123", Username = "OldName" };
+        var authResponse = await client.PostAsJsonAsync("/api/auth/register", registerDto);
+        var authResult = await authResponse.Content.ReadFromJsonAsync<AuthResponseDto>();
+        
+        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", authResult!.Token);
+
+        var updateDto = new UpdateProfileDto { Email = "profileuser@example.com", Username = "NewName" };
+
+        // Act
+        var response = await client.PutAsJsonAsync("/api/auth/update-profile", updateDto);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await response.Content.ReadFromJsonAsync<UserProfileDto>();
+        result.Should().NotBeNull();
+        result!.Username.Should().Be("NewName");
+    }
+
+    [Fact]
+    public async Task ChangePassword_ShouldReturnNoContent_WhenAuthorized()
+    {
+        // Arrange
+        var client = _factory.CreateClient();
+        var registerDto = new RegisterDto { Email = "pwuser@example.com", Password = "password123" };
+        var authResponse = await client.PostAsJsonAsync("/api/auth/register", registerDto);
+        var authResult = await authResponse.Content.ReadFromJsonAsync<AuthResponseDto>();
+        
+        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", authResult!.Token);
+
+        var changePwDto = new ChangePasswordDto { CurrentPassword = "password123", NewPassword = "newpassword123" };
+
+        // Act
+        var response = await client.PutAsJsonAsync("/api/auth/change-password", changePwDto);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
 }
