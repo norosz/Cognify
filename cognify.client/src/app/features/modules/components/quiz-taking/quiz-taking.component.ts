@@ -6,6 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormsModule } from '@angular/forms';
 import { QuizService } from '../../services/quiz.service';
@@ -27,7 +28,8 @@ import { MarkdownLatexPipe } from '../../../../shared/pipes/markdown-latex.pipe'
     MatFormFieldModule,
     FormsModule,
     DragDropModule,
-    MarkdownLatexPipe
+    MarkdownLatexPipe,
+    MatCheckboxModule
   ],
   templateUrl: './quiz-taking.component.html',
   styleUrl: './quiz-taking.component.scss'
@@ -224,5 +226,26 @@ export class QuizTakingComponent {
       }
     }
     return '';
+  }
+
+  onMultiSelectChange(questionId: string, option: string, checked: boolean) {
+    const currentAnswer = this.answers[questionId] || '';
+    let selected = currentAnswer ? currentAnswer.split('|') : [];
+
+    if (checked) {
+      if (!selected.includes(option)) {
+        selected.push(option);
+      }
+    } else {
+      selected = selected.filter(s => s !== option);
+    }
+
+    this.answers[questionId] = selected.join('|');
+  }
+
+  isMultiSelectChecked(questionId: string, option: string): boolean {
+    const currentAnswer = this.answers[questionId];
+    if (!currentAnswer) return false;
+    return currentAnswer.split('|').includes(option);
   }
 }

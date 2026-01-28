@@ -23,9 +23,19 @@ public class DocumentService : IDocumentService
         _userContextService = userContextService;
     }
 
-    public async Task<UploadInitiateResponse> InitiateUploadAsync(Guid moduleId, string fileName, string contentType)
+    private const long MaxFileSize = 50 * 1024 * 1024; // 50 MB
+    private static readonly string[] AllowedExtensions = { ".jpg", ".jpeg", ".png", ".txt", ".pdf", ".docx", ".md", ".yaml", ".json" };
+
+    public async Task<UploadInitiateResponse> InitiateUploadAsync(Guid moduleId, string fileName, string contentType, long fileSize)
     {
         var userId = _userContextService.GetCurrentUserId();
+
+        if (fileSize > MaxFileSize)
+            throw new ArgumentException($"File size exceeds maximum allowed limit of {MaxFileSize / (1024 * 1024)} MB.");
+
+        var extension = Path.GetExtension(fileName).ToLowerInvariant();
+        if (!AllowedExtensions.Contains(extension))
+            throw new ArgumentException($"File type '{extension}' is not allowed.");
         
         // Verify Module Ownership
         var module = await _context.Modules.FirstOrDefaultAsync(m => m.Id == moduleId);
@@ -47,7 +57,8 @@ public class DocumentService : IDocumentService
             FileName = fileName,
             BlobPath = blobName,
             CreatedAt = DateTime.UtcNow,
-            Status = Models.DocumentStatus.Processing 
+            Status = Models.DocumentStatus.Processing,
+            FileSize = fileSize
         };
 
         _context.Documents.Add(document);
@@ -93,6 +104,7 @@ public class DocumentService : IDocumentService
             document.BlobPath, 
             Dtos.Documents.DocumentStatus.Ready, 
             document.CreatedAt,
+            document.FileSize,
             downloadUrl
         );
     }
@@ -136,6 +148,7 @@ public class DocumentService : IDocumentService
                 doc.BlobPath,
                 statusDto,
                 doc.CreatedAt,
+                doc.FileSize,
                 downloadUrl
             ));
         }
@@ -166,6 +179,7 @@ public class DocumentService : IDocumentService
             document.BlobPath, 
             (Dtos.Documents.DocumentStatus)document.Status, 
             document.CreatedAt, 
+            document.FileSize,
             downloadUrl
         );
     }

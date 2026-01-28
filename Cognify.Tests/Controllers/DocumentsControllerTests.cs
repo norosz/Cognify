@@ -88,7 +88,7 @@ public class DocumentsControllerTests : IClassFixture<WebApplicationFactory<Prog
             .Setup(x => x.GenerateUploadSasToken(It.IsAny<string>(), It.IsAny<DateTimeOffset>()))
             .Returns("https://azurite/container/blob?sas=token");
 
-        var request = new UploadInitiateRequest("test.txt", "text/plain");
+        var request = new UploadInitiateRequest("test.txt", "text/plain", 1024);
 
         // Act
         var response = await client.PostAsJsonAsync($"/api/modules/{module.Id}/documents/initiate", request);
@@ -115,7 +115,7 @@ public class DocumentsControllerTests : IClassFixture<WebApplicationFactory<Prog
             .Returns("https://sas-url");
 
         // Initiate
-        var request = new UploadInitiateRequest("test.txt", "text/plain");
+        var request = new UploadInitiateRequest("test.txt", "text/plain", 1024);
         var initRes = await client.PostAsJsonAsync($"/api/modules/{module.Id}/documents/initiate", request);
         var initData = await initRes.Content.ReadFromJsonAsync<UploadInitiateResponse>();
 
@@ -151,7 +151,7 @@ public class DocumentsControllerTests : IClassFixture<WebApplicationFactory<Prog
             .Returns("https://sas-url");
 
         // Create a document
-        var request = new UploadInitiateRequest("test.txt", "text/plain");
+        var request = new UploadInitiateRequest("test.txt", "text/plain", 1024);
         var initRes = await client.PostAsJsonAsync($"/api/modules/{module.Id}/documents/initiate", request);
         var initData = await initRes.Content.ReadFromJsonAsync<UploadInitiateResponse>();
         await client.PostAsync($"/api/documents/{initData!.DocumentId}/complete", null);
@@ -177,7 +177,7 @@ public class DocumentsControllerTests : IClassFixture<WebApplicationFactory<Prog
         _blobStorageMock.Setup(x => x.GenerateUploadSasToken(It.IsAny<string>(), It.IsAny<DateTimeOffset>())).Returns("url");
         _blobStorageMock.Setup(x => x.DeleteAsync(It.IsAny<string>())).Returns(Task.CompletedTask);
 
-        var request = new UploadInitiateRequest("test.txt", "text/plain");
+        var request = new UploadInitiateRequest("test.txt", "text/plain", 1024);
         var initRes = await client.PostAsJsonAsync($"/api/modules/{module.Id}/documents/initiate", request);
         var initData = await initRes.Content.ReadFromJsonAsync<UploadInitiateResponse>();
 

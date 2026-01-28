@@ -4,7 +4,8 @@ namespace Cognify.Server.Dtos.Documents;
 
 public record UploadInitiateRequest(
     [Required] string FileName,
-    [Required] string ContentType
+    [Required] string ContentType,
+    [Required] long FileSize
 );
 
 public record UploadInitiateResponse(
@@ -20,6 +21,7 @@ public record DocumentDto(
     string BlobPath,
     DocumentStatus Status,
     DateTime CreatedAt,
+    long FileSize,
     string? DownloadUrl = null // SAS URL for download
 );
 

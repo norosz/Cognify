@@ -32,5 +32,6 @@ public enum QuestionType
     TrueFalse = 1,
     OpenText = 2,
     Matching = 3,
-    Ordering = 4
+    Ordering = 4,
+    MultiSelect = 5
 }
