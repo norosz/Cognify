@@ -4,10 +4,12 @@
     </div>
 
     <div *ngIf="!isLoading()">
-        <div *ngIf="quizzes().length === 0" class="empty-state">
-            <mat-icon>quiz</mat-icon>
-            <p>No quizzes available yet. Generate one from your notes!</p>
-        </div>
+        <mat-card *ngIf="quizzes().length === 0" class="empty-state cognify-glass-card">
+            <mat-card-content class="empty-state-content">
+                <mat-icon>quiz</mat-icon>
+                <p>No quizzes available yet. Generate one from your notes!</p>
+            </mat-card-content>
+        </mat-card>
 
         <div class="grid">
             <mat-card *ngFor="let item of quizzes()" class="quiz-card cognify-glass-card">

@@ -23,9 +23,19 @@ public class AuthService(
             throw new InvalidOperationException("User with this email already exists.");
         }
 
+        if (!string.IsNullOrWhiteSpace(dto.Username))
+        {
+            var existingUsername = await context.Users.AnyAsync(u => u.Username == dto.Username);
+            if (existingUsername)
+            {
+                throw new InvalidOperationException("Username is already taken.");
+            }
+        }
+
         var user = new User
         {
             Email = dto.Email,
+            Username = dto.Username,
             PasswordHash = passwordHasher.HashPassword(dto.Password)
         };
 
@@ -75,6 +85,7 @@ public class AuthService(
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
+            new Claim("username", user.Username ?? ""),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
@@ -87,5 +98,68 @@ public class AuthService(
         );
 
         return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    public async Task<UserProfileDto> GetUserProfileAsync(Guid userId)
+    {
+        var user = await context.Users.FindAsync(userId);
+        if (user == null)
+        {
+            throw new InvalidOperationException("User not found.");
+        }
+
+        return new UserProfileDto
+        {
+            Id = user.Id,
+            Email = user.Email,
+            Username = user.Username
+        };
+    }
+
+    public async Task ChangePasswordAsync(Guid userId, ChangePasswordDto dto)
+    {
+        var user = await context.Users.FindAsync(userId);
+        if (user == null)
+        {
+            throw new InvalidOperationException("User not found.");
+        }
+
+        if (!passwordHasher.VerifyPassword(dto.CurrentPassword, user.PasswordHash))
+        {
+            throw new UnauthorizedAccessException("Invalid current password.");
+        }
+
+        user.PasswordHash = passwordHasher.HashPassword(dto.NewPassword);
+        await context.SaveChangesAsync();
+    }
+
+    public async Task<UserProfileDto> UpdateProfileAsync(Guid userId, UpdateProfileDto dto)
+    {
+        var user = await context.Users.FindAsync(userId);
+        if (user == null)
+        {
+            throw new InvalidOperationException("User not found.");
+        }
+
+        if (user.Email != dto.Email)
+        {
+            var emailExists = await context.Users.AnyAsync(u => u.Email == dto.Email && u.Id != userId);
+            if (emailExists)
+            {
+                throw new InvalidOperationException("Email is already in use.");
+            }
+            user.Email = dto.Email;
+        }
+
+        user.Username = dto.Username;
+
+        await context.SaveChangesAsync();
+
+        return new UserProfileDto
+        {
+            Id = user.Id,
+            Email = user.Email,
+            Username = user.Username
+        };
     }
 }

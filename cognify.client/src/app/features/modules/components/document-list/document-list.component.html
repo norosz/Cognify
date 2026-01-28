@@ -46,9 +46,11 @@
     </div>
 
     <ng-template #noDocs>
-        <div class="empty-state">
-            <mat-icon class="huge-icon">folder_open</mat-icon>
-            <p>No documents uploaded yet. Upload one to get started!</p>
-        </div>
+        <mat-card class="empty-state cognify-glass-card">
+            <mat-card-content class="empty-state-content">
+                <mat-icon class="huge-icon">folder_open</mat-icon>
+                <p>No documents uploaded yet. Upload one to get started!</p>
+            </mat-card-content>
+        </mat-card>
     </ng-template>
 </div>

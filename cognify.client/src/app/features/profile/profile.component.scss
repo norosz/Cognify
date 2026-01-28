@@ -1,0 +1,24 @@
+.profile-container {
+    padding: 24px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+mat-card {
+    padding: 16px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+mat-divider {
+    margin: 24px 0;
+}
+
+button {
+    align-self: flex-start;
+}

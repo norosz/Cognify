@@ -3,12 +3,13 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
 import { jwtDecode } from 'jwt-decode';
-import { AuthResponse, LoginRequest, RegisterRequest } from './auth.models';
+import { AuthResponse, ChangePasswordRequest, LoginRequest, RegisterRequest, UpdateProfileRequest, UserProfile } from './auth.models';
 
 interface JwtPayload {
   email: string;
   sub: string;
   exp: number;
+  username?: string;
 }
 
 @Injectable({
@@ -18,7 +19,7 @@ export class AuthService {
   private readonly apiUrl = '/api/auth';
   private readonly tokenKey = 'cognify_token';
 
-  currentUser = signal<{ email: string } | null>(null);
+  currentUser = signal<UserProfile | null>(null);
 
   constructor(private http: HttpClient, private router: Router) {
     this.restoreSession();
@@ -44,6 +45,29 @@ export class AuthService {
     );
   }
 
+  validateToken(): Observable<UserProfile> {
+    return this.http.get<UserProfile>(`${this.apiUrl}/me`).pipe(
+      tap(profile => this.currentUser.set(profile)),
+      tap({
+        error: () => this.logout()
+      })
+    );
+  }
+
+  getProfile(): Observable<UserProfile> {
+    return this.http.get<UserProfile>(`${this.apiUrl}/me`);
+  }
+
+  updateProfile(data: UpdateProfileRequest): Observable<UserProfile> {
+    return this.http.put<UserProfile>(`${this.apiUrl}/update-profile`, data).pipe(
+      tap(profile => this.currentUser.set(profile))
+    );
+  }
+
+  changePassword(data: ChangePasswordRequest): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/change-password`, data);
+  }
+
   logout(): void {
     localStorage.removeItem(this.tokenKey);
     this.currentUser.set(null);
@@ -65,7 +89,12 @@ export class AuthService {
         if (isExpired) {
           this.logout();
         } else {
-          this.currentUser.set({ email: decoded.email });
+          // Optimistically set user from token, but validation will override if configured
+          this.currentUser.set({
+            id: decoded.sub,
+            email: decoded.email,
+            username: decoded.username
+          });
         }
       } catch (error) {
         console.error('Invalid token', error);
