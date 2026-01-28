@@ -169,7 +169,7 @@ public class AiControllerTests : IClassFixture<WebApplicationFactory<Program>>, 
         _blobStorageMock.Setup(x => x.DownloadStreamAsync(It.IsAny<string>())).ReturnsAsync(new MemoryStream());
 
         // Mock Document Service
-        var docDto = new Cognify.Server.Dtos.Documents.DocumentDto(documentId, moduleId, "test.png", "path", Cognify.Server.Dtos.Documents.DocumentStatus.Ready, DateTime.UtcNow);
+        var docDto = new Cognify.Server.Dtos.Documents.DocumentDto(documentId, moduleId, "test.png", "path", Cognify.Server.Dtos.Documents.DocumentStatus.Ready, DateTime.UtcNow, 1024);
         _documentServiceMock.Setup(dx => dx.GetByIdAsync(documentId)).ReturnsAsync(docDto);
 
         // Act
