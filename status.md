@@ -38,7 +38,7 @@
 - [x] **[Agent]** Extract embedded images + metadata for PDF materials
 - [x] **[Agent]** Populate extraction contract output (blocks/confidence/images)
 - [ ] **[Agent]** Implement Question Generation Agent (Pipe B)
-- [ ] **[Agent]** Implement Grading Agent (Pipe C)
+- [x] **[Agent]** Implement Grading Agent (Pipe C)
 - [x] **[Agent]** Implement Learning Analytics Agent (Statistical Engine)
 - [x] **[Agent]** Generate rubric content in quiz generation output (v2 contract)
 

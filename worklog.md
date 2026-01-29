@@ -5,6 +5,33 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-29 18:13  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Implemented grading JSON contract with detected mistakes and confidence estimate
+- Added grading prompt template and JSON parsing with fallback to legacy grading
+- Marked grading agent (Pipe C) as completed in status board
+
+**CHANGED FILES**
+- Cognify.Server/Services/AiPrompts.cs
+- Cognify.Server/Services/AiService.cs
+- Cognify.Server/Services/NullAiService.cs
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Use JSON grading output as primary source; fall back to legacy text grading if parsing fails.
+
+**NEXT**
+- Add tests for grading response parsing and detected mistake propagation.
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
 **Timestamp:** 2026-01-29 18:07  
 **Author:** GitHub Copilot  
 

@@ -237,18 +237,55 @@ public class AiService : IAiService
             context = $"{context}\n\nRubric:\n{request.Rubric}";
         }
 
-        var analysis = await GradeAnswerAsync(request.QuestionPrompt, request.UserAnswer, context);
-        var score = TryParseScore(analysis);
-        var feedback = TryParseFeedback(analysis);
+        var model = _configuration["OpenAI:Model"] ?? "gpt-4o";
+        var chatClient = _client.GetChatClient(model);
+        var prompt = AiPrompts.BuildGradingPromptWithRubric(
+            request.QuestionPrompt,
+            request.UserAnswer,
+            context,
+            request.KnownMistakePatterns);
 
-        return new GradingContractResponse(
-            request.ContractVersion,
-            score ?? 0,
-            100,
-            feedback,
-            DetectedMistakes: null,
-            ConfidenceEstimate: null,
-            RawAnalysis: analysis);
+        try
+        {
+            var completion = await chatClient.CompleteChatAsync(
+                [
+                    new SystemChatMessage("You are a strict JSON generator. Return only the required grading JSON object."),
+                    new UserChatMessage(prompt)
+                ],
+                new ChatCompletionOptions
+                {
+                    ResponseFormat = ChatResponseFormat.CreateJsonObjectFormat()
+                }
+            );
+
+            var json = completion.Value.Content[0].Text;
+            var parsed = ParseGradingResponse(json);
+
+            return new GradingContractResponse(
+                request.ContractVersion,
+                parsed.Score,
+                100,
+                parsed.Feedback,
+                parsed.DetectedMistakes,
+                parsed.ConfidenceEstimate,
+                RawAnalysis: json);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to parse grading JSON. Falling back to legacy grading.");
+            var analysis = await GradeAnswerAsync(request.QuestionPrompt, request.UserAnswer, context);
+            var score = TryParseScore(analysis);
+            var feedback = TryParseFeedback(analysis);
+
+            return new GradingContractResponse(
+                request.ContractVersion,
+                score ?? 0,
+                100,
+                feedback,
+                DetectedMistakes: null,
+                ConfidenceEstimate: null,
+                RawAnalysis: analysis);
+        }
     }
 
     private static double? TryParseScore(string analysis)
@@ -270,6 +307,65 @@ public class AiService : IAiService
 
         var match = Regex.Match(analysis, @"Feedback\s*:\s*(.*)", RegexOptions.IgnoreCase | RegexOptions.Singleline);
         return match.Success ? match.Groups[1].Value.Trim() : null;
+    }
+
+    private static (double Score, string? Feedback, IReadOnlyList<string>? DetectedMistakes, double? ConfidenceEstimate) ParseGradingResponse(string json)
+    {
+        if (string.IsNullOrWhiteSpace(json)) return (0, null, null, null);
+
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+            if (root.ValueKind != JsonValueKind.Object)
+            {
+                return (0, null, null, null);
+            }
+
+            double score = 0;
+            string? feedback = null;
+            double? confidence = null;
+            IReadOnlyList<string>? mistakes = null;
+
+            if (root.TryGetProperty("score", out var scoreProp) && scoreProp.ValueKind == JsonValueKind.Number)
+            {
+                score = Math.Clamp(scoreProp.GetDouble(), 0, 100);
+            }
+
+            if (root.TryGetProperty("feedback", out var feedbackProp) && feedbackProp.ValueKind == JsonValueKind.String)
+            {
+                feedback = feedbackProp.GetString();
+            }
+
+            if (root.TryGetProperty("confidenceEstimate", out var confProp) && confProp.ValueKind == JsonValueKind.Number)
+            {
+                confidence = Math.Clamp(confProp.GetDouble(), 0, 1);
+            }
+
+            if (root.TryGetProperty("detectedMistakes", out var mistakesProp) && mistakesProp.ValueKind == JsonValueKind.Array)
+            {
+                var list = new List<string>();
+                foreach (var item in mistakesProp.EnumerateArray())
+                {
+                    if (item.ValueKind == JsonValueKind.String)
+                    {
+                        var value = item.GetString();
+                        if (!string.IsNullOrWhiteSpace(value))
+                        {
+                            list.Add(value);
+                        }
+                    }
+                }
+
+                mistakes = list.Count > 0 ? list : null;
+            }
+
+            return (score, feedback, mistakes, confidence);
+        }
+        catch
+        {
+            return (0, null, null, null);
+        }
     }
 
     private static (List<GeneratedQuestion> Questions, string? QuizRubric) ParseQuizGenerationResponse(string json)
