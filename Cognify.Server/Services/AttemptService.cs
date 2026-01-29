@@ -199,6 +199,12 @@ public class AttemptService(
                 KnownMistakePatterns: null);
 
             var response = await aiService.GradeAnswerAsync(request);
+            if (response == null)
+            {
+                await agentRunService.MarkFailedAsync(run.Id, "AI grading returned null response.");
+                return new QuestionEvaluation(0, false, null, BuildOpenTextMistakes(0));
+            }
+
             var normalizedScore = response.MaxScore > 0
                 ? Math.Clamp(response.Score / response.MaxScore, 0, 1)
                 : 0;

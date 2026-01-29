@@ -1,6 +1,7 @@
 using Cognify.Server.Data;
 using Cognify.Server.DTOs;
 using Cognify.Server.Dtos.Knowledge;
+using Cognify.Server.Dtos.Ai.Contracts;
 using Cognify.Server.Models;
 using Cognify.Server.Services;
 using Cognify.Server.Services.Interfaces;
@@ -255,12 +256,19 @@ public class AttemptServiceTests : IDisposable
         await _context.SaveChangesAsync();
 
         _agentRunServiceMock
-            .Setup(s => s.CreateAsync(_userId, AgentRunType.Grading, It.IsAny<string>(), question.Id.ToString(), "grading-v1"))
+            .Setup(s => s.CreateAsync(_userId, AgentRunType.Grading, It.IsAny<string>(), question.Id.ToString(), "grading-v2"))
             .ReturnsAsync(new AgentRun { Id = Guid.NewGuid(), UserId = _userId, Type = AgentRunType.Grading, Status = AgentRunStatus.Pending });
 
         _aiServiceMock
-            .Setup(s => s.GradeAnswerAsync(question.Prompt, "My answer", It.IsAny<string>()))
-            .ReturnsAsync("Score: 80\nFeedback: Solid answer");
+            .Setup(s => s.GradeAnswerAsync(It.IsAny<GradingContractRequest>()))
+            .ReturnsAsync(new GradingContractResponse(
+                AgentContractVersions.V2,
+                Score: 80,
+                MaxScore: 100,
+                Feedback: "Solid answer",
+                DetectedMistakes: null,
+                ConfidenceEstimate: null,
+                RawAnalysis: "Score: 80\nFeedback: Solid answer"));
 
         var dto = new SubmitAttemptDto
         {
