@@ -167,3 +167,61 @@
     </mat-card>
     }
 </div>
+
+<div class="visualizations-grid">
+    <mat-card class="visualization-card cognify-glass-card">
+        <mat-card-header>
+            <mat-card-title>Knowledge Map</mat-card-title>
+            <mat-card-subtitle>Mastery vs. forgetting risk</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+            @if (!analyticsSummary()) {
+            <div class="empty-inline">
+                <mat-icon>grid_view</mat-icon>
+                <p>No topics to visualize yet.</p>
+            </div>
+            } @else {
+            <ul class="knowledge-map">
+                @for (topic of analyticsSummary()!.topics; track topic.topic) {
+                <li>
+                    <div class="knowledge-header">
+                        <span class="topic-name">{{ topic.topic }}</span>
+                        <span class="topic-meta">Mastery {{ (topic.masteryScore * 100) | number: '1.0-0' }}%</span>
+                    </div>
+                    <div class="bar-row">
+                        <div class="bar mastery" [style.width]="getMasteryWidth(topic.masteryScore)"></div>
+                    </div>
+                    <div class="bar-row">
+                        <div class="bar risk" [style.width]="getRiskWidth(topic.forgettingRisk)"></div>
+                    </div>
+                </li>
+                }
+            </ul>
+            }
+        </mat-card-content>
+    </mat-card>
+
+    <mat-card class="visualization-card cognify-glass-card">
+        <mat-card-header>
+            <mat-card-title>Memory Decay</mat-card-title>
+            <mat-card-subtitle>Average quiz score trend</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+            @if (!analyticsSummary()) {
+            <div class="empty-inline">
+                <mat-icon>show_chart</mat-icon>
+                <p>No trend data yet.</p>
+            </div>
+            } @else {
+            <div class="trend-chart">
+                @for (point of analyticsSummary()!.trends; track point.date) {
+                <div class="trend-bar">
+                    <div class="trend-fill" [style.height]="getTrendHeight(point.averageScore)"></div>
+                    <span class="trend-label">{{ point.date | date: 'MM/dd' }}</span>
+                </div>
+                }
+            </div>
+            }
+        </mat-card-content>
+    </mat-card>
+</div>

@@ -203,4 +203,19 @@ export class DashboardComponent implements OnInit {
       });
     }
   }
+
+  getTrendHeight(score: number): string {
+    const clamped = Math.max(0, Math.min(100, score));
+    return `${clamped}%`;
+  }
+
+  getRiskWidth(risk: number): string {
+    const clamped = Math.max(0, Math.min(1, risk));
+    return `${clamped * 100}%`;
+  }
+
+  getMasteryWidth(mastery: number): string {
+    const clamped = Math.max(0, Math.min(1, mastery));
+    return `${clamped * 100}%`;
+  }
 }
