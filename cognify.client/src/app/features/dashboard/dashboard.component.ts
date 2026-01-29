@@ -16,6 +16,8 @@ import { AdaptiveQuizService } from '../../core/services/adaptive-quiz.service';
 import { PendingService } from '../../core/services/pending.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { ReviewQueueItemDto, UserKnowledgeStateDto } from '../../core/models/knowledge.models';
+import { AnalyticsService } from '../../core/services/analytics.service';
+import { LearningAnalyticsSummaryDto } from '../../core/models/analytics.models';
 
 @Component({
   selector: 'app-dashboard',
@@ -39,16 +41,20 @@ export class DashboardComponent implements OnInit {
   adaptiveQuizService = inject(AdaptiveQuizService);
   pendingService = inject(PendingService);
   notificationService = inject(NotificationService);
+  analyticsService = inject(AnalyticsService);
   dialog = inject(MatDialog);
   modules = signal<ModuleDto[]>([]);
   reviewQueue = signal<ReviewQueueItemDto[]>([]);
   weakTopics = signal<UserKnowledgeStateDto[]>([]);
+  analyticsSummary = signal<LearningAnalyticsSummaryDto | null>(null);
   isKnowledgeLoading = signal<boolean>(false);
+  isAnalyticsLoading = signal<boolean>(false);
   isGenerating = signal<boolean>(false);
 
   ngOnInit() {
     this.loadModules();
     this.loadKnowledge();
+    this.loadAnalytics();
   }
 
   loadModules() {
@@ -74,6 +80,20 @@ export class DashboardComponent implements OnInit {
       error: (err) => {
         console.error('Failed to load knowledge states', err);
         this.isKnowledgeLoading.set(false);
+      }
+    });
+  }
+
+  loadAnalytics() {
+    this.isAnalyticsLoading.set(true);
+    this.analyticsService.getSummary().subscribe({
+      next: (summary) => {
+        this.analyticsSummary.set(summary);
+        this.isAnalyticsLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Failed to load analytics summary', err);
+        this.isAnalyticsLoading.set(false);
       }
     });
   }
