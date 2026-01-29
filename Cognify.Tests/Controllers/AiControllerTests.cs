@@ -185,7 +185,7 @@ public class AiControllerTests : IClassFixture<WebApplicationFactory<Program>>, 
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             var pending = db.ExtractedContents.FirstOrDefault(x => x.Id == pendingId);
             pending.Should().NotBeNull();
-            pending!.Status.Should().Be("Processing");
+            pending!.Status.Should().Be(ExtractedContentStatus.Processing);
             pending.DocumentId.Should().Be(documentId);
         }
     }

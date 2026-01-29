@@ -3,7 +3,6 @@ using Cognify.Server.Models;
 using Cognify.Server.Services;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using Moq;
 using Xunit;
 
 namespace Cognify.Tests.Services;
@@ -19,7 +18,8 @@ public class ExtractedContentServiceTests
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
         _context = new ApplicationDbContext(options);
-        _service = new ExtractedContentService(_context);
+        var agentRunService = new AgentRunService(_context);
+        _service = new ExtractedContentService(_context, agentRunService);
     }
 
     [Fact]
@@ -35,7 +35,7 @@ public class ExtractedContentServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Status.Should().Be("Processing");
+        result.Status.Should().Be(ExtractedContentStatus.Processing);
         result.UserId.Should().Be(userId);
         result.DocumentId.Should().Be(docId);
         result.ModuleId.Should().Be(modId);
@@ -51,7 +51,7 @@ public class ExtractedContentServiceTests
         var content = new ExtractedContent 
         { 
             Id = Guid.NewGuid(), 
-            Status = "Processing",
+            Status = ExtractedContentStatus.Processing,
             UserId = Guid.NewGuid(),
             DocumentId = Guid.NewGuid(),
             ModuleId = Guid.NewGuid(),
@@ -65,7 +65,7 @@ public class ExtractedContentServiceTests
 
         // Assert
         var dbRecord = await _context.ExtractedContents.FindAsync(content.Id);
-        dbRecord!.Status.Should().Be("Ready");
+        dbRecord!.Status.Should().Be(ExtractedContentStatus.Ready);
         dbRecord.Text.Should().Be("Extracted Text");
     }
 
@@ -76,7 +76,7 @@ public class ExtractedContentServiceTests
         var content = new ExtractedContent 
         { 
             Id = Guid.NewGuid(), 
-            Status = "Processing",
+            Status = ExtractedContentStatus.Processing,
             UserId = Guid.NewGuid(),
             DocumentId = Guid.NewGuid(),
             ModuleId = Guid.NewGuid(),
@@ -90,7 +90,7 @@ public class ExtractedContentServiceTests
 
         // Assert
         var dbRecord = await _context.ExtractedContents.FindAsync(content.Id);
-        dbRecord!.Status.Should().Be("Error");
+        dbRecord!.Status.Should().Be(ExtractedContentStatus.Error);
         dbRecord.ErrorMessage.Should().Be("Extraction Failed");
     }
 }

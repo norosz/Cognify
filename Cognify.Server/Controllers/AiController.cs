@@ -1,8 +1,8 @@
 using Cognify.Server.Dtos.Ai;
+using Cognify.Server.Models;
 using Cognify.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace Cognify.Server.Controllers;
 
@@ -14,27 +14,24 @@ public class AiController : ControllerBase
     private readonly IAiService _aiService;
     private readonly INoteService _noteService;
     private readonly IDocumentService _documentService;
-    private readonly IBlobStorageService _blobStorageService;
     private readonly IExtractedContentService _extractedContentService;
     private readonly IUserContextService _userContext;
-    private readonly IServiceScopeFactory _serviceScopeFactory;
+    private readonly ILogger<AiController> _logger;
 
     public AiController(
         IAiService aiService, 
         INoteService noteService, 
-        IDocumentService documentService, 
-        IBlobStorageService blobStorageService,
+        IDocumentService documentService,
         IExtractedContentService extractedContentService,
         IUserContextService userContext,
-        IServiceScopeFactory serviceScopeFactory)
+        ILogger<AiController> logger)
     {
         _aiService = aiService;
         _noteService = noteService;
         _documentService = documentService;
-        _blobStorageService = blobStorageService;
         _extractedContentService = extractedContentService;
         _userContext = userContext;
-        _serviceScopeFactory = serviceScopeFactory;
+        _logger = logger;
     }
 
     private Guid GetUserId() => _userContext.GetCurrentUserId();
@@ -70,48 +67,14 @@ public class AiController : ControllerBase
 
         try
         {
-            // 1. Create Pending Record Immediately (Synchronous to current request)
             var userId = GetUserId();
             var extractedContent = await _extractedContentService.CreatePendingAsync(userId, documentId, document.ModuleId);
-            
-            // 2. Update with Text (Fire-and-Forget)
-            _ = Task.Run(async () => 
-            {
-                try 
-                {
-                    using var scope = _serviceScopeFactory.CreateScope();
-                    var aiService = scope.ServiceProvider.GetRequiredService<IAiService>();
-                    var blobService = scope.ServiceProvider.GetRequiredService<IBlobStorageService>();
-                    var extractionService = scope.ServiceProvider.GetRequiredService<IExtractedContentService>();
-
-                    // Re-download stream in background
-                    // We cannot re-use the 'document' variable safely if context is disposed? 
-                    // 'document' is a DTO/POCO from Service so it should be fine, but let's be safe.
-                    // The path string is safe.
-                    var stream = await blobService.DownloadStreamAsync(document.BlobPath);
-                    
-                    var text = await aiService.ParseHandwritingAsync(stream, contentType);
-                    
-                    await extractionService.UpdateAsync(extractedContent.Id, text);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Background Extraction Failed: {ex.Message}");
-                    try 
-                    {
-                        using var scope = _serviceScopeFactory.CreateScope();
-                        var extractionService = scope.ServiceProvider.GetRequiredService<IExtractedContentService>();
-                        await extractionService.MarkAsErrorAsync(extractedContent.Id, "AI Extraction failed. Please try again.");
-                    } 
-                    catch { /* Swallow error logging failure */ }
-                }
-            });
-
-            return Accepted(new { extractedContentId = extractedContent.Id, status = "Processing" });
+            return Accepted(new { extractedContentId = extractedContent.Id, status = ExtractedContentStatus.Processing });
         }
         catch (Exception ex)
         {
-             return StatusCode(500, new { error = "Failed to initiate extraction.", details = ex.Message });
+            _logger.LogError(ex, "Failed to initiate extraction for document {DocumentId}", documentId);
+            return Problem("Failed to initiate extraction.");
         }
     }
 
@@ -135,7 +98,8 @@ public class AiController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "Failed to generate questions.", details = ex.Message });
+            _logger.LogError(ex, "Failed to generate questions for note {NoteId}", request.NoteId);
+            return Problem("Failed to generate questions.");
         }
     }
 
@@ -149,7 +113,8 @@ public class AiController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "Grading failed.", details = ex.Message });
+            _logger.LogError(ex, "Failed to grade answer");
+            return Problem("Grading failed.");
         }
     }
 }

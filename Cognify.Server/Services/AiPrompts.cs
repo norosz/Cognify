@@ -54,7 +54,7 @@ public static class AiPrompts
         };
     }
 
-    public static string BuildGenerationPrompt(int count, string difficultyPrompt, string typePrompt, string content)
+    public static string BuildGenerationPrompt(int count, int difficultyLevel, string difficultyPrompt, string typePrompt, string content)
     {
         return $$"""
         You are an expert tutor. Your task is to generate {{count}} high-quality study questions based on the provided content.
@@ -79,7 +79,7 @@ public static class AiPrompts
               "pairs": ["Term:Definition", ...], (Only for Matching)
               "correctAnswer": "The correct response or key",
               "explanation": "Why this is correct",
-              "difficultyLevel": {{count}} (Use simple int 1-5, relative to requested difficulty)
+              "difficultyLevel": {{difficultyLevel}} (Use simple int 1-5, relative to requested difficulty)
             }
           ]
         }

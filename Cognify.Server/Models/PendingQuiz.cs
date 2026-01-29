@@ -30,6 +30,8 @@ public class PendingQuiz
 
     public Guid ModuleId { get; set; }
 
+    public Guid? AgentRunId { get; set; }
+
     [Required]
     [MaxLength(200)]
     public required string Title { get; set; }
@@ -63,4 +65,6 @@ public class PendingQuiz
     public User? User { get; set; }
     public Note? Note { get; set; }
     public Module? Module { get; set; }
+
+    public AgentRun? AgentRun { get; set; }
 }

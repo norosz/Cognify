@@ -15,11 +15,13 @@ public class ExtractedContent
 
     public Guid ModuleId { get; set; }
 
+    public Guid? AgentRunId { get; set; }
+
     public string? Text { get; set; }
 
     public DateTime ExtractedAt { get; set; } = DateTime.UtcNow;
 
-    public string Status { get; set; } = "Ready"; // Processing, Ready, Error
+    public ExtractedContentStatus Status { get; set; } = ExtractedContentStatus.Ready;
 
     public string? ErrorMessage { get; set; }
 
@@ -32,4 +34,6 @@ public class ExtractedContent
     public User? User { get; set; }
     public Document? Document { get; set; }
     public Module? Module { get; set; }
+
+    public AgentRun? AgentRun { get; set; }
 }

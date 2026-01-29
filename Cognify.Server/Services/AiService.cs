@@ -29,7 +29,7 @@ public class AiService : IAiService
 
         var difficultyPrompt = AiPrompts.GetDifficultySystemPrompt((int)difficulty);
         var typePrompt = AiPrompts.GetTypeSystemPrompt(type);
-        var prompt = AiPrompts.BuildGenerationPrompt(count, difficultyPrompt, typePrompt, content);
+        var prompt = AiPrompts.BuildGenerationPrompt(count, difficulty, difficultyPrompt, typePrompt, content);
 
         try 
         {

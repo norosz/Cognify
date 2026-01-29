@@ -43,6 +43,8 @@ public class Program
         builder.Services.AddScoped<IAttemptService, AttemptService>();
         builder.Services.AddScoped<IExtractedContentService, ExtractedContentService>();
         builder.Services.AddScoped<IPendingQuizService, PendingQuizService>();
+        builder.Services.AddScoped<IAgentRunService, AgentRunService>();
+        builder.Services.AddHostedService<AiBackgroundWorker>();
 
         // Register Authentication
         var jwtSettings = builder.Configuration.GetSection("Jwt");

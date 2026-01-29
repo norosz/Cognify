@@ -14,6 +14,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Attempt> Attempts => Set<Attempt>();
     public DbSet<ExtractedContent> ExtractedContents => Set<ExtractedContent>();
     public DbSet<PendingQuiz> PendingQuizzes => Set<PendingQuiz>();
+    public DbSet<AgentRun> AgentRuns => Set<AgentRun>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -86,12 +87,29 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasForeignKey(e => e.ModuleId)
             .OnDelete(DeleteBehavior.NoAction); // Prevent multiple cascade paths
 
+        modelBuilder.Entity<ExtractedContent>()
+            .Property(e => e.Status)
+            .HasConversion<string>();
+
         // PendingQuiz Relationships
         modelBuilder.Entity<PendingQuiz>()
             .HasOne(p => p.User)
             .WithMany()
             .HasForeignKey(p => p.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // AgentRun Relationships
+        modelBuilder.Entity<AgentRun>()
+            .HasOne(a => a.User)
+            .WithMany()
+            .HasForeignKey(a => a.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PendingQuiz>()
+            .HasOne(p => p.AgentRun)
+            .WithMany()
+            .HasForeignKey(p => p.AgentRunId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         modelBuilder.Entity<PendingQuiz>()
             .HasOne(p => p.Note)
@@ -104,5 +122,19 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .WithMany()
             .HasForeignKey(p => p.ModuleId)
             .OnDelete(DeleteBehavior.NoAction); // Prevent multiple cascade paths
+
+        modelBuilder.Entity<ExtractedContent>()
+            .HasOne(e => e.AgentRun)
+            .WithMany()
+            .HasForeignKey(e => e.AgentRunId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<AgentRun>()
+            .Property(a => a.Type)
+            .HasConversion<string>();
+
+        modelBuilder.Entity<AgentRun>()
+            .Property(a => a.Status)
+            .HasConversion<string>();
     }
 }

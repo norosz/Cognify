@@ -119,4 +119,9 @@
 - [x] **[UI/UX]** Renamed Document Status `Ready` -> `Uploaded`
 - [x] **[UI/UX]** Enhanced Quiz Cards & Taking UI with Type Indicators
 - [x] **[Testing]** Verified all 56 Backend & 109 Frontend tests pass
+- [x] **[Refactor]** Phase 0: Replace AI `Task.Run` with durable background worker (pending processing)
+- [x] **[Refactor]** Phase 0: Normalize ExtractedContent status to enum + string conversion
+- [x] **[Refactor]** Phase 0: Fix AI prompt difficulty level bug
+- [x] **[Refactor]** Phase 0: Remove legacy quiz generation endpoint usage
+- [x] **[Refactor]** Phase 0: Add durable AgentRun tracking (schema + worker integration)
 

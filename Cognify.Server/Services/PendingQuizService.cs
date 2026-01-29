@@ -8,12 +8,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Cognify.Server.Services;
 
-public class PendingQuizService(ApplicationDbContext db, IServiceProvider serviceProvider) : IPendingQuizService
+public class PendingQuizService(ApplicationDbContext db, IAgentRunService agentRunService) : IPendingQuizService
 {
     public async Task<PendingQuiz> CreateAsync(
         Guid userId, Guid noteId, Guid moduleId, string title,
         QuizDifficulty difficulty, int questionType, int questionCount)
     {
+        var inputHash = AgentRunService.ComputeHash($"quiz:{userId}:{noteId}:{questionType}:{questionCount}:{difficulty}");
+        var run = await agentRunService.CreateAsync(userId, AgentRunType.QuizGeneration, inputHash, promptVersion: "quizgen-v1");
+
         // Resolve ModuleId from Note if not provided
         if (moduleId == Guid.Empty)
         {
@@ -26,6 +29,7 @@ public class PendingQuizService(ApplicationDbContext db, IServiceProvider servic
             UserId = userId,
             NoteId = noteId,
             ModuleId = moduleId,
+            AgentRunId = run.Id,
             Title = title,
             Difficulty = difficulty,
             QuestionType = questionType,
@@ -35,49 +39,6 @@ public class PendingQuizService(ApplicationDbContext db, IServiceProvider servic
 
         db.PendingQuizzes.Add(quiz);
         await db.SaveChangesAsync();
-
-        // Trigger AI Generation in the background with proper scope
-        _ = Task.Run(async () =>
-        {
-            using var scope = serviceProvider.CreateScope();
-            var scopedDb = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            var scopedAi = scope.ServiceProvider.GetRequiredService<IAiService>();
-            var scopedPending = scope.ServiceProvider.GetRequiredService<IPendingQuizService>();
-
-            try
-            {
-                var note = await scopedDb.Notes.AsNoTracking().FirstOrDefaultAsync(n => n.Id == noteId);
-                if (note == null || string.IsNullOrWhiteSpace(note.Content))
-                {
-                    await scopedPending.UpdateStatusAsync(quiz.Id, PendingQuizStatus.Failed, errorMessage: "Note content not found.");
-                    return;
-                }
-
-                var questions = await scopedAi.GenerateQuestionsAsync(
-                    note.Content,
-                    (QuestionType)questionType,
-                    (int)difficulty,
-                    questionCount);
-
-                if (questions == null || questions.Count == 0)
-                {
-                    await scopedPending.UpdateStatusAsync(quiz.Id, PendingQuizStatus.Failed, errorMessage: "AI failed to generate any questions. Please try again with more detailed content.");
-                    return;
-                }
-
-                var options = new JsonSerializerOptions { Converters = { new JsonStringEnumConverter() } };
-                var questionsJson = JsonSerializer.Serialize(questions, options);
-
-                // Track actual count
-                int actualCount = questions.Count;
-
-                await scopedPending.UpdateStatusAsync(quiz.Id, PendingQuizStatus.Ready, questionsJson: questionsJson, actualQuestionCount: actualCount);
-            }
-            catch (Exception ex)
-            {
-                await scopedPending.UpdateStatusAsync(quiz.Id, PendingQuizStatus.Failed, errorMessage: ex.Message);
-            }
-        });
 
         return quiz;
     }

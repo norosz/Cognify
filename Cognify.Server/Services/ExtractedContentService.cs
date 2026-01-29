@@ -5,29 +5,36 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Cognify.Server.Services;
 
-public class ExtractedContentService(ApplicationDbContext db) : IExtractedContentService
+public class ExtractedContentService(ApplicationDbContext db, IAgentRunService agentRunService) : IExtractedContentService
 {
     public async Task<ExtractedContent> CreatePendingAsync(Guid userId, Guid documentId, Guid moduleId)
     {
+        var inputHash = AgentRunService.ComputeHash($"extraction:{userId}:{documentId}");
+
         // Check for existing unsaved content to prevent duplicates (e.g. retries)
         var existing = await db.ExtractedContents
             .FirstOrDefaultAsync(e => e.DocumentId == documentId && e.UserId == userId && !e.IsSaved);
 
         if (existing != null)
         {
-            existing.Status = "Processing";
+            var run = await agentRunService.CreateAsync(userId, AgentRunType.Extraction, inputHash, promptVersion: "extract-v1");
+            existing.AgentRunId = run.Id;
+            existing.Status = ExtractedContentStatus.Processing;
             existing.ErrorMessage = null;
             existing.ExtractedAt = DateTime.UtcNow;
             await db.SaveChangesAsync();
             return existing;
         }
 
+        var agentRun = await agentRunService.CreateAsync(userId, AgentRunType.Extraction, inputHash, promptVersion: "extract-v1");
+
         var content = new ExtractedContent
         {
             UserId = userId,
             DocumentId = documentId,
             ModuleId = moduleId,
-            Status = "Processing",
+            AgentRunId = agentRun.Id,
+            Status = ExtractedContentStatus.Processing,
             Text = null 
         };
 
@@ -42,7 +49,7 @@ public class ExtractedContentService(ApplicationDbContext db) : IExtractedConten
         if (content != null)
         {
             content.Text = text;
-            content.Status = "Ready";
+            content.Status = ExtractedContentStatus.Ready;
             content.ErrorMessage = null;
             content.ExtractedAt = DateTime.UtcNow;
             await db.SaveChangesAsync();
@@ -54,7 +61,7 @@ public class ExtractedContentService(ApplicationDbContext db) : IExtractedConten
         var content = await db.ExtractedContents.FindAsync(id);
         if (content != null)
         {
-            content.Status = "Error";
+            content.Status = ExtractedContentStatus.Error;
             content.ErrorMessage = errorMessage;
             await db.SaveChangesAsync();
         }
