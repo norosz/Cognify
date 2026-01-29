@@ -37,14 +37,20 @@ Scope: Evidence-based comparison of declared capabilities in the README/specs vs
 - Pending items migration: [Cognify.Server/Migrations/20260127134639_AddPendingItemsEntities.cs](Cognify.Server/Migrations/20260127134639_AddPendingItemsEntities.cs#L1-L150)
 - Frontend polling + toasts for state transitions: [cognify.client/src/app/core/services/pending.service.ts](cognify.client/src/app/core/services/pending.service.ts#L1-L220)
 
+### Extraction pipeline (PDF/Image/Text/Office) via Pending + Background Worker
+- Extraction is initiated as a pending job (Accepted/202) and processed asynchronously: [Cognify.Server/Controllers/AiController.cs](Cognify.Server/Controllers/AiController.cs#L30-L85)
+- Background worker performs PDF text-layer extraction, embedded image extraction, OCR fallback, and basic Office/text extraction: [Cognify.Server/Services/AiBackgroundWorker.cs](Cognify.Server/Services/AiBackgroundWorker.cs#L55-L175)
+- Extraction output is stored both as `ExtractedContent` (pending UX) and as a `MaterialExtraction` record for the v2 pipeline model: [Cognify.Server/Services/MaterialExtractionService.cs](Cognify.Server/Services/MaterialExtractionService.cs#L1-L45)
+
 ### Frontend implemented flows
 - Routes include dashboard/modules/pending/profile under an authenticated layout: [cognify.client/src/app/app.routes.ts](cognify.client/src/app/app.routes.ts#L1-L25)
 - Auth is JWT-in-localStorage with optimistic user restore from token: [cognify.client/src/app/core/auth/auth.service.ts](cognify.client/src/app/core/auth/auth.service.ts#L1-L110)
 - Requests automatically get `Authorization: Bearer <token>` via interceptor: [cognify.client/src/app/core/auth/auth.interceptor.ts](cognify.client/src/app/core/auth/auth.interceptor.ts#L1-L22)
-- Route protection is a simple “token exists” guard (no `/me` validation on navigation): [cognify.client/src/app/core/auth/auth.guard.ts](cognify.client/src/app/core/auth/auth.guard.ts#L1-L17)
+- Route protection uses a “token exists” guard: [cognify.client/src/app/core/auth/auth.guard.ts](cognify.client/src/app/core/auth/auth.guard.ts#L1-L17)
+- Startup validates the token against the backend (`/auth/me`) via `provideAppInitializer`: [cognify.client/src/app/app.config.ts](cognify.client/src/app/app.config.ts#L1-L55)
 
 - Main layout provides sidebar nav + pending badge and refreshes pending count on load: [cognify.client/src/app/core/layout/main-layout/main-layout.component.ts](cognify.client/src/app/core/layout/main-layout/main-layout.component.ts#L1-L40), [cognify.client/src/app/core/layout/main-layout/main-layout.component.html](cognify.client/src/app/core/layout/main-layout/main-layout.component.html#L1-L55)
-- Dashboard currently lists modules and opens create/edit dialog (no analytics/heatmaps): [cognify.client/src/app/features/dashboard/dashboard.component.ts](cognify.client/src/app/features/dashboard/dashboard.component.ts#L1-L90)
+- Dashboard includes modules + review/weakness actions and analytics visualizations (gauges, trends, heatmap, decay forecast): [cognify.client/src/app/features/dashboard/dashboard.component.ts](cognify.client/src/app/features/dashboard/dashboard.component.ts#L1-L160)
 
 - Module detail view is tabbed (documents/notes/quizzes), and supports upload dialog: [cognify.client/src/app/features/modules/module-detail/module-detail.component.ts](cognify.client/src/app/features/modules/module-detail/module-detail.component.ts#L1-L125)
 - Notes list supports create/edit/delete and initiates “pending quiz generation” from a note: [cognify.client/src/app/features/notes/components/notes-list/notes-list.component.ts](cognify.client/src/app/features/notes/components/notes-list/notes-list.component.ts#L1-L90)
@@ -64,43 +70,57 @@ Scope: Evidence-based comparison of declared capabilities in the README/specs vs
 
 ## 2. Partially Implemented Features
 
-### OCR Agent (declared: PDF/Image, embedded image support)
-- The current extraction endpoint accepts only image/* and rejects PDFs and other documents: [Cognify.Server/Controllers/AiController.cs](Cognify.Server/Controllers/AiController.cs#L35-L75)
-- There is a content-type switch including .pdf, but the gate still rejects non-image: [Cognify.Server/Controllers/AiController.cs](Cognify.Server/Controllers/AiController.cs#L55-L75)
+### Embedded images are extracted but not fully integrated into Notes/UX
+- PDF extraction uploads embedded images and stores metadata: [Cognify.Server/Services/AiBackgroundWorker.cs](Cognify.Server/Services/AiBackgroundWorker.cs#L409-L452)
+- The extracted markdown currently appends an "Embedded Images" list (filenames/page numbers) rather than emitting resolvable `![...](...)` references: [Cognify.Server/Services/AiBackgroundWorker.cs](Cognify.Server/Services/AiBackgroundWorker.cs#L393-L407)
+- `MaterialExtraction.ImagesJson` is persisted, and Notes can store `EmbeddedImagesJson`, but the frontend rendering path for these images is not clearly wired end-to-end.
 
 ### “AI graded open-ended questions”
-- There is an AI grading endpoint that returns free-form analysis: [Cognify.Server/Controllers/AiController.cs](Cognify.Server/Controllers/AiController.cs#L150-L190)
-- However, quiz attempt scoring is deterministic string equality against stored correct answer JSON; no AI grading is invoked on attempt submission: [Cognify.Server/Services/AttemptService.cs](Cognify.Server/Services/AttemptService.cs#L40-L85)
+- OpenText questions are graded via the grading agent during attempt submission: [Cognify.Server/Services/AttemptService.cs](Cognify.Server/Services/AttemptService.cs#L150-L260)
+- Non-OpenText question types remain deterministic matching/scoring (by design).
 
 ### “Adaptive quiz engine” exists, but not based on knowledge state
-- Generation prompt varies by requested difficulty and question type: [Cognify.Server/Services/AiPrompts.cs](Cognify.Server/Services/AiPrompts.cs#L1-L120)
-- No evidence that user mastery/confidence/mistake patterns are loaded and fed into prompting.
+- Adaptive quiz creation selects targets from review queue or weak states and maps mastery → difficulty: [Cognify.Server/Services/AdaptiveQuizService.cs](Cognify.Server/Services/AdaptiveQuizService.cs#L1-L170)
+- Quiz generation includes a `KnowledgeStateSnapshot` string (adaptive context) when available: [Cognify.Server/Services/AiBackgroundWorker.cs](Cognify.Server/Services/AiBackgroundWorker.cs#L204-L242)
+- Remaining gap: the mistake taxonomy is still coarse (see below), and “topic selection” is relatively simple (first eligible vs best-ranked).
+
+### Mistake Intelligence is present but currently coarse
+- Knowledge updates persist mistake patterns in JSON and record per-question `AnswerEvaluation` entities: [Cognify.Server/Services/KnowledgeStateService.cs](Cognify.Server/Services/KnowledgeStateService.cs#L1-L101)
+- The mistake classifier currently emits only basic categories (`IncorrectAnswer`, `Unanswered`) unless provided by the grading agent: [Cognify.Server/Services/MistakeAnalysisService.cs](Cognify.Server/Services/MistakeAnalysisService.cs#L1-L72)
 
 ### Duplicate/transitioning quiz generation UX
 - Direct “generate then save” component exists: [cognify.client/src/app/features/modules/components/quiz-generation/quiz-generation.component.ts](cognify.client/src/app/features/modules/components/quiz-generation/quiz-generation.component.ts#L1-L140)
 - Also a newer “generate as pending quiz and approve/save later” flow exists: [cognify.client/src/app/features/notes/components/notes-list/notes-list.component.ts](cognify.client/src/app/features/notes/components/notes-list/notes-list.component.ts#L30-L85)
 
-## 3. Declared but Missing Features
+### Upload allow-list vs Extraction support mismatch (.json/.yaml)
+- Upload allows `.json` and `.yaml`: [Cognify.Server/Services/DocumentService.cs](Cognify.Server/Services/DocumentService.cs#L21-L26)
+- Extraction content-type detection does not map these extensions, so they become `application/octet-stream` and will fail extraction: [Cognify.Server/Services/AiBackgroundWorker.cs](Cognify.Server/Services/AiBackgroundWorker.cs#L156-L178)
 
-These are asserted in the README/spec language as core capabilities, but have no corresponding persisted models/services/controllers in the codebase.
+### Spec drift (paths/contracts)
+- Blob paths differ from the spec’s `materials/{userId}/{materialId}/...` convention (e.g. source docs use `{moduleId}/{documentId}_{fileName}`): [Cognify.Server/Services/DocumentService.cs](Cognify.Server/Services/DocumentService.cs#L56-L78)
+- Extracted images are stored under `extracted/{documentId}/images/...` and are not currently emitted as resolvable markdown links: [Cognify.Server/Services/AiBackgroundWorker.cs](Cognify.Server/Services/AiBackgroundWorker.cs#L393-L452)
+- Contract DTOs differ from the spec’s named fields (e.g. OCR contract is `ContentType/Language/Hints`): [Cognify.Server/Dtos/Ai/Contracts/OcrContract.cs](Cognify.Server/Dtos/Ai/Contracts/OcrContract.cs#L1-L14)
+
+## 3. Previously flagged as “missing” — now confirmed implemented
+
+The following items were previously documented as missing, but are present in the current codebase.
 
 ### Persistent User Knowledge Model
-- Claimed: mastery score, confidence score, mistake patterns: [README.md](README.md#L7-L23)
-- Evidence of absence: no DbSet/entity beyond quiz/doc/note/pending primitives: [Cognify.Server/Data/ApplicationDbContext.cs](Cognify.Server/Data/ApplicationDbContext.cs#L1-L20)
+- Persisted entities exist (`UserKnowledgeState`, `LearningInteraction`, `AnswerEvaluation`) and are registered in EF Core: [Cognify.Server/Data/ApplicationDbContext.cs](Cognify.Server/Data/ApplicationDbContext.cs#L1-L22)
+- Attempt submission updates the knowledge state and persists interactions/evaluations: [Cognify.Server/Services/AttemptService.cs](Cognify.Server/Services/AttemptService.cs#L60-L100), [Cognify.Server/Services/KnowledgeStateService.cs](Cognify.Server/Services/KnowledgeStateService.cs#L1-L101)
+- Knowledge states + review queue endpoints exist: [Cognify.Server/Controllers/KnowledgeStatesController.cs](Cognify.Server/Controllers/KnowledgeStatesController.cs#L1-L35)
 
 ### Learning decay prediction + spaced repetition scheduling
-- Claimed: decay prediction and automatic scheduling: [README.md](README.md#L29-L33)
-- Evidence of absence:
-  - No NextReview/ForgettingRisk fields/tables in the EF model surface (DbContext): [Cognify.Server/Data/ApplicationDbContext.cs](Cognify.Server/Data/ApplicationDbContext.cs#L1-L20)
-  - No hosted scheduler/worker (only ad-hoc Task.Run for AI jobs; see Architecture section).
+- Forgetting risk + next review time are computed and stored: [Cognify.Server/Services/KnowledgeStateService.cs](Cognify.Server/Services/KnowledgeStateService.cs#L40-L75)
+- Decay model implementation: [Cognify.Server/Services/DecayPredictionService.cs](Cognify.Server/Services/DecayPredictionService.cs#L1-L70)
 
-### AI Learning Dashboard (knowledge map, decay forecast, analytics, exam readiness)
-- Claimed: dashboard with heatmaps/forecasts/analytics: [README.md](README.md#L34-L55)
-- Evidence of current implementation: dashboard lists modules only: [cognify.client/src/app/features/dashboard/dashboard.component.ts](cognify.client/src/app/features/dashboard/dashboard.component.ts#L1-L80)
+### AI Learning Dashboard + Analytics
+- Analytics endpoints exist (summary/trends/topics/heatmap/forecast): [Cognify.Server/Controllers/LearningAnalyticsController.cs](Cognify.Server/Controllers/LearningAnalyticsController.cs#L1-L90)
+- Frontend dashboard consumes and visualizes these analytics: [cognify.client/src/app/features/dashboard/dashboard.component.ts](cognify.client/src/app/features/dashboard/dashboard.component.ts#L1-L160)
 
-### Mistake intelligence / misconception profiling
-- Claimed: mistake intelligence: [README.md](README.md#L67-L70)
-- Evidence of absence: no persistence for mistake categories/patterns, and no services updating a knowledge profile on attempt submission.
+### Durable background workers (replacing ad-hoc Task.Run)
+- AI extraction + quiz generation are processed via `BackgroundService` polling with `AgentRun` tracking: [Cognify.Server/Services/AiBackgroundWorker.cs](Cognify.Server/Services/AiBackgroundWorker.cs#L1-L220), [Cognify.Server/Models/AgentRun.cs](Cognify.Server/Models/AgentRun.cs#L1-L55)
+- Analytics recomputation runs in a scheduled background worker: [Cognify.Server/Services/LearningAnalyticsBackgroundWorker.cs](Cognify.Server/Services/LearningAnalyticsBackgroundWorker.cs#L1-L120)
 
 ## 4. Architecture Observations
 
@@ -110,10 +130,10 @@ These are asserted in the README/spec language as core capabilities, but have no
 ### Layering
 - Controllers are thin and delegate to services (typical pattern across controllers), and EF Core is used via ApplicationDbContext.
 
-### Background work is non-durable fire-and-forget
-- OCR extraction uses Task.Run with a new DI scope: [Cognify.Server/Controllers/AiController.cs](Cognify.Server/Controllers/AiController.cs#L80-L135)
-- Pending quiz generation uses Task.Run and updates PendingQuiz status: [Cognify.Server/Services/PendingQuizService.cs](Cognify.Server/Services/PendingQuizService.cs#L35-L120)
-- Implication: no retries/queue semantics; restarts may drop in-flight work.
+### Background work is durable-at-rest but still “polling-based”
+- Work is stored in the DB (PendingQuiz/ExtractedContent) and processed by hosted background workers: [Cognify.Server/Services/AiBackgroundWorker.cs](Cognify.Server/Services/AiBackgroundWorker.cs#L1-L220)
+- Each run is tracked via `AgentRun` (status, input hash, output JSON): [Cognify.Server/Models/AgentRun.cs](Cognify.Server/Models/AgentRun.cs#L1-L55)
+- Remaining limitation: this is not a real queue/broker; it’s DB polling, so throughput/retries are basic and “in-flight” guarantees depend on implementation details.
 
 ## 5. AI Integration Status
 
@@ -128,11 +148,11 @@ These are asserted in the README/spec language as core capabilities, but have no
 
 ## 6. Learning Model Status
 
-Status: Missing as a persisted, evolving “cognitive model”.
+Status: Implemented (baseline) with clear room to deepen “mistake intelligence”.
 
-- README claims: mastery/confidence/mistake patterns: [README.md](README.md#L7-L23)
-- Attempt submission only computes and persists Attempt.Score and AnswersJson; no per-topic model updates: [Cognify.Server/Services/AttemptService.cs](Cognify.Server/Services/AttemptService.cs#L20-L120)
-- No DB entity exists to store mastery/confidence/forgetting risk (DbContext inventory): [Cognify.Server/Data/ApplicationDbContext.cs](Cognify.Server/Data/ApplicationDbContext.cs#L1-L20)
+- Knowledge state is persisted and updated on attempt submission: [Cognify.Server/Services/AttemptService.cs](Cognify.Server/Services/AttemptService.cs#L60-L100)
+- Spaced repetition fields (`ForgettingRisk`, `NextReviewAt`) exist and are updated: [Cognify.Server/Models/UserKnowledgeState.cs](Cognify.Server/Models/UserKnowledgeState.cs#L1-L40)
+- Per-question evaluations are stored (`AnswerEvaluation`): [Cognify.Server/Models/AnswerEvaluation.cs](Cognify.Server/Models/AnswerEvaluation.cs#L1-L32)
 
 ## 7. Quiz System Status
 
@@ -152,11 +172,13 @@ Tests:
 
 ## 8. Scheduler / Spaced Repetition Status
 
-Status: Missing.
+Status: Implemented at the data-model level (review queue + next review dates).
 
-- README claim: decay prediction + automatic review scheduling: [README.md](README.md#L29-L33)
-- No “next review” fields/entities in the EF model surface: [Cognify.Server/Data/ApplicationDbContext.cs](Cognify.Server/Data/ApplicationDbContext.cs#L1-L20)
-- No background scheduler/hosted worker; only ad-hoc Task.Run for AI jobs: [Cognify.Server/Controllers/AiController.cs](Cognify.Server/Controllers/AiController.cs#L80-L135)
+- Review queue endpoint exists: [Cognify.Server/Controllers/KnowledgeStatesController.cs](Cognify.Server/Controllers/KnowledgeStatesController.cs#L1-L35)
+- Next review dates are computed and persisted: [Cognify.Server/Services/KnowledgeStateService.cs](Cognify.Server/Services/KnowledgeStateService.cs#L40-L75)
+
+Remaining gap:
+- There is no separate “review scheduler” that automatically creates quizzes or nudges users without user action; the current UX is “Review Queue + Generate Review Quiz” on demand.
 
 ---
 

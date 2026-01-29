@@ -200,6 +200,31 @@ public class AiControllerTests : IClassFixture<WebApplicationFactory<Program>>, 
             pending!.Status.Should().Be(ExtractedContentStatus.Processing);
             pending.DocumentId.Should().Be(documentId);
         }
+
+        [Fact]
+        public async Task ExtractText_ShouldReject_WhenDocumentNotUploaded()
+        {
+            // Arrange
+            var (client, _, _) = await CreateAuthenticatedClientAsync();
+            var documentId = Guid.NewGuid();
+            var moduleId = Guid.NewGuid();
+
+            _documentServiceMock.Setup(dx => dx.GetByIdAsync(documentId))
+                .ReturnsAsync(new Cognify.Server.Dtos.Documents.DocumentDto(
+                    documentId,
+                    moduleId,
+                    "draft.txt",
+                    "path",
+                    Cognify.Server.Dtos.Documents.DocumentStatus.Pending,
+                    DateTime.UtcNow,
+                    1024));
+
+            // Act
+            var response = await client.PostAsync($"/api/ai/extract-text/{documentId}", null);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        }
     }
 
     [Fact]
@@ -233,6 +258,45 @@ public class AiControllerTests : IClassFixture<WebApplicationFactory<Program>>, 
                 UserId = userId,
                 ModuleId = moduleId,
                 FileName = "test.pdf",
+                BlobPath = "path"
+            });
+
+        var response = await client.PostAsync($"/api/ai/extract-text/{documentId}", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Accepted);
+    }
+
+    [Fact]
+    public async Task ExtractText_ShouldAcceptJsonFiles()
+    {
+        // Arrange
+        var (client, _, userId) = await CreateAuthenticatedClientAsync();
+
+        Guid documentId;
+        Guid moduleId;
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var module = new Module { Id = Guid.NewGuid(), OwnerUserId = userId, Title = "M", Description = "D" };
+            var doc = new Document { Id = Guid.NewGuid(), ModuleId = module.Id, FileName = "notes.json", BlobPath = "path", Status = Cognify.Server.Models.DocumentStatus.Uploaded, CreatedAt = DateTime.UtcNow };
+            db.Modules.Add(module);
+            db.Documents.Add(doc);
+            await db.SaveChangesAsync();
+            documentId = doc.Id;
+            moduleId = module.Id;
+        }
+
+        _documentServiceMock.Setup(dx => dx.GetByIdAsync(documentId))
+            .ReturnsAsync(new Cognify.Server.Dtos.Documents.DocumentDto(documentId, moduleId, "notes.json", "path", Cognify.Server.Dtos.Documents.DocumentStatus.Uploaded, DateTime.UtcNow, 1024));
+
+        _materialServiceMock.Setup(x => x.EnsureForDocumentAsync(documentId, It.IsAny<Guid>()))
+            .ReturnsAsync(new Material
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                ModuleId = moduleId,
+                FileName = "notes.json",
                 BlobPath = "path"
             });
 

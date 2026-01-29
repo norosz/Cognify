@@ -1,4 +1,5 @@
 using Cognify.Server.Dtos.Ai;
+using Cognify.Server.Dtos.Documents;
 using Cognify.Server.Models;
 using Cognify.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -50,6 +51,9 @@ public class AiController : ControllerBase
         if (string.IsNullOrEmpty(document.BlobPath))
             return BadRequest("Invalid document path.");
 
+        if (document.Status != DocumentStatus.Uploaded)
+            return BadRequest("Document must be uploaded before extraction.");
+
         // Basic extension check
         var extension = Path.GetExtension(document.FileName).ToLowerInvariant();
         var contentType = extension switch
@@ -61,6 +65,9 @@ public class AiController : ControllerBase
             ".gif" => "image/gif",
             ".pdf" => "application/pdf",
             ".txt" => "text/plain",
+            ".json" => "text/plain",
+            ".yaml" => "text/plain",
+            ".yml" => "text/plain",
             ".md" => "text/markdown",
             ".html" => "text/html",
             ".htm" => "text/html",

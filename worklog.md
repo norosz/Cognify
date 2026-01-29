@@ -5,6 +5,36 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-29 20:25  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Added extraction guard to block non-uploaded documents
+- Allowed `.json`/`.yaml`/`.yml` files to be extracted as text
+- Added controller tests for extraction guard and JSON acceptance
+- Updated status board to reflect completed items
+
+**CHANGED FILES**
+- Cognify.Server/Controllers/AiController.cs
+- Cognify.Server/Services/AiBackgroundWorker.cs
+- Cognify.Tests/Controllers/AiControllerTests.cs
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Treat `.json`/`.yaml`/`.yml` as plain text for extraction to match upload allow-list
+- Reject extraction attempts unless document is in Uploaded state
+
+**NEXT**
+- Run backend tests (`dotnet test`) to verify new controller tests
+- Continue with embedded image UX + SAS access path
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
 **Timestamp:** 2026-01-29 20:05  
 **Author:** GitHub Copilot  
 

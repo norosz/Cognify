@@ -3,26 +3,43 @@
 ## 📋 To Do
 
 ###  Notes
+- [ ] **[Frontend]** Render extracted embedded images inside Notes (Markdown preview + saved notes)
+- [ ] **[Backend]** Provide an authenticated way to fetch extracted image blobs (e.g., SAS URL or proxy download) for `EmbeddedImagesJson`
+- [ ] **[UX]** Clarify extraction → note flow: auto-create draft note vs Pending → manual “Save as Note”
 
 ### 🤖 AI Generation, Agents & Quizzes
+- [ ] **[UX]** Consolidate quiz generation UX (legacy “generate then save” vs Pending approval flow)
+- [ ] **[Backend]** Improve adaptive topic selection (rank best eligible instead of “first eligible”) and document selection rules
 
 ### 🧠 User Knowledge & AI Feedback
+- [ ] **[Backend]** Feed `KnownMistakePatterns` into grading contract requests (currently null) to close the feedback loop
 
 ### 🎯 Adaptive Quiz Engine
+- [ ] **[Frontend]** Surface which topic/note the adaptive quiz targeted (and why) more prominently in the UI
 
 ### 📉 Decay & Mistake Intelligence
+- [ ] **[Backend]** Expand mistake taxonomy beyond `IncorrectAnswer`/`Unanswered` (toward misconception profiling)
+- [ ] **[Backend]** Consider persisting structured mistake categories (not only ad-hoc JSON counters)
 
 ### 📊 AI Learning Dashboard (Frontend)
+- [ ] **[UX]** Add clearer empty/error states for analytics panels (e.g., “No learning data yet”) and guidance on how to generate data
 
 ### 🤖 AI Agents & Pipelines (v2)
+- [ ] **[Docs]** Align `PROJECT_SPEC.md` v2 agent contract field names with actual DTO contracts (avoid drift)
+- [ ] **[Docs]** Align blob path conventions in docs with current implementation (or update code to match docs)
+- [ ] **[Backend]** Embedded PDF images: emit resolvable markdown links (not only filename lists) or render from `EmbeddedImagesJson`
 
 ### 💾 File Management Enhancements
+ 
 
 ## 🏗️ In Progress
 
 ### 🤖 AI Agents & Pipelines (v2)
+- [ ] **[Audit]** Close end-to-end gaps from Jan 29 inspection (images usability, file-type consistency, contract/docs drift)
 
 ## ✅ Done
+- [x] **[Backend]** Allow extraction for `.json`/`.yaml` uploads by treating them as text
+- [x] **[Backend]** Guard extraction when `Document.Status != Uploaded`
 - [x] **[Backend]** Implement `LearningAnalyticsService` (Aggregator)
 - [x] **[Backend]** Implement prompting that includes Mastery/ForgettingRisk/MistakePatterns
 - [x] **[Backend]** Implement `DecayPredictionService` (Spaced Repetition)
