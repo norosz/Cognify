@@ -9,7 +9,7 @@ import { KnowledgeService } from '../../core/services/knowledge.service';
 import { AdaptiveQuizService } from '../../core/services/adaptive-quiz.service';
 import { PendingService } from '../../core/services/pending.service';
 import { NotificationService } from '../../core/services/notification.service';
-import { AnalyticsService } from '../../core/services/analytics.service';
+import { LearningAnalyticsService } from '../../core/services/learning-analytics.service';
 
 describe('DashboardComponent', () => {
     let component: DashboardComponent;
@@ -20,7 +20,7 @@ describe('DashboardComponent', () => {
     let adaptiveQuizServiceSpy: jasmine.SpyObj<AdaptiveQuizService>;
     let pendingServiceSpy: jasmine.SpyObj<PendingService>;
     let notificationServiceSpy: jasmine.SpyObj<NotificationService>;
-    let analyticsServiceSpy: jasmine.SpyObj<AnalyticsService>;
+    let analyticsServiceSpy: jasmine.SpyObj<LearningAnalyticsService>;
 
     beforeEach(async () => {
         moduleServiceSpy = jasmine.createSpyObj('ModuleService', ['getModules', 'deleteModule']);
@@ -29,7 +29,7 @@ describe('DashboardComponent', () => {
         adaptiveQuizServiceSpy = jasmine.createSpyObj('AdaptiveQuizService', ['createAdaptiveQuiz']);
         pendingServiceSpy = jasmine.createSpyObj('PendingService', ['refreshPendingCount']);
         notificationServiceSpy = jasmine.createSpyObj('NotificationService', ['loading', 'update']);
-        analyticsServiceSpy = jasmine.createSpyObj('AnalyticsService', ['getSummary']);
+        analyticsServiceSpy = jasmine.createSpyObj('LearningAnalyticsService', ['getSummary', 'getTrends', 'getTopics', 'getRetentionHeatmap', 'getDecayForecast']);
 
         moduleServiceSpy.getModules.and.returnValue(of([]));
         knowledgeServiceSpy.getStates.and.returnValue(of([]));
@@ -52,20 +52,34 @@ describe('DashboardComponent', () => {
             masteryScore: 0.5,
             forgettingRisk: 0.6
         }));
+        notificationServiceSpy.loading.and.returnValue('loading-id');
         analyticsServiceSpy.getSummary.and.returnValue(of({
+            totalTopics: 0,
+            averageMastery: 0,
+            averageForgettingRisk: 0,
+            weakTopicsCount: 0,
+            totalAttempts: 0,
+            accuracyRate: 0,
+            examReadinessScore: 0,
+            learningVelocity: 0,
+            lastActivityAt: null
+        }));
+        analyticsServiceSpy.getTrends.and.returnValue(of({
             from: new Date().toISOString(),
             to: new Date().toISOString(),
-            totalAttempts: 2,
-            averageScore: 75,
-            totalInteractions: 10,
-            correctRate: 0.7,
-            activeTopics: 3,
-            averageMastery: 0.55,
-            averageForgettingRisk: 0.45,
-            trends: [],
+            bucketDays: 7,
+            points: []
+        }));
+        analyticsServiceSpy.getTopics.and.returnValue(of({
+            topics: [],
+            weakestTopics: []
+        }));
+        analyticsServiceSpy.getRetentionHeatmap.and.returnValue(of([]));
+        analyticsServiceSpy.getDecayForecast.and.returnValue(of({
+            days: 14,
+            stepDays: 2,
             topics: []
         }));
-        notificationServiceSpy.loading.and.returnValue('loading-id');
 
         await TestBed.configureTestingModule({
             imports: [DashboardComponent, NoopAnimationsModule],
@@ -76,13 +90,18 @@ describe('DashboardComponent', () => {
                 { provide: AdaptiveQuizService, useValue: adaptiveQuizServiceSpy },
                 { provide: PendingService, useValue: pendingServiceSpy },
                 { provide: NotificationService, useValue: notificationServiceSpy },
-                { provide: AnalyticsService, useValue: analyticsServiceSpy },
+                { provide: LearningAnalyticsService, useValue: analyticsServiceSpy },
                 {
                     provide: ActivatedRoute,
                     useValue: { snapshot: { paramMap: { get: () => null } } }
                 }
             ]
         })
+            .overrideComponent(DashboardComponent, {
+                set: {
+                    template: '<div></div>'
+                }
+            })
             .compileComponents();
 
         fixture = TestBed.createComponent(DashboardComponent);
@@ -107,6 +126,10 @@ describe('DashboardComponent', () => {
 
     it('should load analytics summary on init', () => {
         expect(analyticsServiceSpy.getSummary).toHaveBeenCalled();
+        expect(analyticsServiceSpy.getTrends).toHaveBeenCalled();
+        expect(analyticsServiceSpy.getTopics).toHaveBeenCalled();
+        expect(analyticsServiceSpy.getRetentionHeatmap).toHaveBeenCalled();
+        expect(analyticsServiceSpy.getDecayForecast).toHaveBeenCalled();
     });
 
     it('should open dialog for editing', () => {

@@ -32,12 +32,25 @@ public class KnowledgeStateServiceTests : IDisposable
         _userId = Guid.NewGuid();
 
         _userContextMock.Setup(uc => uc.GetCurrentUserId()).Returns(_userId);
+
         _decayPredictionMock
-            .Setup(x => x.Predict(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<DateTime>(), It.IsAny<DateTime?>(), It.IsAny<int>()))
-            .Returns((double mastery, double confidence, DateTime now, DateTime? last, int incorrect) => (now.AddDays(3), 0.5));
+            .Setup(x => x.CalculateForgettingRisk(It.IsAny<double>(), It.IsAny<DateTime?>(), It.IsAny<DateTime>()))
+            .Returns(0.5);
+        _decayPredictionMock
+            .Setup(x => x.CalculateForgettingRiskAt(It.IsAny<double>(), It.IsAny<DateTime?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+            .Returns(0.5);
+        _decayPredictionMock
+            .Setup(x => x.CalculateNextReviewAt(It.IsAny<double>(), It.IsAny<DateTime>()))
+            .Returns((double mastery, DateTime now) => now.AddDays(3));
 
         _mistakeAnalysisMock
-            .Setup(x => x.Analyze(It.IsAny<Question?>(), It.IsAny<KnowledgeInteractionInput>()))
+            .Setup(x => x.UpdateMistakePatterns(It.IsAny<string?>(), It.IsAny<IReadOnlyCollection<KnowledgeInteractionInput>>()))
+            .Returns(new Dictionary<string, int>());
+        _mistakeAnalysisMock
+            .Setup(x => x.SerializeMistakePatterns(It.IsAny<Dictionary<string, int>>()))
+            .Returns("{}");
+        _mistakeAnalysisMock
+            .Setup(x => x.DetectMistakes(It.IsAny<KnowledgeInteractionInput>()))
             .Returns([]);
 
         _service = new KnowledgeStateService(

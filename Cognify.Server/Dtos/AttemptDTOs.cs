@@ -7,6 +7,8 @@ public record AttemptDto
     public Guid UserId { get; init; }
     public double Score { get; init; }
     public Dictionary<string, string> Answers { get; init; } = []; // QuestionId (as string) -> Answer
+    public int? TimeSpentSeconds { get; init; }
+    public string? Difficulty { get; init; }
     public DateTime CreatedAt { get; init; }
 }
 
@@ -14,4 +16,6 @@ public record SubmitAttemptDto
 {
     public Guid QuestionSetId { get; init; }
     public Dictionary<string, string> Answers { get; init; } = []; // QuestionId (as string) -> Answer
+    public int? TimeSpentSeconds { get; init; }
+    public string? Difficulty { get; init; }
 }

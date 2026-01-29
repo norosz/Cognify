@@ -30,11 +30,12 @@ public class Program
         builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
         builder.Services.AddScoped<IDocumentService, DocumentService>();
         builder.Services.AddScoped<INoteService, NoteService>();
-        builder.Services.AddScoped<IKnowledgeStateService, KnowledgeStateService>();
         builder.Services.AddScoped<IDecayPredictionService, DecayPredictionService>();
         builder.Services.AddScoped<IMistakeAnalysisService, MistakeAnalysisService>();
-        builder.Services.AddScoped<IAdaptiveQuizService, AdaptiveQuizService>();
+        builder.Services.AddScoped<IKnowledgeStateService, KnowledgeStateService>();
+        builder.Services.AddScoped<ILearningAnalyticsComputationService, LearningAnalyticsComputationService>();
         builder.Services.AddScoped<ILearningAnalyticsService, LearningAnalyticsService>();
+        builder.Services.AddScoped<IAdaptiveQuizService, AdaptiveQuizService>();
         
         // Register AI
         builder.Services.AddSingleton(sp => 

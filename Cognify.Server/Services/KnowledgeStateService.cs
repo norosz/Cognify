@@ -10,8 +10,8 @@ namespace Cognify.Server.Services;
 public class KnowledgeStateService(
     ApplicationDbContext context,
     IUserContextService userContext,
-    IDecayPredictionService decayPredictionService,
-    IMistakeAnalysisService mistakeAnalysisService) : IKnowledgeStateService
+    IDecayPredictionService decayService,
+    IMistakeAnalysisService mistakeService) : IKnowledgeStateService
 {
     private const double MinScore = 0.0;
     private const double MaxScore = 1.0;
@@ -45,12 +45,14 @@ public class KnowledgeStateService(
         var attemptScore = Clamp(attempt.Score / 100.0);
         state.MasteryScore = Clamp((state.MasteryScore * 0.7) + (attemptScore * 0.3));
         state.ConfidenceScore = Clamp((state.ConfidenceScore * 0.7) + (attemptScore * 0.3));
-        var previousReview = state.LastReviewedAt;
+
+        state.ForgettingRisk = decayService.CalculateForgettingRisk(state.MasteryScore, state.LastReviewedAt, now);
+        state.LastReviewedAt = now;
+        state.NextReviewAt = decayService.CalculateNextReviewAt(state.MasteryScore, now);
         state.UpdatedAt = now;
 
-        var questionLookup = questionSet.Questions?.ToDictionary(q => q.Id, q => q) ?? new Dictionary<Guid, Question>();
-        var mistakeData = ParseMistakePatterns(state.MistakePatternsJson);
-        var incorrectCount = 0;
+        var mistakeData = mistakeService.UpdateMistakePatterns(state.MistakePatternsJson, interactions);
+        state.MistakePatternsJson = mistakeService.SerializeMistakePatterns(mistakeData);
 
         foreach (var interaction in interactions)
         {
@@ -68,17 +70,7 @@ public class KnowledgeStateService(
 
             context.LearningInteractions.Add(interactionEntity);
 
-            if (!interaction.IsCorrect)
-            {
-                incorrectCount++;
-            }
-
-            var question = questionLookup.TryGetValue(interaction.QuestionId, out var found) ? found : null;
-            var mistakes = interaction.DetectedMistakes?.ToList() ?? mistakeAnalysisService.Analyze(question, interaction).ToList();
-            foreach (var mistake in mistakes)
-            {
-                mistakeData[mistake] = mistakeData.GetValueOrDefault(mistake) + 1;
-            }
+            var mistakes = interaction.DetectedMistakes?.ToList() ?? mistakeService.DetectMistakes(interaction);
 
             var evaluation = new AnswerEvaluation
             {
@@ -92,18 +84,6 @@ public class KnowledgeStateService(
 
             context.AnswerEvaluations.Add(evaluation);
         }
-
-        var prediction = decayPredictionService.Predict(
-            state.MasteryScore,
-            state.ConfidenceScore,
-            now,
-            previousReview,
-            incorrectCount);
-
-        state.ForgettingRisk = Clamp(prediction.ForgettingRisk);
-        state.NextReviewAt = prediction.NextReviewAt;
-        state.LastReviewedAt = now;
-        state.MistakePatternsJson = JsonSerializer.Serialize(mistakeData);
 
         await context.SaveChangesAsync();
     }
@@ -176,26 +156,8 @@ public class KnowledgeStateService(
         return "General";
     }
 
-    private static Dictionary<string, int> ParseMistakePatterns(string? json)
-    {
-        if (string.IsNullOrWhiteSpace(json))
-        {
-            return new Dictionary<string, int>();
-        }
-
-        try
-        {
-            return JsonSerializer.Deserialize<Dictionary<string, int>>(json) ?? new Dictionary<string, int>();
-        }
-        catch
-        {
-            return new Dictionary<string, int>();
-        }
-    }
-
     private static double Clamp(double value)
     {
         return Math.Min(MaxScore, Math.Max(MinScore, value));
     }
-
 }

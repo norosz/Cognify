@@ -1,9 +1,10 @@
 using Cognify.Server.Dtos.Knowledge;
-using Cognify.Server.Models;
 
 namespace Cognify.Server.Services.Interfaces;
 
 public interface IMistakeAnalysisService
 {
-    IReadOnlyList<string> Analyze(Question? question, KnowledgeInteractionInput interaction);
+    Dictionary<string, int> UpdateMistakePatterns(string? existingJson, IReadOnlyCollection<KnowledgeInteractionInput> interactions);
+    string SerializeMistakePatterns(Dictionary<string, int> patterns);
+    List<string> DetectMistakes(KnowledgeInteractionInput interaction);
 }

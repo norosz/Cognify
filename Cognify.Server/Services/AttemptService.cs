@@ -85,6 +85,8 @@ public class AttemptService(
             QuestionSetId = dto.QuestionSetId,
             AnswersJson = JsonSerializer.Serialize(dto.Answers),
             Score = score,
+            TimeSpentSeconds = dto.TimeSpentSeconds,
+            Difficulty = dto.Difficulty ?? questionSet.Difficulty.ToString(),
             CreatedAt = DateTime.UtcNow
         };
 
@@ -127,6 +129,8 @@ public class AttemptService(
             UserId = attempt.UserId,
             Score = attempt.Score,
             Answers = TryDeserializeAttempts(attempt.AnswersJson),
+            TimeSpentSeconds = attempt.TimeSpentSeconds,
+            Difficulty = attempt.Difficulty,
             CreatedAt = attempt.CreatedAt
         };
     }

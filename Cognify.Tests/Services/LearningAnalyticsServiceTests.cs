@@ -13,6 +13,7 @@ public class LearningAnalyticsServiceTests : IDisposable
 {
     private readonly ApplicationDbContext _context;
     private readonly Mock<IUserContextService> _userContextMock;
+    private readonly LearningAnalyticsService _service;
     private readonly Guid _userId;
 
     public LearningAnalyticsServiceTests()
@@ -24,46 +25,95 @@ public class LearningAnalyticsServiceTests : IDisposable
         _context = new ApplicationDbContext(options);
         _userContextMock = new Mock<IUserContextService>();
         _userId = Guid.NewGuid();
-        _userContextMock.Setup(x => x.GetCurrentUserId()).Returns(_userId);
+        _userContextMock.Setup(u => u.GetCurrentUserId()).Returns(_userId);
+
+        var computationService = new LearningAnalyticsComputationService(_context, new DecayPredictionService());
+        _service = new LearningAnalyticsService(_userContextMock.Object, computationService);
     }
 
     [Fact]
-    public async Task GetSummaryAsync_ReturnsAggregatedMetrics()
+    public async Task GetSummaryAsync_ReturnsAggregateMetrics()
     {
-        var now = DateTime.UtcNow;
+        _context.UserKnowledgeStates.AddRange(
+            new UserKnowledgeState
+            {
+                UserId = _userId,
+                Topic = "Math / Algebra",
+                MasteryScore = 0.8,
+                ConfidenceScore = 0.7,
+                ForgettingRisk = 0.2,
+                UpdatedAt = DateTime.UtcNow
+            },
+            new UserKnowledgeState
+            {
+                UserId = _userId,
+                Topic = "Science / Biology",
+                MasteryScore = 0.4,
+                ConfidenceScore = 0.4,
+                ForgettingRisk = 0.7,
+                UpdatedAt = DateTime.UtcNow
+            });
 
         _context.Attempts.AddRange(
-            new Attempt { UserId = _userId, QuestionSetId = Guid.NewGuid(), AnswersJson = "{}", Score = 80, CreatedAt = now.AddDays(-1) },
-            new Attempt { UserId = _userId, QuestionSetId = Guid.NewGuid(), AnswersJson = "{}", Score = 60, CreatedAt = now.AddDays(-1) }
-        );
-
-        _context.LearningInteractions.AddRange(
-            new LearningInteraction { UserId = _userId, Topic = "Topic A", IsCorrect = true, CreatedAt = now.AddDays(-1) },
-            new LearningInteraction { UserId = _userId, Topic = "Topic A", IsCorrect = false, CreatedAt = now.AddDays(-1) }
-        );
-
-        _context.UserKnowledgeStates.AddRange(
-            new UserKnowledgeState { UserId = _userId, Topic = "Topic A", MasteryScore = 0.5, ConfidenceScore = 0.5, ForgettingRisk = 0.4, UpdatedAt = now },
-            new UserKnowledgeState { UserId = _userId, Topic = "Topic B", MasteryScore = 0.7, ConfidenceScore = 0.7, ForgettingRisk = 0.2, UpdatedAt = now }
+            new Attempt { UserId = _userId, QuestionSetId = Guid.NewGuid(), AnswersJson = "{}", Score = 90, CreatedAt = DateTime.UtcNow.AddDays(-1) },
+            new Attempt { UserId = _userId, QuestionSetId = Guid.NewGuid(), AnswersJson = "{}", Score = 60, CreatedAt = DateTime.UtcNow }
         );
 
         await _context.SaveChangesAsync();
 
-        var service = new LearningAnalyticsService(_context, _userContextMock.Object);
-        var summary = await service.GetSummaryAsync(days: 7, trendDays: 1, maxTopics: 5);
+        var summary = await _service.GetSummaryAsync();
 
+        summary.TotalTopics.Should().Be(2);
         summary.TotalAttempts.Should().Be(2);
-        summary.AverageScore.Should().BeApproximately(70, 0.1);
-        summary.TotalInteractions.Should().Be(2);
-        summary.CorrectRate.Should().BeApproximately(0.5, 0.01);
-        summary.ActiveTopics.Should().Be(2);
-        summary.Trends.Should().HaveCount(2);
-        summary.Topics.Should().HaveCount(2);
+        summary.AccuracyRate.Should().BeApproximately(0.75, 0.01);
+        summary.AverageMastery.Should().BeApproximately(0.6, 0.01);
+    }
+
+    [Fact]
+    public async Task GetTopicDistributionAsync_OrdersWeakestTopics()
+    {
+        _context.UserKnowledgeStates.AddRange(
+            new UserKnowledgeState
+            {
+                UserId = _userId,
+                Topic = "Chemistry / Bonds",
+                MasteryScore = 0.2,
+                ConfidenceScore = 0.3,
+                ForgettingRisk = 0.9,
+                UpdatedAt = DateTime.UtcNow
+            },
+            new UserKnowledgeState
+            {
+                UserId = _userId,
+                Topic = "History / WW2",
+                MasteryScore = 0.7,
+                ConfidenceScore = 0.6,
+                ForgettingRisk = 0.3,
+                UpdatedAt = DateTime.UtcNow
+            }
+        );
+
+        _context.LearningInteractions.Add(new LearningInteraction
+        {
+            UserId = _userId,
+            Topic = "Chemistry / Bonds",
+            Type = LearningInteractionType.QuizAnswer,
+            IsCorrect = false,
+            CreatedAt = DateTime.UtcNow
+        });
+
+        await _context.SaveChangesAsync();
+
+        var topics = await _service.GetTopicDistributionAsync(10, 1);
+
+        topics.WeakestTopics.Should().HaveCount(1);
+        topics.WeakestTopics[0].Topic.Should().Be("Chemistry / Bonds");
     }
 
     public void Dispose()
     {
         _context.Database.EnsureDeleted();
         _context.Dispose();
+        GC.SuppressFinalize(this);
     }
 }

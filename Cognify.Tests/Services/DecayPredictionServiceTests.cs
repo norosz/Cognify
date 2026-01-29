@@ -7,28 +7,40 @@ namespace Cognify.Tests.Services;
 public class DecayPredictionServiceTests
 {
     [Fact]
-    public void Predict_ShouldIncreaseInterval_WithHigherMastery()
+    public void CalculateNextReviewAt_ShouldIncreaseInterval_WithHigherMastery()
     {
         var service = new DecayPredictionService();
         var now = DateTime.UtcNow;
 
-        var low = service.Predict(0.2, 0.2, now, now.AddDays(-1), incorrectCount: 0);
-        var high = service.Predict(0.9, 0.9, now, now.AddDays(-1), incorrectCount: 0);
+        var low = service.CalculateNextReviewAt(0.2, now);
+        var high = service.CalculateNextReviewAt(0.9, now);
 
-        high.NextReviewAt.Should().BeAfter(low.NextReviewAt);
-        high.ForgettingRisk.Should().BeLessThanOrEqualTo(low.ForgettingRisk);
+        high.Should().BeAfter(low);
     }
 
     [Fact]
-    public void Predict_ShouldIncreaseRisk_WithIncorrectCount()
+    public void CalculateForgettingRisk_ShouldIncreaseOverTime()
     {
         var service = new DecayPredictionService();
         var now = DateTime.UtcNow;
+        var lastReviewedAt = now.AddDays(-1);
 
-        var baseResult = service.Predict(0.6, 0.6, now, now.AddDays(-2), incorrectCount: 0);
-        var withErrors = service.Predict(0.6, 0.6, now, now.AddDays(-2), incorrectCount: 3);
+        var baseline = service.CalculateForgettingRiskAt(0.6, lastReviewedAt, now, now);
+        var later = service.CalculateForgettingRiskAt(0.6, lastReviewedAt, now, now.AddDays(7));
 
-        withErrors.ForgettingRisk.Should().BeGreaterThanOrEqualTo(baseResult.ForgettingRisk);
-        withErrors.NextReviewAt.Should().BeOnOrBefore(baseResult.NextReviewAt);
+        later.Should().BeGreaterThan(baseline);
+    }
+
+    [Fact]
+    public void CalculateForgettingRisk_ShouldDecrease_WithHigherMastery()
+    {
+        var service = new DecayPredictionService();
+        var now = DateTime.UtcNow;
+        var lastReviewedAt = now.AddDays(-3);
+
+        var low = service.CalculateForgettingRisk(0.2, lastReviewedAt, now);
+        var high = service.CalculateForgettingRisk(0.9, lastReviewedAt, now);
+
+        high.Should().BeLessThan(low);
     }
 }

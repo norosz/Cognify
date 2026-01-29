@@ -11,37 +11,37 @@ namespace Cognify.Tests.Controllers;
 public class LearningAnalyticsControllerTests
 {
     [Fact]
-    public async Task GetSummary_ReturnsBadRequest_OnInvalidDays()
+    public async Task GetTrends_ReturnsBadRequest_OnInvalidBucketDays()
     {
         var service = new Mock<ILearningAnalyticsService>();
         var controller = new LearningAnalyticsController(service.Object);
 
-        var result = await controller.GetSummary(0, 14, 10);
+        var result = await controller.GetTrends(from: null, to: null, bucketDays: 0);
 
         result.Result.Should().BeOfType<BadRequestObjectResult>();
     }
 
     [Fact]
-    public async Task GetSummary_ReturnsOk_OnValidRequest()
+    public async Task GetSummary_ReturnsOk()
     {
         var service = new Mock<ILearningAnalyticsService>();
-        var summary = new LearningAnalyticsSummaryDto(
-            DateTime.UtcNow.AddDays(-1),
-            DateTime.UtcNow,
-            1,
-            80,
-            2,
-            0.5,
-            2,
-            0.6,
-            0.4,
-            [],
-            []);
+        var summary = new LearningAnalyticsSummaryDto
+        {
+            TotalTopics = 3,
+            AverageMastery = 0.6,
+            AverageForgettingRisk = 0.4,
+            WeakTopicsCount = 1,
+            TotalAttempts = 2,
+            AccuracyRate = 0.75,
+            ExamReadinessScore = 0.65,
+            LearningVelocity = 0.5,
+            LastActivityAt = DateTime.UtcNow
+        };
 
-        service.Setup(s => s.GetSummaryAsync(30, 14, 10)).ReturnsAsync(summary);
+        service.Setup(s => s.GetSummaryAsync()).ReturnsAsync(summary);
         var controller = new LearningAnalyticsController(service.Object);
 
-        var result = await controller.GetSummary(30, 14, 10);
+        var result = await controller.GetSummary();
 
         var ok = result.Result.Should().BeOfType<OkObjectResult>().Subject;
         ok.Value.Should().BeEquivalentTo(summary);

@@ -2,10 +2,7 @@ namespace Cognify.Server.Services.Interfaces;
 
 public interface IDecayPredictionService
 {
-    (DateTime NextReviewAt, double ForgettingRisk) Predict(
-        double masteryScore,
-        double confidenceScore,
-        DateTime now,
-        DateTime? lastReviewedAt,
-        int incorrectCount);
+    double CalculateForgettingRisk(double masteryScore, DateTime? lastReviewedAt, DateTime now);
+    double CalculateForgettingRiskAt(double masteryScore, DateTime? lastReviewedAt, DateTime now, DateTime atDate);
+    DateTime CalculateNextReviewAt(double masteryScore, DateTime now);
 }

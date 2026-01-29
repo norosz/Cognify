@@ -4,30 +4,49 @@ namespace Cognify.Server.Services;
 
 public class DecayPredictionService : IDecayPredictionService
 {
-    private const double MinRisk = 0.05;
-    private const double MaxRisk = 0.95;
-    private const double MinIntervalDays = 1;
-    private const double MaxIntervalDays = 30;
+    private const double MinScore = 0.0;
+    private const double MaxScore = 1.0;
 
-    public (DateTime NextReviewAt, double ForgettingRisk) Predict(
-        double masteryScore,
-        double confidenceScore,
-        DateTime now,
-        DateTime? lastReviewedAt,
-        int incorrectCount)
+    public double CalculateForgettingRisk(double masteryScore, DateTime? lastReviewedAt, DateTime now)
     {
-        var stability = 1 + (masteryScore * 10) + (confidenceScore * 4);
-        var penalty = Math.Min(incorrectCount, 5) * 0.6;
-        var interval = Math.Clamp(stability - penalty, MinIntervalDays, MaxIntervalDays);
+        return CalculateForgettingRiskAt(masteryScore, lastReviewedAt, now, now);
+    }
 
-        var daysSince = lastReviewedAt.HasValue
-            ? Math.Max(0, (now - lastReviewedAt.Value).TotalDays)
-            : interval / 2;
+    public double CalculateForgettingRiskAt(double masteryScore, DateTime? lastReviewedAt, DateTime now, DateTime atDate)
+    {
+        var mastery = Clamp(masteryScore);
+        var baselineDate = lastReviewedAt ?? now;
+        var days = Math.Max(0, (atDate - baselineDate).TotalDays);
+        var decayRate = 0.12 + (1 - mastery) * 0.25;
+        var retention = mastery * Math.Exp(-decayRate * days);
+        var risk = 1 - retention;
+        return Clamp(risk);
+    }
 
-        var rawRisk = daysSince / (interval + 1);
-        var adjusted = rawRisk + (incorrectCount * 0.03);
-        var risk = Math.Clamp(adjusted, MinRisk, MaxRisk);
+    public DateTime CalculateNextReviewAt(double masteryScore, DateTime now)
+    {
+        var mastery = Clamp(masteryScore);
 
-        return (now.AddDays(interval), risk);
+        if (mastery >= 0.85)
+        {
+            return now.AddDays(14);
+        }
+
+        if (mastery >= 0.7)
+        {
+            return now.AddDays(7);
+        }
+
+        if (mastery >= 0.5)
+        {
+            return now.AddDays(3);
+        }
+
+        return now.AddDays(1);
+    }
+
+    private static double Clamp(double value)
+    {
+        return Math.Max(MinScore, Math.Min(MaxScore, value));
     }
 }
