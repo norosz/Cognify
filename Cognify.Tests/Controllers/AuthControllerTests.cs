@@ -152,4 +152,22 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Program>>
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
+
+    [Fact]
+    public async Task Me_ShouldReturnProfile_WhenAuthorized()
+    {
+        var client = _factory.CreateClient();
+        var registerDto = new RegisterDto { Email = "meuser@example.com", Password = "password123" };
+        var authResponse = await client.PostAsJsonAsync("/api/auth/register", registerDto);
+        var authResult = await authResponse.Content.ReadFromJsonAsync<AuthResponseDto>();
+
+        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", authResult!.Token);
+
+        var response = await client.GetAsync("/api/auth/me");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var profile = await response.Content.ReadFromJsonAsync<UserProfileDto>();
+        profile.Should().NotBeNull();
+        profile!.Email.Should().Be(registerDto.Email);
+    }
 }

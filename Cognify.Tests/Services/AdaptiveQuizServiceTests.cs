@@ -144,6 +144,53 @@ public class AdaptiveQuizServiceTests : IDisposable
         result.PendingQuiz.Difficulty.Should().Be(QuizDifficulty.Intermediate.ToString());
     }
 
+    [Fact]
+    public async Task CreateAdaptiveQuizAsync_NoteMode_ThrowsWhenNoteIdMissing()
+    {
+        var request = new AdaptiveQuizRequest { Mode = AdaptiveQuizMode.Note };
+
+        Func<Task> act = async () => await _service.CreateAdaptiveQuizAsync(request);
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task CreateAdaptiveQuizAsync_WeaknessMode_ThrowsWhenNoStates()
+    {
+        _knowledgeStateMock.Setup(k => k.GetMyStatesAsync())
+            .ReturnsAsync([]);
+
+        var request = new AdaptiveQuizRequest { Mode = AdaptiveQuizMode.Weakness, QuestionCount = 5 };
+
+        Func<Task> act = async () => await _service.CreateAdaptiveQuizAsync(request);
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task CreateAdaptiveQuizAsync_ShouldThrow_WhenNoteNotOwned()
+    {
+        var module = new Module { Id = Guid.NewGuid(), Title = "Physics", OwnerUserId = Guid.NewGuid() };
+        var note = new Note { Id = Guid.NewGuid(), ModuleId = module.Id, Title = "Kinematics", Module = module };
+        _context.Modules.Add(module);
+        _context.Notes.Add(note);
+        await _context.SaveChangesAsync();
+
+        _knowledgeStateMock.Setup(k => k.GetMyStatesAsync())
+            .ReturnsAsync([new UserKnowledgeStateDto { SourceNoteId = note.Id, Topic = "Topic", MasteryScore = 0.2 }]);
+
+        var request = new AdaptiveQuizRequest
+        {
+            Mode = AdaptiveQuizMode.Note,
+            NoteId = note.Id,
+            QuestionCount = 5
+        };
+
+        Func<Task> act = async () => await _service.CreateAdaptiveQuizAsync(request);
+
+        await act.Should().ThrowAsync<UnauthorizedAccessException>();
+    }
+
     public void Dispose()
     {
         _context.Database.EnsureDeleted();

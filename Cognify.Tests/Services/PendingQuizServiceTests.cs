@@ -49,6 +49,72 @@ public class PendingQuizServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task CreateAsync_ShouldResolveModuleId_FromNote_WhenEmpty()
+    {
+        var moduleId = Guid.NewGuid();
+        var noteId = Guid.NewGuid();
+
+        _context.Modules.Add(new Module { Id = moduleId, OwnerUserId = _userId, Title = "Module" });
+        _context.Notes.Add(new Note { Id = noteId, ModuleId = moduleId, Title = "Note" });
+        await _context.SaveChangesAsync();
+
+        var result = await _service.CreateAsync(_userId, noteId, Guid.Empty, "Title", QuizDifficulty.Beginner, 0, 3);
+
+        result.ModuleId.Should().Be(moduleId);
+    }
+
+    [Fact]
+    public async Task GetByUserAsync_ShouldReturnQuizzes_WithNoteAndModule()
+    {
+        var moduleId = Guid.NewGuid();
+        var noteId = Guid.NewGuid();
+
+        _context.Modules.Add(new Module { Id = moduleId, OwnerUserId = _userId, Title = "Module" });
+        _context.Notes.Add(new Note { Id = noteId, ModuleId = moduleId, Title = "Note" });
+
+        _context.PendingQuizzes.Add(new PendingQuiz
+        {
+            UserId = _userId,
+            NoteId = noteId,
+            ModuleId = moduleId,
+            Title = "Quiz",
+            Status = PendingQuizStatus.Generating
+        });
+        await _context.SaveChangesAsync();
+
+        var result = await _service.GetByUserAsync(_userId);
+
+        result.Should().HaveCount(1);
+        result[0].Note.Should().NotBeNull();
+        result[0].Module.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_ShouldReturnQuiz_WhenFound()
+    {
+        var moduleId = Guid.NewGuid();
+        var noteId = Guid.NewGuid();
+        var pending = new PendingQuiz
+        {
+            UserId = _userId,
+            NoteId = noteId,
+            ModuleId = moduleId,
+            Title = "Quiz",
+            Status = PendingQuizStatus.Generating
+        };
+
+        _context.Modules.Add(new Module { Id = moduleId, OwnerUserId = _userId, Title = "Module" });
+        _context.Notes.Add(new Note { Id = noteId, ModuleId = moduleId, Title = "Note" });
+        _context.PendingQuizzes.Add(pending);
+        await _context.SaveChangesAsync();
+
+        var result = await _service.GetByIdAsync(pending.Id);
+
+        result.Should().NotBeNull();
+        result!.Id.Should().Be(pending.Id);
+    }
+
+    [Fact]
     public async Task SaveAsQuizAsync_ShouldCreateQuestionSet_And_DeletePendingQuiz()
     {
         // Arrange
@@ -124,6 +190,30 @@ public class PendingQuizServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task SaveAsQuizAsync_ShouldThrow_WhenNoQuestionsJson()
+    {
+        var pendingId = Guid.NewGuid();
+        var pendingQuiz = new PendingQuiz
+        {
+            Id = pendingId,
+            UserId = _userId,
+            NoteId = Guid.NewGuid(),
+            ModuleId = Guid.NewGuid(),
+            Title = "Empty Quiz",
+            Status = PendingQuizStatus.Ready,
+            QuestionsJson = null
+        };
+
+        _context.PendingQuizzes.Add(pendingQuiz);
+        await _context.SaveChangesAsync();
+
+        Func<Task> act = async () => await _service.SaveAsQuizAsync(pendingId, _userId);
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("No questions generated.");
+    }
+
+    [Fact]
     public async Task SaveAsQuizAsync_ShouldThrow_WhenUnauthorized()
     {
         // Arrange
@@ -148,6 +238,99 @@ public class PendingQuizServiceTests : IDisposable
 
         // Assert
         await act.Should().ThrowAsync<UnauthorizedAccessException>();
+    }
+
+    [Fact]
+    public async Task SaveAsQuizAsync_ShouldFlattenArrayCorrectAnswer()
+    {
+        var noteId = Guid.NewGuid();
+        var moduleId = Guid.NewGuid();
+        var pendingId = Guid.NewGuid();
+
+        var questions = new List<GeneratedQuestion>
+        {
+            new GeneratedQuestion { Text = "Q1", Type = QuestionType.MultipleSelect, Options = ["A", "B"], CorrectAnswer = new[] { "A", "B" } }
+        };
+        var questionsJson = JsonSerializer.Serialize(questions);
+
+        var pendingQuiz = new PendingQuiz
+        {
+            Id = pendingId,
+            UserId = _userId,
+            NoteId = noteId,
+            ModuleId = moduleId,
+            Title = "Saved Quiz",
+            Status = PendingQuizStatus.Ready,
+            QuestionsJson = questionsJson,
+            QuestionType = (int)QuestionType.MultipleSelect,
+            QuestionCount = 1,
+            Difficulty = QuizDifficulty.Beginner
+        };
+
+        _context.PendingQuizzes.Add(pendingQuiz);
+        await _context.SaveChangesAsync();
+
+        var result = await _service.SaveAsQuizAsync(pendingId, _userId);
+
+        var dbQuestion = await _context.Questions.FirstOrDefaultAsync(q => q.QuestionSetId == result.Id);
+        dbQuestion.Should().NotBeNull();
+        dbQuestion!.CorrectAnswerJson.Should().Be("\"A|B\"");
+    }
+
+    [Fact]
+    public async Task UpdateStatusAsync_ShouldUpdateFields()
+    {
+        var pending = new PendingQuiz
+        {
+            UserId = _userId,
+            NoteId = Guid.NewGuid(),
+            ModuleId = Guid.NewGuid(),
+            Title = "Quiz",
+            Status = PendingQuizStatus.Generating
+        };
+        _context.PendingQuizzes.Add(pending);
+        await _context.SaveChangesAsync();
+
+        await _service.UpdateStatusAsync(pending.Id, PendingQuizStatus.Ready, questionsJson: "[]", errorMessage: "", actualQuestionCount: 2);
+
+        var updated = await _context.PendingQuizzes.FindAsync(pending.Id);
+        updated!.Status.Should().Be(PendingQuizStatus.Ready);
+        updated.QuestionsJson.Should().Be("[]");
+        updated.ActualQuestionCount.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_ShouldRemoveQuiz()
+    {
+        var pending = new PendingQuiz
+        {
+            UserId = _userId,
+            NoteId = Guid.NewGuid(),
+            ModuleId = Guid.NewGuid(),
+            Title = "Quiz",
+            Status = PendingQuizStatus.Generating
+        };
+        _context.PendingQuizzes.Add(pending);
+        await _context.SaveChangesAsync();
+
+        await _service.DeleteAsync(pending.Id);
+
+        var deleted = await _context.PendingQuizzes.FindAsync(pending.Id);
+        deleted.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetCountByUserAsync_ShouldReturnCount()
+    {
+        _context.PendingQuizzes.AddRange(
+            new PendingQuiz { UserId = _userId, NoteId = Guid.NewGuid(), ModuleId = Guid.NewGuid(), Title = "Q1", Status = PendingQuizStatus.Generating },
+            new PendingQuiz { UserId = Guid.NewGuid(), NoteId = Guid.NewGuid(), ModuleId = Guid.NewGuid(), Title = "Q2", Status = PendingQuizStatus.Generating }
+        );
+        await _context.SaveChangesAsync();
+
+        var count = await _service.GetCountByUserAsync(_userId);
+
+        count.Should().Be(1);
     }
 
     public void Dispose()

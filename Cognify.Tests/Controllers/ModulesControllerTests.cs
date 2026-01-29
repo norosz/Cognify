@@ -5,6 +5,7 @@ using Cognify.Server;
 using Cognify.Server.Data;
 using Cognify.Server.Dtos.Auth;
 using Cognify.Server.Dtos.Modules;
+using Cognify.Tests;
 using Cognify.Tests.Extensions;
 using FluentAssertions;
 using Microsoft.AspNetCore.Hosting;
@@ -41,19 +42,42 @@ public class ModulesControllerTests : IClassFixture<WebApplicationFactory<Progra
 
     private async Task<(HttpClient Client, string Token)> CreateAuthenticatedClientAsync()
     {
-        var client = _factory.CreateClient();
-        var registerDto = new RegisterDto 
-        { 
-            Email = $"user-{Guid.NewGuid()}@example.com", 
-            Password = "password123" 
-        };
+        for (var attempt = 0; attempt < 3; attempt++)
+        {
+            var client = _factory.CreateClient();
+            var registerDto = new RegisterDto
+            {
+                Email = $"user-{Guid.NewGuid()}@example.com",
+                Password = "password123"
+            };
 
-        var response = await client.PostAsJsonAsync("/api/auth/register", registerDto);
-        var authResponse = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
-        
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResponse!.Token);
+            var response = await client.PostAsJsonAsync("/api/auth/register", registerDto);
 
-        return (client, authResponse.Token);
+            if (response.StatusCode == HttpStatusCode.Conflict)
+            {
+                response = await client.PostAsJsonAsync("/api/auth/login", new LoginDto
+                {
+                    Email = registerDto.Email,
+                    Password = registerDto.Password
+                });
+            }
+
+            if (response.IsSuccessStatusCode)
+            {
+                var authResponse = await response.Content.ReadFromJsonAsync<AuthResponseDto>(TestConstants.JsonOptions);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResponse!.Token);
+                return (client, authResponse.Token);
+            }
+
+            if (response.StatusCode != HttpStatusCode.InternalServerError)
+            {
+                response.EnsureSuccessStatusCode();
+            }
+
+            await Task.Delay(100);
+        }
+
+        throw new InvalidOperationException("Failed to authenticate test client.");
     }
 
     [Fact]

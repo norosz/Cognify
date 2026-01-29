@@ -108,6 +108,46 @@ public class KnowledgeStateServiceTests : IDisposable
         queue[0].Topic.Should().Be("Topic A");
     }
 
+    [Fact]
+    public async Task GetMyStatesAsync_ReturnsOrderedStates()
+    {
+        _context.UserKnowledgeStates.AddRange(
+            new UserKnowledgeState
+            {
+                UserId = _userId,
+                Topic = "Topic A",
+                MasteryScore = 0.4,
+                ConfidenceScore = 0.4,
+                ForgettingRisk = 0.6,
+                UpdatedAt = DateTime.UtcNow
+            },
+            new UserKnowledgeState
+            {
+                UserId = _userId,
+                Topic = "Topic B",
+                MasteryScore = 0.9,
+                ConfidenceScore = 0.9,
+                ForgettingRisk = 0.1,
+                UpdatedAt = DateTime.UtcNow
+            },
+            new UserKnowledgeState
+            {
+                UserId = Guid.NewGuid(),
+                Topic = "Other",
+                MasteryScore = 0.2,
+                ConfidenceScore = 0.2,
+                ForgettingRisk = 0.9,
+                UpdatedAt = DateTime.UtcNow
+            });
+
+        await _context.SaveChangesAsync();
+
+        var states = await _service.GetMyStatesAsync();
+
+        states.Should().HaveCount(2);
+        states.First().Topic.Should().Be("Topic A");
+    }
+
     public void Dispose()
     {
         _context.Database.EnsureDeleted();

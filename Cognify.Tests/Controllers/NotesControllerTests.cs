@@ -8,6 +8,7 @@ using Cognify.Server.Dtos.Auth;
 using Cognify.Server.Dtos.Modules;
 using Cognify.Server.Dtos.Notes;
 using Cognify.Server.Services.Interfaces;
+using Cognify.Tests;
 using Cognify.Tests.Extensions;
 using FluentAssertions;
 using Microsoft.AspNetCore.Hosting;
@@ -64,7 +65,18 @@ public class NotesControllerTests : IClassFixture<WebApplicationFactory<Program>
         };
 
         var response = await client.PostAsJsonAsync("/api/auth/register", registerDto);
-        var authResponse = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
+
+        if (response.StatusCode == HttpStatusCode.Conflict)
+        {
+            response = await client.PostAsJsonAsync("/api/auth/login", new LoginDto
+            {
+                Email = registerDto.Email,
+                Password = registerDto.Password
+            });
+        }
+
+        response.EnsureSuccessStatusCode();
+        var authResponse = await response.Content.ReadFromJsonAsync<AuthResponseDto>(TestConstants.JsonOptions);
         
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResponse!.Token);
 
