@@ -1,5 +1,4 @@
 using Cognify.Server.Dtos.Ai;
-using Cognify.Server.Dtos.Documents;
 using Cognify.Server.Models;
 using Cognify.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -51,7 +50,7 @@ public class AiController : ControllerBase
         if (string.IsNullOrEmpty(document.BlobPath))
             return BadRequest("Invalid document path.");
 
-        if (document.Status != DocumentStatus.Uploaded)
+        if (document.Status != Cognify.Server.Dtos.Documents.DocumentStatus.Uploaded)
             return BadRequest("Document must be uploaded before extraction.");
 
         // Basic extension check

@@ -74,7 +74,11 @@ public class AdaptiveQuizService(
     private async Task<AdaptiveTarget?> SelectFromReviewQueueAsync(int maxTopics)
     {
         var items = await knowledgeStateService.GetReviewQueueAsync(maxTopics);
-        var candidate = items.FirstOrDefault(i => i.SourceNoteId.HasValue);
+        var candidate = items
+            .Where(i => i.SourceNoteId.HasValue)
+            .OrderByDescending(i => i.ForgettingRisk)
+            .ThenBy(i => i.NextReviewAt ?? DateTime.MaxValue)
+            .FirstOrDefault();
 
         return candidate == null
             ? null

@@ -142,20 +142,20 @@ The core logic is implemented via three backend AI agents with strict contracts:
 
 ### 1. OCR Agent
 - **Function**: Extracts text and layout from Images/PDFs.
-- **Input**: `MaterialBlobUri`, `Language`, `Hints`
-- **Output**: `ExtractedText`, `BlocksJson` (layout), `Confidence`
+- **Input**: `ContractVersion`, `ContentType`, `Language`, `Hints`
+- **Output**: `ContractVersion`, `ExtractedText`, `BlocksJson` (layout), `Confidence`
 - **Idempotency**: Reprocessing same materialId overwrites/no-ops safely.
 
 ### 2. Question Generation Agent (Advanced)
 - **Function**: Generates adaptive quizzes based on notes and user knowledge state.
-- **Input**: `NoteContent`, `UserKnowledgeState`, `Difficulty`, `MistakeFocus`
-- **Output**: `QuizQuestions` (Prompt, Options, Key), `QuizRubric`
+- **Input**: `ContractVersion`, `NoteContent`, `QuestionType`, `Difficulty`, `QuestionCount`, `KnowledgeStateSnapshot`, `MistakeFocus`
+- **Output**: `ContractVersion`, `QuizQuestions` (Prompt, Options, Key), `QuizRubric`
 - **Features**: Deterministic output seeded by input context where feasible.
 
 ### 3. Grading Agent
 - **Function**: Evaluates answers against a rubric and detects mistakes.
-- **Input**: `QuestionPrompt`, `UserAnswer`, `AnswerKey`, `Rubric`, `KnownMistakePatterns`
-- **Output**: `Score`, `Feedback`, `DetectedMistakes`
+- **Input**: `ContractVersion`, `QuestionPrompt`, `UserAnswer`, `AnswerKey`, `Rubric`, `KnownMistakePatterns`
+- **Output**: `ContractVersion`, `Score`, `MaxScore`, `Feedback`, `DetectedMistakes`, `ConfidenceEstimate`, `RawAnalysis`
 - **Correlation**: Logs `AnswerEvaluationId` and update signals.
 
 ### 4. Learning Analytics Agent (Statistical Engine)
@@ -172,17 +172,17 @@ The core logic is implemented via three backend AI agents with strict contracts:
 **Trigger**: User uploads a file (PDF, Office, HTML, E-book) to a module.
 
 **Steps**:
-1.  **Store Blob**: Save raw file to `materials/{userId}/{materialId}/source/{filename}`.
-2.  **Create Material**: DB record `Material` with `Status = Uploaded`, `HasEmbeddedImages = unknown`.
+1.  **Store Blob**: Save raw file to `{moduleId}/{documentId}_{filename}`.
+2.  **Create Material**: DB record `Material` linked to the `Document` with `Status = Uploaded`, `HasEmbeddedImages = unknown`.
 3.  **Run Extraction**:
     -   **Text**: Extract pure text content where possible (e.g., PDF Text layer).
     -   **Images**: Extract embedded images as separate binary assets (e.g., Figures, Charts).
-    -   Store image blobs: `materials/{userId}/{materialId}/images/{imageId}.png`.
+    -   Store image blobs: `extracted/{documentId}/images/{imageId}.{ext}`.
 4.  **Create Extraction Record**:
     -   `ExtractedMarkdown` (Text + inline LaTeX).
     -   `Images[]` metadata (list of extracted images + page references).
-5.  **Create Note Draft**: Convert `ExtractedMarkdown` to a Note.
-    -   *(Optional)* Embed image references: `![Figure](blob://...)`.
+5.  **Create Note Draft**: Conversion is user-approved via Pending → “Review & Save” (keeps embedded image links).
+    -   Embedded image links use generated download URLs.
 6.  **Update Status**: `Material.Status = Processed`, `HasEmbeddedImages = true/false`.
 
 ### Pipeline B — Generate Adaptive Quiz
@@ -226,7 +226,7 @@ The core logic is implemented via three backend AI agents with strict contracts:
     - `ImagesJson` (List of extracted image references)
 - **Note**
     - `Id`, `UserId`, `Title`, `Content` (Markdown + LaTeX)
-    - `SourceMaterialId` (nullable)
+    - `SourceMaterialId` (nullable), `EmbeddedImagesJson` (nullable)
 - **Quiz**
     - `Id`, `UserId`, `Topic`, `Title`, `CreatedAt`
 - **QuizQuestion**
@@ -273,7 +273,7 @@ The core logic is implemented via three backend AI agents with strict contracts:
 - `.png`, `.jpg`, `.jpeg`, `.webp`, `.bmp`, `.tiff`
 
 ### C) Text-only Formats
-- `.txt`, `.md` (Direct read)
+- `.txt`, `.md`, `.json`, `.yaml`, `.yml` (Direct read)
 
 ---
 

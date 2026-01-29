@@ -153,4 +153,15 @@ describe('DashboardComponent', () => {
         expect(dialogSpy.open).toHaveBeenCalled();
         expect(event.stopPropagation).toHaveBeenCalled();
     });
+
+    it('should include selected topic in review quiz notification', () => {
+        component.generateReviewQuiz();
+
+        expect(notificationServiceSpy.update).toHaveBeenCalledWith(
+            'loading-id',
+            jasmine.objectContaining({
+                message: 'Review quiz queued for Topic. Check Pending for progress.'
+            })
+        );
+    });
 });

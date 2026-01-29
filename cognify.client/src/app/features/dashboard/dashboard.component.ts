@@ -151,10 +151,12 @@ export class DashboardComponent implements OnInit {
       maxTopics: 5,
       questionType: 'MultipleChoice'
     }).subscribe({
-      next: () => {
+      next: (response) => {
+        const topicLabel = response.selectedTopic || response.pendingQuiz.noteName;
+        const details = topicLabel ? ` for ${topicLabel}` : '';
         this.notificationService.update(loadingId, {
           type: 'success',
-          message: 'Review quiz queued. Check Pending for progress.',
+          message: `Review quiz queued${details}. Check Pending for progress.`,
           autoClose: true,
           link: ['/pending', { tab: 'quizzes' }],
           linkText: 'View Pending'
@@ -184,10 +186,12 @@ export class DashboardComponent implements OnInit {
       maxTopics: 5,
       questionType: 'MultipleChoice'
     }).subscribe({
-      next: () => {
+      next: (response) => {
+        const topicLabel = response.selectedTopic || response.pendingQuiz.noteName;
+        const details = topicLabel ? ` for ${topicLabel}` : '';
         this.notificationService.update(loadingId, {
           type: 'success',
-          message: 'Weakness quiz queued. Check Pending for progress.',
+          message: `Weakness quiz queued${details}. Check Pending for progress.`,
           autoClose: true,
           link: ['/pending', { tab: 'quizzes' }],
           linkText: 'View Pending'

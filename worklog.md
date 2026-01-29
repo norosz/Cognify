@@ -5,6 +5,191 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-29 22:55  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Added structured `UserMistakePattern` persistence and upsert logic
+- Created EF migration `AddUserMistakePatterns`
+- Updated status board to mark structured mistake persistence complete
+
+**CHANGED FILES**
+- Cognify.Server/Models/UserMistakePattern.cs
+- Cognify.Server/Data/ApplicationDbContext.cs
+- Cognify.Server/Services/KnowledgeStateService.cs
+- Cognify.Tests/Services/KnowledgeStateServiceTests.cs
+- Cognify.Server/Migrations/20260129225500_AddUserMistakePatterns.cs
+- Cognify.Server/Migrations/20260129225500_AddUserMistakePatterns.Designer.cs
+- Cognify.Server/Migrations/ApplicationDbContextModelSnapshot.cs
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Store mistake categories per user/topic with unique index on (UserId, Topic, Category)
+
+**NEXT**
+- Run backend tests to validate migration and knowledge service updates
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
+**Timestamp:** 2026-01-29 22:45  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Added empty-state guidance for analytics charts (readiness, velocity, distribution, heatmap, decay)
+- Updated status board to mark analytics UX improvements complete
+
+**CHANGED FILES**
+- cognify.client/src/app/features/dashboard/dashboard.component.html
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Use existing `analyticsSummary()` / data arrays as the empty-state condition
+
+**NEXT**
+- Consider structured mistake category persistence
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
+**Timestamp:** 2026-01-29 22:30  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Included selected topic/note details in adaptive quiz notifications
+- Added dashboard test to verify notification message
+- Updated status board to mark adaptive target visibility as complete
+
+**CHANGED FILES**
+- cognify.client/src/app/features/dashboard/dashboard.component.ts
+- cognify.client/src/app/features/dashboard/dashboard.component.spec.ts
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Surface target context in notification to avoid extra navigation for users
+
+**NEXT**
+- Add clearer analytics empty/error states on dashboard
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
+**Timestamp:** 2026-01-29 22:20  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Marked embedded PDF image rendering via EmbeddedImagesJson as completed
+
+**CHANGED FILES**
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Use EmbeddedImagesJson + SAS download URLs for rendering instead of persisting markdown links
+
+**NEXT**
+- Add clearer analytics empty/error states on dashboard
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
+**Timestamp:** 2026-01-29 22:10  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Updated PROJECT_SPEC to align agent contracts with DTOs
+- Documented current blob paths and Pending-based extraction → note flow
+- Added text format support list for `.json`/`.yaml`/`.yml`
+- Updated status board to mark doc alignment tasks complete
+
+**CHANGED FILES**
+- PROJECT_SPEC.md
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Document current implementation instead of changing blob storage paths
+
+**NEXT**
+- Add clearer analytics empty/error states
+- Consider structured mistake categories storage
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
+**Timestamp:** 2026-01-29 21:50  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Ranked review-queue adaptive quiz targets by forgetting risk and next review date
+- Added unit test to ensure highest-risk eligible topic is selected
+- Updated status board to mark adaptive selection improvement complete
+
+**CHANGED FILES**
+- Cognify.Server/Services/AdaptiveQuizService.cs
+- Cognify.Tests/Services/AdaptiveQuizServiceTests.cs
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Filter review queue to eligible items first, then rank by forgetting risk and next review date
+
+**NEXT**
+- Add clearer analytics empty/error states
+- Consider structured mistake categories storage
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
+**Timestamp:** 2026-01-29 21:35  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Removed legacy quiz generation component to consolidate UX around Pending flow
+- Updated status board to mark consolidation complete
+
+**CHANGED FILES**
+- cognify.client/src/app/features/modules/components/quiz-generation/quiz-generation.component.ts
+- cognify.client/src/app/features/modules/components/quiz-generation/quiz-generation.component.html
+- cognify.client/src/app/features/modules/components/quiz-generation/quiz-generation.component.scss
+- cognify.client/src/app/features/modules/components/quiz-generation/quiz-generation.component.spec.ts
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Keep quiz generation via the dialog + Pending approval flow as the single UX path
+
+**NEXT**
+- Improve adaptive topic selection ranking
+- Add clearer analytics empty/error states
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
 **Timestamp:** 2026-01-29 21:20  
 **Author:** GitHub Copilot  
 

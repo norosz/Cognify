@@ -15,6 +15,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<UserKnowledgeState> UserKnowledgeStates => Set<UserKnowledgeState>();
     public DbSet<LearningInteraction> LearningInteractions => Set<LearningInteraction>();
     public DbSet<AnswerEvaluation> AnswerEvaluations => Set<AnswerEvaluation>();
+    public DbSet<UserMistakePattern> UserMistakePatterns => Set<UserMistakePattern>();
     public DbSet<ExtractedContent> ExtractedContents => Set<ExtractedContent>();
     public DbSet<PendingQuiz> PendingQuizzes => Set<PendingQuiz>();
     public DbSet<AgentRun> AgentRuns => Set<AgentRun>();
@@ -122,6 +123,16 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .WithMany()
             .HasForeignKey(a => a.LearningInteractionId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<UserMistakePattern>()
+            .HasOne(p => p.User)
+            .WithMany()
+            .HasForeignKey(p => p.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<UserMistakePattern>()
+            .HasIndex(p => new { p.UserId, p.Topic, p.Category })
+            .IsUnique();
 
         // ExtractedContent Relationships
         modelBuilder.Entity<ExtractedContent>()

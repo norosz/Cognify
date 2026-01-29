@@ -5,27 +5,18 @@
 ###  Notes
 
 ### 🤖 AI Generation, Agents & Quizzes
-- [ ] **[UX]** Consolidate quiz generation UX (legacy “generate then save” vs Pending approval flow)
-- [ ] **[Backend]** Improve adaptive topic selection (rank best eligible instead of “first eligible”) and document selection rules
 
 ### 🧠 User Knowledge & AI Feedback
 
 ### 🎯 Adaptive Quiz Engine
-- [ ] **[Frontend]** Surface which topic/note the adaptive quiz targeted (and why) more prominently in the UI
 
 ### 📉 Decay & Mistake Intelligence
-- [ ] **[Backend]** Consider persisting structured mistake categories (not only ad-hoc JSON counters)
 
 ### 📊 AI Learning Dashboard (Frontend)
-- [ ] **[UX]** Add clearer empty/error states for analytics panels (e.g., “No learning data yet”) and guidance on how to generate data
 
 ### 🤖 AI Agents & Pipelines (v2)
-- [ ] **[Docs]** Align `PROJECT_SPEC.md` v2 agent contract field names with actual DTO contracts (avoid drift)
-- [ ] **[Docs]** Align blob path conventions in docs with current implementation (or update code to match docs)
-- [ ] **[Backend]** Embedded PDF images: emit resolvable markdown links (not only filename lists) or render from `EmbeddedImagesJson`
 
 ### 💾 File Management Enhancements
- 
 
 ## 🏗️ In Progress
 
@@ -33,6 +24,14 @@
 - [ ] **[Audit]** Close end-to-end gaps from Jan 29 inspection (images usability, file-type consistency, contract/docs drift)
 
 ## ✅ Done
+- [x] **[Backend]** Persist structured mistake categories (UserMistakePatterns)
+- [x] **[UX]** Add clearer empty/error states for analytics panels with guidance
+- [x] **[Frontend]** Surface which topic/note the adaptive quiz targeted in notifications
+- [x] **[Backend/Frontend]** Embedded PDF images rendered via `EmbeddedImagesJson`
+- [x] **[Docs]** Align `PROJECT_SPEC.md` v2 agent contract field names with actual DTO contracts
+- [x] **[Docs]** Align blob path conventions and extraction flow in docs with current implementation
+- [x] **[Backend]** Improve adaptive topic selection (rank best eligible instead of “first eligible”)
+- [x] **[UX]** Consolidate quiz generation UX (remove legacy direct-generate component)
 - [x] **[Backend]** Expand mistake taxonomy beyond `IncorrectAnswer`/`Unanswered`
 - [x] **[UX]** Clarify extraction → note flow in Pending (Review & Save creates a Note)
 - [x] **[Backend]** Provide an authenticated way to fetch extracted image blobs (SAS URLs via NoteService)

@@ -105,6 +105,72 @@ public class AdaptiveQuizServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task CreateAdaptiveQuizAsync_ReviewMode_PrefersHighestRiskEligibleTopic()
+    {
+        var module = new Module { Id = Guid.NewGuid(), Title = "Chemistry", OwnerUserId = _userId };
+        var noteLowRisk = new Note { Id = Guid.NewGuid(), ModuleId = module.Id, Title = "Atoms", Module = module };
+        var noteHighRisk = new Note { Id = Guid.NewGuid(), ModuleId = module.Id, Title = "Bonds", Module = module };
+        _context.Modules.Add(module);
+        _context.Notes.AddRange(noteLowRisk, noteHighRisk);
+        await _context.SaveChangesAsync();
+
+        _knowledgeStateMock.Setup(k => k.GetReviewQueueAsync(It.IsAny<int>()))
+            .ReturnsAsync([
+                new ReviewQueueItemDto
+                {
+                    Topic = "General",
+                    SourceNoteId = null,
+                    MasteryScore = 0.5,
+                    ForgettingRisk = 0.9,
+                    NextReviewAt = DateTime.UtcNow.AddDays(-2)
+                },
+                new ReviewQueueItemDto
+                {
+                    Topic = "Chemistry / Atoms",
+                    SourceNoteId = noteLowRisk.Id,
+                    MasteryScore = 0.6,
+                    ForgettingRisk = 0.3,
+                    NextReviewAt = DateTime.UtcNow.AddDays(-1)
+                },
+                new ReviewQueueItemDto
+                {
+                    Topic = "Chemistry / Bonds",
+                    SourceNoteId = noteHighRisk.Id,
+                    MasteryScore = 0.4,
+                    ForgettingRisk = 0.8,
+                    NextReviewAt = DateTime.UtcNow.AddDays(-1)
+                }
+            ]);
+
+        _pendingQuizMock
+            .Setup(p => p.CreateAsync(_userId, noteHighRisk.Id, module.Id, It.IsAny<string>(), It.IsAny<QuizDifficulty>(), It.IsAny<int>(), It.IsAny<int>()))
+            .ReturnsAsync((Guid userId, Guid noteId, Guid moduleId, string title, QuizDifficulty difficulty, int type, int count) => new PendingQuiz
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                NoteId = noteId,
+                ModuleId = moduleId,
+                Title = title,
+                Difficulty = difficulty,
+                QuestionType = type,
+                QuestionCount = count,
+                Status = PendingQuizStatus.Generating,
+                CreatedAt = DateTime.UtcNow
+            });
+
+        var request = new AdaptiveQuizRequest
+        {
+            Mode = AdaptiveQuizMode.Review,
+            QuestionCount = 5,
+            QuestionType = "MultipleChoice"
+        };
+
+        var result = await _service.CreateAdaptiveQuizAsync(request);
+
+        result.SelectedTopic.Should().Be("Chemistry / Bonds");
+    }
+
+    [Fact]
     public async Task CreateAdaptiveQuizAsync_NoteMode_UsesDefaultsWhenNoState()
     {
         var module = new Module { Id = Guid.NewGuid(), Title = "Physics", OwnerUserId = _userId };

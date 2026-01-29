@@ -54,6 +54,8 @@ public class KnowledgeStateService(
         var mistakeData = mistakeService.UpdateMistakePatterns(state.MistakePatternsJson, interactions);
         state.MistakePatternsJson = mistakeService.SerializeMistakePatterns(mistakeData);
 
+        var mistakeCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
         foreach (var interaction in interactions)
         {
             var interactionEntity = new LearningInteraction
@@ -71,6 +73,10 @@ public class KnowledgeStateService(
             context.LearningInteractions.Add(interactionEntity);
 
             var mistakes = interaction.DetectedMistakes?.ToList() ?? mistakeService.DetectMistakes(interaction);
+            foreach (var mistake in mistakes)
+            {
+                mistakeCounts[mistake] = mistakeCounts.GetValueOrDefault(mistake) + 1;
+            }
 
             var evaluation = new AnswerEvaluation
             {
@@ -85,6 +91,8 @@ public class KnowledgeStateService(
 
             context.AnswerEvaluations.Add(evaluation);
         }
+
+        await UpsertStructuredMistakesAsync(attempt.UserId, topic, quiz.NoteId, mistakeCounts, now);
 
         await context.SaveChangesAsync();
     }
@@ -160,5 +168,51 @@ public class KnowledgeStateService(
     private static double Clamp(double value)
     {
         return Math.Min(MaxScore, Math.Max(MinScore, value));
+    }
+
+    private async Task UpsertStructuredMistakesAsync(
+        Guid userId,
+        string topic,
+        Guid? sourceNoteId,
+        Dictionary<string, int> mistakeCounts,
+        DateTime now)
+    {
+        if (mistakeCounts.Count == 0)
+        {
+            return;
+        }
+
+        var categories = mistakeCounts.Keys.ToList();
+        var existing = await context.UserMistakePatterns
+            .Where(p => p.UserId == userId && p.Topic == topic && categories.Contains(p.Category))
+            .ToListAsync();
+
+        foreach (var (category, count) in mistakeCounts)
+        {
+            var current = existing.FirstOrDefault(p => p.Category == category);
+            if (current == null)
+            {
+                context.UserMistakePatterns.Add(new UserMistakePattern
+                {
+                    UserId = userId,
+                    Topic = topic,
+                    SourceNoteId = sourceNoteId,
+                    Category = category,
+                    Count = count,
+                    FirstSeenAt = now,
+                    LastSeenAt = now,
+                    UpdatedAt = now
+                });
+                continue;
+            }
+
+            current.Count += count;
+            current.LastSeenAt = now;
+            current.UpdatedAt = now;
+            if (current.SourceNoteId == null && sourceNoteId.HasValue)
+            {
+                current.SourceNoteId = sourceNoteId;
+            }
+        }
     }
 }

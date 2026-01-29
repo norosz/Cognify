@@ -77,11 +77,18 @@
                 <mat-spinner diameter="28"></mat-spinner>
             </div>
             } @else {
+            @if (!analyticsSummary()) {
+            <div class="empty-inline">
+                <mat-icon>analytics</mat-icon>
+                <p>No analytics data yet. Complete a quiz to generate insights.</p>
+            </div>
+            } @else {
             <div class="chart" echarts [options]="readinessOptions()"></div>
             <div class="analytics-meta">
                 <span>Accuracy {{ (analyticsSummary()?.accuracyRate || 0) * 100 | number: '1.0-0' }}%</span>
                 <span>Topics {{ analyticsSummary()?.totalTopics || 0 }}</span>
             </div>
+            }
             }
         </mat-card-content>
     </mat-card>
@@ -97,11 +104,18 @@
                 <mat-spinner diameter="28"></mat-spinner>
             </div>
             } @else {
+            @if (!analyticsSummary()) {
+            <div class="empty-inline">
+                <mat-icon>show_chart</mat-icon>
+                <p>No recent activity yet. Take a quiz to start tracking momentum.</p>
+            </div>
+            } @else {
             <div class="chart chart-small" echarts [options]="velocityOptions()"></div>
             <div class="analytics-meta">
                 <span>Velocity {{ (analyticsSummary()?.learningVelocity || 0) * 100 | number: '1.0-0' }}%</span>
                 <span>Attempts {{ analyticsSummary()?.totalAttempts || 0 }}</span>
             </div>
+            }
             }
         </mat-card-content>
     </mat-card>
@@ -117,7 +131,14 @@
                 <mat-spinner diameter="28"></mat-spinner>
             </div>
             } @else {
+            @if (!analyticsSummary() || (topicDistribution()?.topics?.length || 0) === 0) {
+            <div class="empty-inline">
+                <mat-icon>pie_chart</mat-icon>
+                <p>No topic distribution yet. Add notes or complete quizzes to populate.</p>
+            </div>
+            } @else {
             <div class="chart" echarts [options]="distributionOptions()"></div>
+            }
             }
         </mat-card-content>
     </mat-card>
@@ -133,7 +154,14 @@
                 <mat-spinner diameter="28"></mat-spinner>
             </div>
             } @else {
+            @if (!analyticsSummary() || (retentionHeatmap()?.length || 0) === 0) {
+            <div class="empty-inline">
+                <mat-icon>grid_view</mat-icon>
+                <p>No heatmap data yet. Keep practicing to visualize mastery.</p>
+            </div>
+            } @else {
             <div class="chart chart-tall" echarts [options]="heatmapOptions()"></div>
+            }
             }
         </mat-card-content>
     </mat-card>
@@ -149,7 +177,14 @@
                 <mat-spinner diameter="28"></mat-spinner>
             </div>
             } @else {
+            @if (!analyticsSummary() || (decayForecast()?.topics?.length || 0) === 0) {
+            <div class="empty-inline">
+                <mat-icon>timeline</mat-icon>
+                <p>No decay forecast yet. Complete quizzes to unlock predictions.</p>
+            </div>
+            } @else {
             <div class="chart chart-tall" echarts [options]="decayOptions()"></div>
+            }
             }
         </mat-card-content>
     </mat-card>

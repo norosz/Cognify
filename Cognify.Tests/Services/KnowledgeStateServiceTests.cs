@@ -90,6 +90,42 @@ public class KnowledgeStateServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task ApplyAttemptResultAsync_PersistsStructuredMistakePatterns()
+    {
+        var module = new Module { Id = Guid.NewGuid(), Title = "Chemistry", OwnerUserId = _userId };
+        var note = new Note { Id = Guid.NewGuid(), ModuleId = module.Id, Title = "Atoms", Module = module };
+        var quiz = new Quiz { Id = Guid.NewGuid(), NoteId = note.Id, Title = "Quiz", Note = note };
+        var attempt = new Attempt { Id = Guid.NewGuid(), UserId = _userId, QuizId = quiz.Id, AnswersJson = "{}", Score = 40 };
+
+        var interactions = new List<KnowledgeInteractionInput>
+        {
+            new()
+            {
+                QuestionId = Guid.NewGuid(),
+                UserAnswer = "A",
+                IsCorrect = false,
+                DetectedMistakes = new[] { "ConceptGap", "TooShortAnswer" }
+            },
+            new()
+            {
+                QuestionId = Guid.NewGuid(),
+                UserAnswer = "B",
+                IsCorrect = false,
+                DetectedMistakes = new[] { "ConceptGap" }
+            }
+        };
+
+        await _service.ApplyAttemptResultAsync(attempt, quiz, interactions);
+
+        var patterns = await _context.UserMistakePatterns
+            .Where(p => p.UserId == _userId)
+            .ToListAsync();
+
+        patterns.Should().Contain(p => p.Category == "ConceptGap" && p.Count == 2);
+        patterns.Should().Contain(p => p.Category == "TooShortAnswer" && p.Count == 1);
+    }
+
+    [Fact]
     public async Task GetReviewQueueAsync_ReturnsDueItemsOnly()
     {
         _context.UserKnowledgeStates.AddRange(
