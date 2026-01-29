@@ -49,6 +49,66 @@ public class MistakeAnalysisServiceTests
     }
 
     [Fact]
+    public void DetectMistakes_ShouldReturnPartiallyCorrect_WhenScoreIsPartial()
+    {
+        var result = _service.DetectMistakes(new KnowledgeInteractionInput
+        {
+            QuestionId = Guid.NewGuid(),
+            UserAnswer = "Longer answer",
+            IsCorrect = false,
+            Score = 0.5,
+            MaxScore = 1
+        });
+
+        result.Should().Contain("PartiallyCorrect");
+        result.Should().NotContain("IncorrectAnswer");
+    }
+
+    [Fact]
+    public void DetectMistakes_ShouldIncludeLowConfidence_WhenConfidenceLow()
+    {
+        var result = _service.DetectMistakes(new KnowledgeInteractionInput
+        {
+            QuestionId = Guid.NewGuid(),
+            UserAnswer = "Longer answer",
+            IsCorrect = false,
+            Score = 0,
+            ConfidenceEstimate = 0.2
+        });
+
+        result.Should().Contain("LowConfidence");
+    }
+
+    [Fact]
+    public void DetectMistakes_ShouldIncludeTooShortAnswer_WhenAnswerIsShort()
+    {
+        var result = _service.DetectMistakes(new KnowledgeInteractionInput
+        {
+            QuestionId = Guid.NewGuid(),
+            UserAnswer = "No",
+            IsCorrect = false,
+            Score = 0
+        });
+
+        result.Should().Contain("TooShortAnswer");
+    }
+
+    [Fact]
+    public void DetectMistakes_ShouldInferConceptGap_FromFeedback()
+    {
+        var result = _service.DetectMistakes(new KnowledgeInteractionInput
+        {
+            QuestionId = Guid.NewGuid(),
+            UserAnswer = "Answer",
+            IsCorrect = false,
+            Score = 0,
+            Feedback = "Your concept understanding is incomplete."
+        });
+
+        result.Should().Contain("ConceptGap");
+    }
+
+    [Fact]
     public void UpdateMistakePatterns_ShouldIncrementCounts_FromDetectedMistakes()
     {
         var patterns = _service.UpdateMistakePatterns(null,

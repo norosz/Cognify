@@ -6,6 +6,19 @@ namespace Cognify.Server.Services;
 
 public class MistakeAnalysisService : IMistakeAnalysisService
 {
+    private static readonly Dictionary<string, string[]> FeedbackKeywordMap = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["ConceptGap"] = new[] { "concept", "understanding", "misconception" },
+        ["DefinitionGap"] = new[] { "definition", "define", "terminology" },
+        ["CalculationError"] = new[] { "calculation", "compute", "math", "arithmetic" },
+        ["UnitsError"] = new[] { "unit", "units" },
+        ["FormulaMisuse"] = new[] { "formula", "equation" },
+        ["SignError"] = new[] { "sign", "negative", "positive" },
+        ["LogicalError"] = new[] { "logic", "logical" },
+        ["ReasoningGap"] = new[] { "reasoning", "explain", "justification" },
+        ["VisualInterpretationError"] = new[] { "diagram", "figure", "graph" }
+    };
+
     public Dictionary<string, int> UpdateMistakePatterns(string? existingJson, IReadOnlyCollection<KnowledgeInteractionInput> interactions)
     {
         var patterns = ParseMistakePatterns(existingJson);
@@ -50,7 +63,43 @@ public class MistakeAnalysisService : IMistakeAnalysisService
             return ["Unanswered"];
         }
 
-        return ["IncorrectAnswer"];
+        var mistakes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        var normalizedScore = interaction.MaxScore > 0
+            ? interaction.Score / interaction.MaxScore
+            : 0;
+
+        if (normalizedScore > 0)
+        {
+            mistakes.Add("PartiallyCorrect");
+        }
+        else
+        {
+            mistakes.Add("IncorrectAnswer");
+        }
+
+        if (interaction.ConfidenceEstimate is < 0.5)
+        {
+            mistakes.Add("LowConfidence");
+        }
+
+        if (interaction.UserAnswer.Trim().Length < 8)
+        {
+            mistakes.Add("TooShortAnswer");
+        }
+
+        if (!string.IsNullOrWhiteSpace(interaction.Feedback))
+        {
+            foreach (var (category, keywords) in FeedbackKeywordMap)
+            {
+                if (keywords.Any(keyword => interaction.Feedback.Contains(keyword, StringComparison.OrdinalIgnoreCase)))
+                {
+                    mistakes.Add(category);
+                }
+            }
+        }
+
+        return mistakes.ToList();
     }
 
     private static Dictionary<string, int> ParseMistakePatterns(string? json)

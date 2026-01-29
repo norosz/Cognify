@@ -14,7 +14,6 @@
 - [ ] **[Frontend]** Surface which topic/note the adaptive quiz targeted (and why) more prominently in the UI
 
 ### 📉 Decay & Mistake Intelligence
-- [ ] **[Backend]** Expand mistake taxonomy beyond `IncorrectAnswer`/`Unanswered` (toward misconception profiling)
 - [ ] **[Backend]** Consider persisting structured mistake categories (not only ad-hoc JSON counters)
 
 ### 📊 AI Learning Dashboard (Frontend)
@@ -34,6 +33,7 @@
 - [ ] **[Audit]** Close end-to-end gaps from Jan 29 inspection (images usability, file-type consistency, contract/docs drift)
 
 ## ✅ Done
+- [x] **[Backend]** Expand mistake taxonomy beyond `IncorrectAnswer`/`Unanswered`
 - [x] **[UX]** Clarify extraction → note flow in Pending (Review & Save creates a Note)
 - [x] **[Backend]** Provide an authenticated way to fetch extracted image blobs (SAS URLs via NoteService)
 - [x] **[Backend]** Feed `KnownMistakePatterns` into grading contract requests (close the feedback loop)

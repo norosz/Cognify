@@ -5,6 +5,33 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-29 21:20  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Expanded mistake taxonomy with partial correctness, low confidence, short answers, and feedback keyword cues
+- Added unit tests covering new mistake categories
+- Updated status board to mark taxonomy expansion as complete
+
+**CHANGED FILES**
+- Cognify.Server/Services/MistakeAnalysisService.cs
+- Cognify.Tests/Services/MistakeAnalysisServiceTests.cs
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Use deterministic heuristics on answer length, score, confidence, and feedback keywords to infer categories
+
+**NEXT**
+- Consolidate quiz generation UX (legacy vs pending)
+- Consider structured mistake categories storage
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
 **Timestamp:** 2026-01-29 21:05  
 **Author:** GitHub Copilot  
 
