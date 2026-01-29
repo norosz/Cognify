@@ -24,7 +24,6 @@ import { QuizListComponent } from '../components/quiz-list/quiz-list.component';
     RouterLink,
     MatDialogModule,
     DocumentListComponent,
-    DocumentListComponent,
     NotesListComponent,
     QuizListComponent
   ],

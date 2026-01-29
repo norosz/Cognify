@@ -15,7 +15,7 @@ Deliverables (no new “smartness” yet; make it production-grade-ish):
 - Consolidate and version AI contracts:
   - One canonical question schema (already close) + explicit DTOs for AI responses; contract tests.
 - Fix API/UX drift:
-  - Align frontend quiz-gen calls with the real endpoint (or delete the legacy call) in `quiz.service.ts`.
+  - Confirm frontend quiz-gen calls align with the current AI endpoint.
   - Fix prompt `difficultyLevel` bug in `AiPrompts.cs`.
 - Improve error handling + telemetry:
   - All AI failures return stable `ProblemDetails`; log with correlation; never leak raw exceptions to clients.

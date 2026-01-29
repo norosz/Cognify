@@ -5,6 +5,7 @@ import { PendingService } from './core/services/pending.service';
 
 @Component({
   selector: 'app-root',
+  standalone: true,
   imports: [RouterOutlet, NotificationContainerComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'

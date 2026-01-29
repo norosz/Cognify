@@ -31,6 +31,11 @@
 ### 🚨 Stabilization (Jan 29 Audit)
 
 ## ✅ Done
+- [x] **[Frontend/Angular]** Fix Angular bootstrap conflict (only one bootstrap path: AppModule vs `bootstrapApplication`)
+- [x] **[Frontend/Angular]** Resolve template error: unknown element `app-notification-container`
+- [x] **[Frontend/TS]** Reduce RxJS/TSConfig “deprecation” noise so real errors stand out
+- [x] **[Frontend]** Remove duplicate `DocumentListComponent` import in Module Detail
+- [x] **[Backend/Frontend Contract]** Confirm legacy quiz endpoint is fully retired; remove remaining client/docs references
 - [x] **[Backend/Frontend]** Surface user mistake patterns in analytics/knowledge views (DTO + UI)
 - [x] **[Frontend]** Unblock Angular build and restore dashboard + note editor compilation
 - [x] **[Frontend]** Fix Dashboard template parsing errors (invalid control-flow + mismatched tags)
