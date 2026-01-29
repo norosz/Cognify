@@ -5,6 +5,91 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-29 17:46  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Added v2 agent contract DTOs for OCR, quiz generation, and grading with versioning
+- Wired quiz generation and OCR to contract-based calls in background worker
+- Updated open-text grading to use contract response and recorded structured AgentRun output
+- Made AI worker test-safe by registering a null AI service and disabling AI worker in Testing
+- Versioned quiz and grading agent input hashes to v2
+
+**CHANGED FILES**
+- Cognify.Server/Dtos/Ai/Contracts/AgentContractVersions.cs
+- Cognify.Server/Dtos/Ai/Contracts/QuizGenerationContract.cs
+- Cognify.Server/Dtos/Ai/Contracts/GradingContract.cs
+- Cognify.Server/Dtos/Ai/Contracts/OcrContract.cs
+- Cognify.Server/Services/Interfaces/IAiService.cs
+- Cognify.Server/Services/AiService.cs
+- Cognify.Server/Services/NullAiService.cs
+- Cognify.Server/Services/AiBackgroundWorker.cs
+- Cognify.Server/Services/PendingQuizService.cs
+- Cognify.Server/Services/AttemptService.cs
+- Cognify.Server/Program.cs
+- status.md
+
+**DECISIONS**
+- Preserve existing AI endpoints and models while layering v2 contract DTOs on top for compatibility.
+- Disable AI background worker in Testing to ensure deterministic, key-free test runs.
+
+**NEXT**
+- Add rubric persistence/mapping to align quiz output with v2 contracts.
+- Extend contract usage to extraction metadata (BlocksJson/Confidence) and grading detected mistakes.
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
+**Timestamp:** 2026-01-29 17:35  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Updated status board to reflect current v2 implementation (analytics/decay/dashboard/adaptive prompting)
+- Added new In Progress items for strict v2 agent contracts + quiz rubric alignment + test-safe worker behavior
+
+**CHANGED FILES**
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Prefer a compatibility approach: keep `QuestionSet`/`Question` as the persisted quiz model while adding v2-style contracts (DTOs + versioning + idempotent InputHash) on top.
+
+**NEXT**
+- Implement strict request/response DTO contracts for OCR/QuizGen/Grading with contract versioning.
+- Remove OpenAI-key dependency from test runs (skip/disable AI worker loops or inject a null AI client in Testing).
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
+**Timestamp:** 2026-01-29 17:36  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Completed merge of `origin/main` into `feat/Extraction_V2_pipeline` and committed the merge
+- Fixed `LearningAnalyticsBackgroundWorkerTests` teardown to avoid `ObjectDisposedException` on `ApplicationDbContext`
+
+**CHANGED FILES**
+- Cognify.Tests/Services/LearningAnalyticsBackgroundWorkerTests.cs
+
+**DECISIONS**
+- Avoid calling `EnsureDeleted()` for EF InMemory test DB teardown; DI scopes may already dispose the context.
+
+**NEXT**
+- Re-run backend tests (`dotnet test Cognify.Tests`) to confirm the teardown fix is green.
+- Optionally run Angular tests/build to validate client after the merge.
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
 **Timestamp:** 2026-01-29 18:05  
 **Author:** GitHub Copilot  
 

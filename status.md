@@ -15,36 +15,41 @@
 - [x] **[Agent]** Implement Question Generation Agent (Advanced) & Grading
 - [x] **[Agent]** Implement Grading Agent
 ### 🧠 User Knowledge & AI Feedback
-- [ ] **[Backend]** Implement `LearningAnalyticsService` (Aggregator)
+- [x] **[Backend]** Implement `LearningAnalyticsService` (Aggregator)
 
 ### 🎯 Adaptive Quiz Engine
-- [ ] **[Backend]** Implement prompting that includes Mastery/ForgettingRisk/MistakePatterns
+- [x] **[Backend]** Implement prompting that includes Mastery/ForgettingRisk/MistakePatterns
 
 ### 📉 Decay & Mistake Intelligence
-- [ ] **[Backend]** Implement `DecayPredictionService` (Spaced Repetition)
-- [ ] **[Backend]** Implement `MistakeAnalysisService` (Error Pattern Detection)
-- [ ] **[Backend]** Update `UserKnowledgeState` with `MistakePatterns` & `ForgettingRisk`
+- [x] **[Backend]** Implement `DecayPredictionService` (Spaced Repetition)
+- [x] **[Backend]** Implement `MistakeAnalysisService` (Error Pattern Detection)
+- [x] **[Backend]** Update `UserKnowledgeState` with `MistakePatterns` & `ForgettingRisk`
 
 ### 📊 AI Learning Dashboard (Frontend)
-- [ ] **[Frontend]** Build Knowledge Map Visualization
-- [ ] **[Frontend]** Build Memory Decay Chart
-- [ ] **[Frontend]** Build Concept Weakness List
+- [x] **[Frontend]** Build Knowledge Map Visualization
+- [x] **[Frontend]** Build Memory Decay Chart
+- [x] **[Frontend]** Build Concept Weakness List
 
 ### 🤖 AI Agents & Pipelines (v2)
 - [x] **[Backend]** Implement `Material`, `MaterialExtraction`, `Note` (Updated) Entities
 - [ ] **[Backend]** Implement `Quiz`, `QuizQuestion`, `QuizRubric` Entities
-- [ ] **[Backend]** Implement `LearningInteraction`, `AnswerEvaluation`, `UserKnowledgeState` Entities
+- [x] **[Backend]** Implement `LearningInteraction`, `AnswerEvaluation`, `UserKnowledgeState` Entities
 - [x] **[Backend]** Migrate DB to v2 Schema
 - [x] **[Agent]** Extract embedded images + metadata for PDF materials
 - [ ] **[Agent]** Implement Question Generation Agent (Pipe B)
 - [ ] **[Agent]** Implement Grading Agent (Pipe C)
-- [ ] **[Agent]** Implement Learning Analytics Agent (Statistical Engine)
+- [x] **[Agent]** Implement Learning Analytics Agent (Statistical Engine)
 
 ### 💾 File Management Enhancements
 - [x] **[Backend]** Add `FileSizeBytes` to Document Entity/DTO
 - [x] **[Frontend]** Display File Size in Document Card in MB
 
 ## 🏗️ In Progress
+
+### 🤖 AI Agents & Pipelines (v2)
+- [x] **[Refactor]** Define strict v2 agent contracts (OCR / QuizGen / Grading) + versioning + input-hash idempotency
+- [ ] **[Refactor]** Align quiz output with v2 contracts (Rubric DTO + persistence strategy; keep `QuestionSet`/`Question` compatibility)
+- [x] **[Test]** Make background worker test-safe (no OpenAI key required; deterministic test runs)
 
 
 

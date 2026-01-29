@@ -1,9 +1,10 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Cognify.Server.Data;
+using Cognify.Server.Dtos.Ai.Contracts;
 using Cognify.Server.Models;
-using Cognify.Server.Services.Interfaces;
 using Cognify.Server.Models.Ai; // Added for GeneratedQuestion
+using Cognify.Server.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace Cognify.Server.Services;
@@ -14,8 +15,8 @@ public class PendingQuizService(ApplicationDbContext db, IAgentRunService agentR
         Guid userId, Guid noteId, Guid moduleId, string title,
         QuizDifficulty difficulty, int questionType, int questionCount)
     {
-        var inputHash = AgentRunService.ComputeHash($"quiz:{userId}:{noteId}:{questionType}:{questionCount}:{difficulty}");
-        var run = await agentRunService.CreateAsync(userId, AgentRunType.QuizGeneration, inputHash, promptVersion: "quizgen-v1");
+        var inputHash = AgentRunService.ComputeHash($"quiz:{AgentContractVersions.V2}:{userId}:{noteId}:{questionType}:{questionCount}:{difficulty}");
+        var run = await agentRunService.CreateAsync(userId, AgentRunType.QuizGeneration, inputHash, promptVersion: "quizgen-v2");
 
         // Resolve ModuleId from Note if not provided
         if (moduleId == Guid.Empty)
@@ -88,9 +89,8 @@ public class PendingQuizService(ApplicationDbContext db, IAgentRunService agentR
         await db.SaveChangesAsync();
 
         // Parse and create Questions
-        // Parse and create Questions
         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true, Converters = { new JsonStringEnumConverter() } };
-        var generatedQuestions = JsonSerializer.Deserialize<List<GeneratedQuestion>>(pending.QuestionsJson, options);
+        var generatedQuestions = ParseGeneratedQuestions(pending.QuestionsJson, options);
 
         if (generatedQuestions != null)
         {
@@ -118,6 +118,40 @@ public class PendingQuizService(ApplicationDbContext db, IAgentRunService agentR
         await db.SaveChangesAsync();
 
         return questionSet;
+    }
+
+    private static List<GeneratedQuestion> ParseGeneratedQuestions(string json, JsonSerializerOptions options)
+    {
+        if (string.IsNullOrWhiteSpace(json)) return [];
+
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+
+            if (root.ValueKind == JsonValueKind.Array)
+            {
+                return JsonSerializer.Deserialize<List<GeneratedQuestion>>(root.GetRawText(), options) ?? [];
+            }
+
+            if (root.ValueKind == JsonValueKind.Object)
+            {
+                foreach (var prop in root.EnumerateObject())
+                {
+                    if (string.Equals(prop.Name, "questions", StringComparison.OrdinalIgnoreCase)
+                        && prop.Value.ValueKind == JsonValueKind.Array)
+                    {
+                        return JsonSerializer.Deserialize<List<GeneratedQuestion>>(prop.Value.GetRawText(), options) ?? [];
+                    }
+                }
+            }
+        }
+        catch
+        {
+            return [];
+        }
+
+        return [];
     }
 
     private static string? FlattenCorrectAnswer(object? obj)
