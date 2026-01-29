@@ -5,6 +5,27 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-29 18:05  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Updated Karma config to run headless in single-run mode to avoid hanging watch sessions
+
+**CHANGED FILES**
+- cognify.client/karma.conf.js
+
+**DECISIONS**
+- Defaulted to ChromeHeadless with `singleRun: true` and `autoWatch: false` for CI-friendly behavior.
+
+**NEXT**
+- Re-run frontend tests if needed.
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
 **Timestamp:** 2026-01-29 17:55  
 **Author:** GitHub Copilot  
 
