@@ -2,8 +2,11 @@ using Cognify.Server.Data;
 using Cognify.Server.Models;
 using Cognify.Server.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.IO.Compression;
+using System.Net;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace Cognify.Server.Services;
 
@@ -119,6 +122,16 @@ public class AiBackgroundWorker(
                         text = AppendImagesToMarkdown(text, images);
                     }
                 }
+                else if (contentType.StartsWith("text/") || contentType == "application/xhtml+xml")
+                {
+                    buffer.Position = 0;
+                    text = await ReadTextAsync(contentType, buffer, stoppingToken);
+                }
+                else if (IsOfficeContent(contentType))
+                {
+                    buffer.Position = 0;
+                    text = ExtractOfficeText(contentType, buffer);
+                }
                 else if (contentType.StartsWith("image/"))
                 {
                     buffer.Position = 0;
@@ -126,10 +139,10 @@ public class AiBackgroundWorker(
                 }
                 else
                 {
-                    await extractionService.MarkAsErrorAsync(item.Id, "Only image and PDF files are supported for extraction.");
+                    await extractionService.MarkAsErrorAsync(item.Id, "Unsupported file type for extraction.");
                     if (item.AgentRunId.HasValue)
                     {
-                        await agentRunService.MarkFailedAsync(item.AgentRunId.Value, "Only image and PDF files are supported for extraction.");
+                        await agentRunService.MarkFailedAsync(item.AgentRunId.Value, "Unsupported file type for extraction.");
                     }
                     continue;
                 }
@@ -250,8 +263,107 @@ public class AiBackgroundWorker(
             ".webp" => "image/webp",
             ".gif" => "image/gif",
             ".pdf" => "application/pdf",
+            ".txt" => "text/plain",
+            ".md" => "text/markdown",
+            ".html" => "text/html",
+            ".htm" => "text/html",
+            ".mhtml" => "text/html",
+            ".epub" => "application/epub+zip",
+            ".docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            ".pptx" => "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            ".xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             _ => "application/octet-stream"
         };
+    }
+
+    private static bool IsOfficeContent(string contentType)
+    {
+        return contentType is "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            or "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+            or "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            or "application/epub+zip";
+    }
+
+    private static async Task<string> ReadTextAsync(string contentType, Stream stream, CancellationToken cancellationToken)
+    {
+        using var reader = new StreamReader(stream, Encoding.UTF8, leaveOpen: true);
+        var raw = await reader.ReadToEndAsync(cancellationToken);
+
+        if (contentType == "text/html")
+        {
+            return NormalizeWhitespace(StripHtml(raw));
+        }
+
+        return NormalizeWhitespace(raw);
+    }
+
+    private static string ExtractOfficeText(string contentType, Stream stream)
+    {
+        using var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true);
+
+        return contentType switch
+        {
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document" =>
+                NormalizeWhitespace(ReadZipEntryText(archive, "word/document.xml")),
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation" =>
+                NormalizeWhitespace(ReadZipEntriesText(archive, "ppt/slides/", ".xml")),
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" =>
+                NormalizeWhitespace(ReadZipEntryText(archive, "xl/sharedStrings.xml")),
+            "application/epub+zip" =>
+                NormalizeWhitespace(ReadZipEntriesText(archive, string.Empty, ".xhtml", ".html")),
+            _ => string.Empty
+        };
+    }
+
+    private static string ReadZipEntryText(ZipArchive archive, string entryName)
+    {
+        var entry = archive.GetEntry(entryName);
+        if (entry == null) return string.Empty;
+
+        using var reader = new StreamReader(entry.Open());
+        var xml = reader.ReadToEnd();
+        return StripHtml(xml);
+    }
+
+    private static string ReadZipEntriesText(ZipArchive archive, string prefix, params string[] extensions)
+    {
+        var builder = new StringBuilder();
+        var entries = archive.Entries
+            .Where(e => e.FullName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
+                        && extensions.Any(ext => e.FullName.EndsWith(ext, StringComparison.OrdinalIgnoreCase)))
+            .OrderBy(e => e.FullName)
+            .ToList();
+
+        foreach (var entry in entries)
+        {
+            using var reader = new StreamReader(entry.Open());
+            var xml = reader.ReadToEnd();
+            var text = StripHtml(xml);
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                if (builder.Length > 0)
+                {
+                    builder.AppendLine().AppendLine("---").AppendLine();
+                }
+                builder.Append(text);
+            }
+        }
+
+        return builder.ToString();
+    }
+
+    private static string StripHtml(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input)) return string.Empty;
+        var noTags = Regex.Replace(input, "<[^>]+>", " ");
+        return WebUtility.HtmlDecode(noTags);
+    }
+
+    private static string NormalizeWhitespace(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input)) return string.Empty;
+        var normalized = Regex.Replace(input, "\\s+", " ").Trim();
+        return normalized;
     }
 
     private static string AppendImagesToMarkdown(string text, List<PdfImageMetadata> images)
