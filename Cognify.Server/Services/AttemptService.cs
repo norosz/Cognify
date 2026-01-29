@@ -69,7 +69,11 @@ public class AttemptService(
             {
                 QuestionId = question.Id,
                 UserAnswer = userAnswer,
-                IsCorrect = evaluation.IsCorrect
+                IsCorrect = evaluation.IsCorrect,
+                Score = evaluation.Score,
+                MaxScore = 1,
+                Feedback = evaluation.Feedback,
+                DetectedMistakes = evaluation.DetectedMistakes
             });
         }
 
@@ -143,7 +147,7 @@ public class AttemptService(
     {
         if (string.IsNullOrWhiteSpace(userAnswer))
         {
-            return new QuestionEvaluation(0, false);
+            return new QuestionEvaluation(0, false, null, null);
         }
 
         var correctAnswer = TryDeserializeString(question.CorrectAnswerJson);
@@ -195,12 +199,16 @@ public class AttemptService(
             });
 
             await agentRunService.MarkCompletedAsync(run.Id, output);
-            return new QuestionEvaluation(normalizedScore, normalizedScore >= OpenTextCorrectThreshold);
+                return new QuestionEvaluation(
+                    normalizedScore,
+                    normalizedScore >= OpenTextCorrectThreshold,
+                    TryParseFeedback(analysis),
+                    BuildOpenTextMistakes(normalizedScore));
         }
         catch (Exception ex)
         {
             await agentRunService.MarkFailedAsync(run.Id, ex.Message);
-            return new QuestionEvaluation(0, false);
+            return new QuestionEvaluation(0, false, null, null);
         }
     }
 
@@ -230,7 +238,7 @@ public class AttemptService(
 
     private static QuestionEvaluation ScoreFromBoolean(bool isCorrect)
     {
-        return new QuestionEvaluation(isCorrect ? 1 : 0, isCorrect);
+        return new QuestionEvaluation(isCorrect ? 1 : 0, isCorrect, null, isCorrect ? null : new[] { "IncorrectAnswer" });
     }
 
     private static bool SequenceEquals(IReadOnlyList<string> left, IReadOnlyList<string> right)
@@ -309,5 +317,30 @@ public class AttemptService(
         return null;
     }
 
-    private readonly record struct QuestionEvaluation(double Score, bool IsCorrect);
+    private static string? TryParseFeedback(string analysis)
+    {
+        if (string.IsNullOrWhiteSpace(analysis)) return null;
+
+        var match = Regex.Match(analysis, @"Feedback\s*[:\-]\s*(.*)$", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+        if (match.Success)
+        {
+            var feedback = match.Groups[1].Value.Trim();
+            return string.IsNullOrWhiteSpace(feedback) ? null : feedback;
+        }
+
+        return null;
+    }
+
+    private static IReadOnlyList<string>? BuildOpenTextMistakes(double normalizedScore)
+    {
+        return normalizedScore >= OpenTextCorrectThreshold
+            ? null
+            : new[] { "OpenTextIncorrect" };
+    }
+
+    private readonly record struct QuestionEvaluation(
+        double Score,
+        bool IsCorrect,
+        string? Feedback,
+        IReadOnlyList<string>? DetectedMistakes);
 }

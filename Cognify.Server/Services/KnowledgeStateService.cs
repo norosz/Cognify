@@ -73,7 +73,7 @@ public class KnowledgeStateService(
             }
 
             var question = questionLookup.TryGetValue(interaction.QuestionId, out var found) ? found : null;
-            var mistakes = DetectMistakes(question, interaction);
+            var mistakes = interaction.DetectedMistakes?.ToList() ?? DetectMistakes(question, interaction);
             foreach (var mistake in mistakes)
             {
                 mistakeData[mistake] = mistakeData.GetValueOrDefault(mistake) + 1;
@@ -82,8 +82,9 @@ public class KnowledgeStateService(
             var evaluation = new AnswerEvaluation
             {
                 LearningInteraction = interactionEntity,
-                Score = interaction.IsCorrect ? 1 : 0,
-                MaxScore = 1,
+                Score = interaction.Score > 0 ? interaction.Score : (interaction.IsCorrect ? 1 : 0),
+                MaxScore = interaction.MaxScore > 0 ? interaction.MaxScore : 1,
+                Feedback = interaction.Feedback,
                 DetectedMistakesJson = mistakes.Count == 0 ? null : JsonSerializer.Serialize(mistakes),
                 CreatedAt = now
             };
