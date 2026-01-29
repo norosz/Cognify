@@ -14,6 +14,8 @@ public class KnowledgeStateServiceTests : IDisposable
 {
     private readonly ApplicationDbContext _context;
     private readonly Mock<IUserContextService> _userContextMock;
+    private readonly Mock<IDecayPredictionService> _decayPredictionMock;
+    private readonly Mock<IMistakeAnalysisService> _mistakeAnalysisMock;
     private readonly KnowledgeStateService _service;
     private readonly Guid _userId;
 
@@ -25,14 +27,37 @@ public class KnowledgeStateServiceTests : IDisposable
 
         _context = new ApplicationDbContext(options);
         _userContextMock = new Mock<IUserContextService>();
+        _decayPredictionMock = new Mock<IDecayPredictionService>();
+        _mistakeAnalysisMock = new Mock<IMistakeAnalysisService>();
         _userId = Guid.NewGuid();
 
         _userContextMock.Setup(uc => uc.GetCurrentUserId()).Returns(_userId);
+
+        _decayPredictionMock
+            .Setup(x => x.CalculateForgettingRisk(It.IsAny<double>(), It.IsAny<DateTime?>(), It.IsAny<DateTime>()))
+            .Returns(0.5);
+        _decayPredictionMock
+            .Setup(x => x.CalculateForgettingRiskAt(It.IsAny<double>(), It.IsAny<DateTime?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+            .Returns(0.5);
+        _decayPredictionMock
+            .Setup(x => x.CalculateNextReviewAt(It.IsAny<double>(), It.IsAny<DateTime>()))
+            .Returns((double mastery, DateTime now) => now.AddDays(3));
+
+        _mistakeAnalysisMock
+            .Setup(x => x.UpdateMistakePatterns(It.IsAny<string?>(), It.IsAny<IReadOnlyCollection<KnowledgeInteractionInput>>()))
+            .Returns(new Dictionary<string, int>());
+        _mistakeAnalysisMock
+            .Setup(x => x.SerializeMistakePatterns(It.IsAny<Dictionary<string, int>>()))
+            .Returns("{}");
+        _mistakeAnalysisMock
+            .Setup(x => x.DetectMistakes(It.IsAny<KnowledgeInteractionInput>()))
+            .Returns([]);
+
         _service = new KnowledgeStateService(
             _context,
             _userContextMock.Object,
-            new DecayPredictionService(),
-            new MistakeAnalysisService());
+            _decayPredictionMock.Object,
+            _mistakeAnalysisMock.Object);
     }
 
     [Fact]
@@ -94,6 +119,46 @@ public class KnowledgeStateServiceTests : IDisposable
 
         queue.Should().HaveCount(1);
         queue[0].Topic.Should().Be("Topic A");
+    }
+
+    [Fact]
+    public async Task GetMyStatesAsync_ReturnsOrderedStates()
+    {
+        _context.UserKnowledgeStates.AddRange(
+            new UserKnowledgeState
+            {
+                UserId = _userId,
+                Topic = "Topic A",
+                MasteryScore = 0.4,
+                ConfidenceScore = 0.4,
+                ForgettingRisk = 0.6,
+                UpdatedAt = DateTime.UtcNow
+            },
+            new UserKnowledgeState
+            {
+                UserId = _userId,
+                Topic = "Topic B",
+                MasteryScore = 0.9,
+                ConfidenceScore = 0.9,
+                ForgettingRisk = 0.1,
+                UpdatedAt = DateTime.UtcNow
+            },
+            new UserKnowledgeState
+            {
+                UserId = Guid.NewGuid(),
+                Topic = "Other",
+                MasteryScore = 0.2,
+                ConfidenceScore = 0.2,
+                ForgettingRisk = 0.9,
+                UpdatedAt = DateTime.UtcNow
+            });
+
+        await _context.SaveChangesAsync();
+
+        var states = await _service.GetMyStatesAsync();
+
+        states.Should().HaveCount(2);
+        states.First().Topic.Should().Be("Topic A");
     }
 
     public void Dispose()

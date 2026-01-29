@@ -1,5 +1,4 @@
 using Cognify.Server.Data;
-using Cognify.Server.Dtos.Analytics;
 using Cognify.Server.Models;
 using Cognify.Server.Services;
 using Cognify.Server.Services.Interfaces;

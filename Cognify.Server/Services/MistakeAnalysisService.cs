@@ -14,10 +14,20 @@ public class MistakeAnalysisService : IMistakeAnalysisService
             return patterns;
         }
 
-        var incorrectCount = interactions.Count(i => !i.IsCorrect);
-        if (incorrectCount > 0)
+        foreach (var interaction in interactions)
         {
-            patterns["incorrectCount"] = patterns.GetValueOrDefault("incorrectCount") + incorrectCount;
+            if (interaction.IsCorrect)
+            {
+                continue;
+            }
+
+            patterns["incorrectCount"] = patterns.GetValueOrDefault("incorrectCount") + 1;
+
+            var mistakes = interaction.DetectedMistakes?.ToList() ?? DetectMistakes(interaction);
+            foreach (var mistake in mistakes)
+            {
+                patterns[mistake] = patterns.GetValueOrDefault(mistake) + 1;
+            }
         }
 
         return patterns;
@@ -33,6 +43,11 @@ public class MistakeAnalysisService : IMistakeAnalysisService
         if (interaction.IsCorrect)
         {
             return [];
+        }
+
+        if (string.IsNullOrWhiteSpace(interaction.UserAnswer))
+        {
+            return ["Unanswered"];
         }
 
         return ["IncorrectAnswer"];

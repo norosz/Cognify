@@ -59,15 +59,29 @@ public class AiController : ControllerBase
             ".jpeg" => "image/jpeg",
             ".webp" => "image/webp",
             ".gif" => "image/gif",
-            ".pdf" => "application/pdf", 
+            ".pdf" => "application/pdf",
+            ".txt" => "text/plain",
+            ".md" => "text/markdown",
+            ".html" => "text/html",
+            ".htm" => "text/html",
+            ".mhtml" => "text/html",
+            ".epub" => "application/epub+zip",
+            ".docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            ".pptx" => "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            ".xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             _ => "application/octet-stream"
         };
         
         var isImage = contentType.StartsWith("image/");
         var isPdf = contentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase);
-        if (!isImage && !isPdf)
+        var isText = contentType.StartsWith("text/") || contentType == "application/xhtml+xml";
+        var isOffice = contentType is "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            or "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+            or "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            or "application/epub+zip";
+        if (!isImage && !isPdf && !isText && !isOffice)
         {
-            return BadRequest("Only image and PDF files are supported for extraction.");
+            return BadRequest("Only supported document formats can be extracted.");
         }
 
         try

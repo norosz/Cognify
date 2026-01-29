@@ -54,10 +54,10 @@ export class DashboardComponent implements OnInit {
   modules = signal<ModuleDto[]>([]);
   reviewQueue = signal<ReviewQueueItemDto[]>([]);
   weakTopics = signal<UserKnowledgeStateDto[]>([]);
+  analyticsSummary = signal<LearningAnalyticsSummaryDto | null>(null);
   isKnowledgeLoading = signal<boolean>(false);
   isGenerating = signal<boolean>(false);
   isAnalyticsLoading = signal<boolean>(false);
-  analyticsSummary = signal<LearningAnalyticsSummaryDto | null>(null);
   performanceTrends = signal<PerformanceTrendsDto | null>(null);
   topicDistribution = signal<TopicDistributionDto | null>(null);
   retentionHeatmap = signal<RetentionHeatmapPointDto[]>([]);

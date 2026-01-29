@@ -80,10 +80,123 @@
     font-size: 0.9rem;
 }
 
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+}
+
+.summary-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.summary-label {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.summary-value {
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 1.05rem;
+}
+
 .modules-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(480px, 1fr)); // Increased by 50% (320px * 1.5 = 480px)
     gap: 24px;
+}
+
+.visualizations-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 24px;
+    margin-top: 32px;
+}
+
+.visualization-card {
+    min-height: 260px;
+}
+
+.knowledge-map {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    li {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 12px 14px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+}
+
+.knowledge-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: center;
+}
+
+.bar-row {
+    position: relative;
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+}
+
+.bar {
+    height: 100%;
+    border-radius: inherit;
+}
+
+.bar.mastery {
+    background: linear-gradient(90deg, #4caf50, #66bb6a);
+}
+
+.bar.risk {
+    background: linear-gradient(90deg, #f44336, #ff7043);
+}
+
+.trend-chart {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(28px, 1fr));
+    gap: 10px;
+    align-items: end;
+    min-height: 160px;
+}
+
+.trend-bar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.trend-fill {
+    width: 100%;
+    min-height: 6px;
+    border-radius: 8px 8px 4px 4px;
+    background: linear-gradient(180deg, rgba(33, 150, 243, 0.85), rgba(33, 150, 243, 0.35));
+    transition: height 0.2s ease;
+}
+
+.trend-label {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
 }
 
 .module-card {

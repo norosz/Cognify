@@ -4,12 +4,23 @@ using Cognify.Server.Dtos.Knowledge;
 using Cognify.Server.Models;
 using Cognify.Server.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace Cognify.Server.Services;
 
-public class AttemptService(ApplicationDbContext context, IUserContextService userContext, IKnowledgeStateService knowledgeStateService) : IAttemptService
+public class AttemptService(
+    ApplicationDbContext context,
+    IUserContextService userContext,
+    IKnowledgeStateService knowledgeStateService,
+    IAiService aiService,
+    IAgentRunService agentRunService) : IAttemptService
 {
+    private const double OpenTextCorrectThreshold = 0.7;
+    private const int MaxGradingContextChars = 2000;
+
     public async Task<AttemptDto> SubmitAttemptAsync(SubmitAttemptDto dto)
     {
         var userId = userContext.GetCurrentUserId();
@@ -23,7 +34,7 @@ public class AttemptService(ApplicationDbContext context, IUserContextService us
         if (questionSet == null)
              throw new KeyNotFoundException("Question set not found.");
 
-        double correctCount = 0;
+        double totalScore = 0;
         int totalQuestions = questionSet.Questions.Count;
 
         var interactions = new List<KnowledgeInteractionInput>();
@@ -51,27 +62,22 @@ public class AttemptService(ApplicationDbContext context, IUserContextService us
                 }
             }
 
-            var isCorrect = false;
-
-            if (userAnswer != null)
-            {
-                var correctAnswer = JsonSerializer.Deserialize<string>(question.CorrectAnswerJson);
-                if (string.Equals(userAnswer, correctAnswer, StringComparison.OrdinalIgnoreCase))
-                {
-                    correctCount++;
-                    isCorrect = true;
-                }
-            }
+            var evaluation = await EvaluateQuestionAsync(userId, question, userAnswer);
+            totalScore += evaluation.Score;
 
             interactions.Add(new KnowledgeInteractionInput
             {
                 QuestionId = question.Id,
                 UserAnswer = userAnswer,
-                IsCorrect = isCorrect
+                IsCorrect = evaluation.IsCorrect,
+                Score = evaluation.Score,
+                MaxScore = 1,
+                Feedback = evaluation.Feedback,
+                DetectedMistakes = evaluation.DetectedMistakes
             });
         }
 
-        double score = totalQuestions > 0 ? (correctCount / totalQuestions) * 100 : 0;
+        double score = totalQuestions > 0 ? (totalScore / totalQuestions) * 100 : 0;
 
         var attempt = new Attempt
         {
@@ -140,4 +146,205 @@ public class AttemptService(ApplicationDbContext context, IUserContextService us
             return []; 
         }
     }
+
+    private async Task<QuestionEvaluation> EvaluateQuestionAsync(Guid userId, Question question, string? userAnswer)
+    {
+        if (string.IsNullOrWhiteSpace(userAnswer))
+        {
+            return new QuestionEvaluation(0, false, null, null);
+        }
+
+        var correctAnswer = TryDeserializeString(question.CorrectAnswerJson);
+        var normalizedUser = Normalize(userAnswer);
+        var normalizedCorrect = Normalize(correctAnswer);
+
+        switch (question.Type)
+        {
+            case QuestionType.TrueFalse:
+            case QuestionType.MultipleChoice:
+                return ScoreFromBoolean(string.Equals(normalizedUser, normalizedCorrect, StringComparison.OrdinalIgnoreCase));
+
+            case QuestionType.Ordering:
+                return ScoreFromBoolean(SequenceEquals(SplitAnswer(userAnswer), SplitAnswer(correctAnswer)));
+
+            case QuestionType.MultipleSelect:
+                return ScoreFromBoolean(SetEquals(SplitAnswer(userAnswer), SplitAnswer(correctAnswer)));
+
+            case QuestionType.Matching:
+                return ScoreFromBoolean(PairsEqual(ParsePairs(userAnswer), ParsePairs(correctAnswer)));
+
+            case QuestionType.OpenText:
+                return await ScoreOpenTextAsync(userId, question, userAnswer, correctAnswer);
+
+            default:
+                return ScoreFromBoolean(string.Equals(normalizedUser, normalizedCorrect, StringComparison.OrdinalIgnoreCase));
+        }
+    }
+
+    private async Task<QuestionEvaluation> ScoreOpenTextAsync(Guid userId, Question question, string userAnswer, string correctAnswer)
+    {
+        var context = BuildOpenTextContext(question, correctAnswer);
+        var inputHash = AgentRunService.ComputeHash($"grading:{question.Id}:{userAnswer}:{correctAnswer}");
+        var run = await agentRunService.CreateAsync(userId, AgentRunType.Grading, inputHash, correlationId: question.Id.ToString(), promptVersion: "grading-v1");
+
+        try
+        {
+            var analysis = await aiService.GradeAnswerAsync(question.Prompt, userAnswer, context);
+            var parsedScore = TryParseScore(analysis);
+            var normalizedScore = parsedScore.HasValue
+                ? Math.Clamp(parsedScore.Value / 100.0, 0, 1)
+                : 0;
+
+            var output = JsonSerializer.Serialize(new
+            {
+                score = parsedScore,
+                normalizedScore,
+                analysis
+            });
+
+            await agentRunService.MarkCompletedAsync(run.Id, output);
+                return new QuestionEvaluation(
+                    normalizedScore,
+                    normalizedScore >= OpenTextCorrectThreshold,
+                    TryParseFeedback(analysis),
+                    BuildOpenTextMistakes(normalizedScore));
+        }
+        catch (Exception ex)
+        {
+            await agentRunService.MarkFailedAsync(run.Id, ex.Message);
+            return new QuestionEvaluation(0, false, null, null);
+        }
+    }
+
+    private static string BuildOpenTextContext(Question question, string correctAnswer)
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine("Reference Answer:");
+        builder.AppendLine(correctAnswer);
+
+        if (!string.IsNullOrWhiteSpace(question.Explanation))
+        {
+            builder.AppendLine();
+            builder.AppendLine("Explanation:");
+            builder.AppendLine(question.Explanation);
+        }
+
+        var context = builder.ToString();
+        if (context.Length > MaxGradingContextChars)
+        {
+            return context[..MaxGradingContextChars];
+        }
+
+        return context;
+    }
+
+    private static string Normalize(string value) => value.Trim();
+
+    private static QuestionEvaluation ScoreFromBoolean(bool isCorrect)
+    {
+        return new QuestionEvaluation(isCorrect ? 1 : 0, isCorrect, null, isCorrect ? null : new[] { "IncorrectAnswer" });
+    }
+
+    private static bool SequenceEquals(IReadOnlyList<string> left, IReadOnlyList<string> right)
+    {
+        if (left.Count != right.Count) return false;
+        for (var i = 0; i < left.Count; i++)
+        {
+            if (!string.Equals(left[i], right[i], StringComparison.OrdinalIgnoreCase)) return false;
+        }
+        return true;
+    }
+
+    private static bool SetEquals(IReadOnlyList<string> left, IReadOnlyList<string> right)
+    {
+        var setLeft = new HashSet<string>(left, StringComparer.OrdinalIgnoreCase);
+        var setRight = new HashSet<string>(right, StringComparer.OrdinalIgnoreCase);
+        return setLeft.SetEquals(setRight);
+    }
+
+    private static IReadOnlyList<string> SplitAnswer(string value)
+    {
+        return value
+            .Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Where(s => !string.IsNullOrWhiteSpace(s))
+            .ToList();
+    }
+
+    private static Dictionary<string, string> ParsePairs(string value)
+    {
+        var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var pair in SplitAnswer(value))
+        {
+            var parts = pair.Split(':');
+            if (parts.Length < 2) continue;
+            var term = parts[0].Trim();
+            var definition = string.Join(':', parts.Skip(1)).Trim();
+            if (string.IsNullOrWhiteSpace(term) || string.IsNullOrWhiteSpace(definition)) continue;
+            result[term] = definition;
+        }
+        return result;
+    }
+
+    private static bool PairsEqual(Dictionary<string, string> left, Dictionary<string, string> right)
+    {
+        if (left.Count != right.Count) return false;
+        foreach (var kvp in left)
+        {
+            if (!right.TryGetValue(kvp.Key, out var other)) return false;
+            if (!string.Equals(kvp.Value, other, StringComparison.OrdinalIgnoreCase)) return false;
+        }
+        return true;
+    }
+
+    private static string TryDeserializeString(string json)
+    {
+        try
+        {
+            return JsonSerializer.Deserialize<string>(json) ?? string.Empty;
+        }
+        catch
+        {
+            return json;
+        }
+    }
+
+    private static int? TryParseScore(string analysis)
+    {
+        if (string.IsNullOrWhiteSpace(analysis)) return null;
+
+        var match = Regex.Match(analysis, @"Score\s*[:\-]\s*(\d{1,3})", RegexOptions.IgnoreCase);
+        if (match.Success && int.TryParse(match.Groups[1].Value, out var score))
+        {
+            return Math.Clamp(score, 0, 100);
+        }
+
+        return null;
+    }
+
+    private static string? TryParseFeedback(string analysis)
+    {
+        if (string.IsNullOrWhiteSpace(analysis)) return null;
+
+        var match = Regex.Match(analysis, @"Feedback\s*[:\-]\s*(.*)$", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+        if (match.Success)
+        {
+            var feedback = match.Groups[1].Value.Trim();
+            return string.IsNullOrWhiteSpace(feedback) ? null : feedback;
+        }
+
+        return null;
+    }
+
+    private static IReadOnlyList<string>? BuildOpenTextMistakes(double normalizedScore)
+    {
+        return normalizedScore >= OpenTextCorrectThreshold
+            ? null
+            : new[] { "OpenTextIncorrect" };
+    }
+
+    private readonly record struct QuestionEvaluation(
+        double Score,
+        bool IsCorrect,
+        string? Feedback,
+        IReadOnlyList<string>? DetectedMistakes);
 }

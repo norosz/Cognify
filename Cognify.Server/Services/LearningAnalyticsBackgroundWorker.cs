@@ -1,6 +1,5 @@
 using System.Text.Json;
 using Cognify.Server.Data;
-using Cognify.Server.Dtos.Analytics;
 using Cognify.Server.Models;
 using Cognify.Server.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -103,7 +102,9 @@ public class LearningAnalyticsBackgroundWorker(
                 logger.LogError(ex, "Learning analytics agent failed for user {UserId}", userId);
                 var failedRun = await db.AgentRuns
                     .OrderByDescending(r => r.CreatedAt)
-                    .FirstOrDefaultAsync(r => r.UserId == userId && r.Type == AgentRunType.Analytics && r.Status == AgentRunStatus.Running, stoppingToken);
+                    .FirstOrDefaultAsync(r => r.UserId == userId
+                                             && r.Type == AgentRunType.Analytics
+                                             && r.Status == AgentRunStatus.Running, stoppingToken);
 
                 if (failedRun != null)
                 {

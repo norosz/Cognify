@@ -2,6 +2,11 @@ using Cognify.Server.Data;
 using Cognify.Server.Models;
 using Cognify.Server.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.IO.Compression;
+using System.Net;
+using System.Text;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace Cognify.Server.Services;
 
@@ -11,6 +16,7 @@ public class AiBackgroundWorker(
 {
     private static readonly TimeSpan PollInterval = TimeSpan.FromSeconds(5);
     private const int BatchSize = 5;
+    private const int MaxOcrImages = 10;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -90,24 +96,41 @@ public class AiBackgroundWorker(
                 if (contentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase))
                 {
                     text = await pdfTextExtractor.ExtractTextAsync(buffer, stoppingToken);
+
+                    buffer.Position = 0;
+                    var extractedImages = await pdfImageExtractor.ExtractImagesAsync(buffer, stoppingToken);
+
                     if (string.IsNullOrWhiteSpace(text))
                     {
-                        await extractionService.MarkAsErrorAsync(item.Id, "No selectable text found in PDF. Try an image-based document.");
+                        text = await OcrPdfImagesAsync(aiService, extractedImages, stoppingToken);
+                    }
+
+                    if (string.IsNullOrWhiteSpace(text))
+                    {
+                        await extractionService.MarkAsErrorAsync(item.Id, "No selectable text or images found in PDF.");
                         if (item.AgentRunId.HasValue)
                         {
-                            await agentRunService.MarkFailedAsync(item.AgentRunId.Value, "No selectable text found in PDF.");
+                            await agentRunService.MarkFailedAsync(item.AgentRunId.Value, "No selectable text or images found in PDF.");
                         }
                         continue;
                     }
 
-                    buffer.Position = 0;
-                    var extractedImages = await pdfImageExtractor.ExtractImagesAsync(buffer, stoppingToken);
                     images = await UploadPdfImagesAsync(blobService, item.Document.Id, extractedImages, stoppingToken);
 
                     if (images.Count > 0)
                     {
                         text = AppendImagesToMarkdown(text, images);
                     }
+                }
+                else if (contentType.StartsWith("text/") || contentType == "application/xhtml+xml")
+                {
+                    buffer.Position = 0;
+                    text = await ReadTextAsync(contentType, buffer, stoppingToken);
+                }
+                else if (IsOfficeContent(contentType))
+                {
+                    buffer.Position = 0;
+                    text = ExtractOfficeText(contentType, buffer);
                 }
                 else if (contentType.StartsWith("image/"))
                 {
@@ -116,10 +139,10 @@ public class AiBackgroundWorker(
                 }
                 else
                 {
-                    await extractionService.MarkAsErrorAsync(item.Id, "Only image and PDF files are supported for extraction.");
+                    await extractionService.MarkAsErrorAsync(item.Id, "Unsupported file type for extraction.");
                     if (item.AgentRunId.HasValue)
                     {
-                        await agentRunService.MarkFailedAsync(item.AgentRunId.Value, "Only image and PDF files are supported for extraction.");
+                        await agentRunService.MarkFailedAsync(item.AgentRunId.Value, "Unsupported file type for extraction.");
                     }
                     continue;
                 }
@@ -191,7 +214,7 @@ public class AiBackgroundWorker(
                 }
 
                 var questions = await aiService.GenerateQuestionsAsync(
-                    note.Content,
+                    BuildAdaptiveContent(note.Content, await LoadAdaptiveContextAsync(db, quiz.UserId, quiz.NoteId, stoppingToken)),
                     (QuestionType)quiz.QuestionType,
                     (int)quiz.Difficulty,
                     quiz.QuestionCount);
@@ -240,8 +263,107 @@ public class AiBackgroundWorker(
             ".webp" => "image/webp",
             ".gif" => "image/gif",
             ".pdf" => "application/pdf",
+            ".txt" => "text/plain",
+            ".md" => "text/markdown",
+            ".html" => "text/html",
+            ".htm" => "text/html",
+            ".mhtml" => "text/html",
+            ".epub" => "application/epub+zip",
+            ".docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            ".pptx" => "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            ".xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             _ => "application/octet-stream"
         };
+    }
+
+    private static bool IsOfficeContent(string contentType)
+    {
+        return contentType is "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            or "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+            or "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            or "application/epub+zip";
+    }
+
+    private static async Task<string> ReadTextAsync(string contentType, Stream stream, CancellationToken cancellationToken)
+    {
+        using var reader = new StreamReader(stream, Encoding.UTF8, leaveOpen: true);
+        var raw = await reader.ReadToEndAsync(cancellationToken);
+
+        if (contentType == "text/html")
+        {
+            return NormalizeWhitespace(StripHtml(raw));
+        }
+
+        return NormalizeWhitespace(raw);
+    }
+
+    private static string ExtractOfficeText(string contentType, Stream stream)
+    {
+        using var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true);
+
+        return contentType switch
+        {
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document" =>
+                NormalizeWhitespace(ReadZipEntryText(archive, "word/document.xml")),
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation" =>
+                NormalizeWhitespace(ReadZipEntriesText(archive, "ppt/slides/", ".xml")),
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" =>
+                NormalizeWhitespace(ReadZipEntryText(archive, "xl/sharedStrings.xml")),
+            "application/epub+zip" =>
+                NormalizeWhitespace(ReadZipEntriesText(archive, string.Empty, ".xhtml", ".html")),
+            _ => string.Empty
+        };
+    }
+
+    private static string ReadZipEntryText(ZipArchive archive, string entryName)
+    {
+        var entry = archive.GetEntry(entryName);
+        if (entry == null) return string.Empty;
+
+        using var reader = new StreamReader(entry.Open());
+        var xml = reader.ReadToEnd();
+        return StripHtml(xml);
+    }
+
+    private static string ReadZipEntriesText(ZipArchive archive, string prefix, params string[] extensions)
+    {
+        var builder = new StringBuilder();
+        var entries = archive.Entries
+            .Where(e => e.FullName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
+                        && extensions.Any(ext => e.FullName.EndsWith(ext, StringComparison.OrdinalIgnoreCase)))
+            .OrderBy(e => e.FullName)
+            .ToList();
+
+        foreach (var entry in entries)
+        {
+            using var reader = new StreamReader(entry.Open());
+            var xml = reader.ReadToEnd();
+            var text = StripHtml(xml);
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                if (builder.Length > 0)
+                {
+                    builder.AppendLine().AppendLine("---").AppendLine();
+                }
+                builder.Append(text);
+            }
+        }
+
+        return builder.ToString();
+    }
+
+    private static string StripHtml(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input)) return string.Empty;
+        var noTags = Regex.Replace(input, "<[^>]+>", " ");
+        return WebUtility.HtmlDecode(noTags);
+    }
+
+    private static string NormalizeWhitespace(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input)) return string.Empty;
+        var normalized = Regex.Replace(input, "\\s+", " ").Trim();
+        return normalized;
     }
 
     private static string AppendImagesToMarkdown(string text, List<PdfImageMetadata> images)
@@ -293,6 +415,114 @@ public class AiBackgroundWorker(
         }
 
         return results;
+    }
+
+    private static string BuildAdaptiveContent(string baseContent, string? adaptiveContext)
+    {
+        if (string.IsNullOrWhiteSpace(adaptiveContext))
+        {
+            return baseContent;
+        }
+
+        return $$"""
+        {{baseContent}}
+
+        ---
+        Adaptive Guidance:
+        {{adaptiveContext}}
+
+        Instruction: Emphasize weak areas, common mistakes, and review gaps. Focus on clarity and targeted practice.
+        """;
+    }
+
+    private static async Task<string?> LoadAdaptiveContextAsync(
+        ApplicationDbContext db,
+        Guid userId,
+        Guid noteId,
+        CancellationToken stoppingToken)
+    {
+        var state = await db.UserKnowledgeStates
+            .AsNoTracking()
+            .FirstOrDefaultAsync(s => s.UserId == userId && s.SourceNoteId == noteId, stoppingToken);
+
+        if (state == null)
+        {
+            return null;
+        }
+
+        var mistakes = ParseMistakePatterns(state.MistakePatternsJson)
+            .OrderByDescending(kv => kv.Value)
+            .Take(3)
+            .Select(kv => $"{kv.Key} ({kv.Value})")
+            .ToList();
+
+        var mistakeSummary = mistakes.Count > 0
+            ? string.Join(", ", mistakes)
+            : "None recorded";
+
+        return $$"""
+        Topic: {{state.Topic}}
+        MasteryScore: {{state.MasteryScore:0.00}}
+        ForgettingRisk: {{state.ForgettingRisk:0.00}}
+        ConfidenceScore: {{state.ConfidenceScore:0.00}}
+        MistakePatterns: {{mistakeSummary}}
+        """.Trim();
+    }
+
+    private static Dictionary<string, int> ParseMistakePatterns(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return new Dictionary<string, int>();
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize<Dictionary<string, int>>(json) ?? new Dictionary<string, int>();
+        }
+        catch
+        {
+            return new Dictionary<string, int>();
+        }
+    }
+
+    private static async Task<string> OcrPdfImagesAsync(
+        IAiService aiService,
+        List<PdfEmbeddedImage> images,
+        CancellationToken cancellationToken)
+    {
+        if (images.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        var builder = new StringBuilder();
+        var processed = 0;
+
+        foreach (var image in images)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (image.Bytes == null || image.Bytes.Length == 0) continue;
+
+            processed++;
+            if (processed > MaxOcrImages) break;
+
+            var contentType = string.IsNullOrWhiteSpace(image.ContentType) ? "image/png" : image.ContentType;
+            await using var ms = new MemoryStream(image.Bytes);
+            var extracted = await aiService.ParseHandwritingAsync(ms, contentType);
+
+            if (string.IsNullOrWhiteSpace(extracted)) continue;
+
+            if (builder.Length > 0)
+            {
+                builder.AppendLine().AppendLine("---").AppendLine();
+            }
+
+            builder.Append(extracted.Trim());
+        }
+
+        return builder.ToString();
     }
 
     private record ExtractionOutput(string Text, List<PdfImageMetadata> Images);

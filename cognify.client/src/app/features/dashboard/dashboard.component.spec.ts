@@ -124,6 +124,14 @@ describe('DashboardComponent', () => {
         expect(knowledgeServiceSpy.getReviewQueue).toHaveBeenCalled();
     });
 
+    it('should load analytics summary on init', () => {
+        expect(analyticsServiceSpy.getSummary).toHaveBeenCalled();
+        expect(analyticsServiceSpy.getTrends).toHaveBeenCalled();
+        expect(analyticsServiceSpy.getTopics).toHaveBeenCalled();
+        expect(analyticsServiceSpy.getRetentionHeatmap).toHaveBeenCalled();
+        expect(analyticsServiceSpy.getDecayForecast).toHaveBeenCalled();
+    });
+
     it('should open dialog for editing', () => {
         const mockModule = {
             id: '1',

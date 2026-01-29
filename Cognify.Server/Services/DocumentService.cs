@@ -24,7 +24,7 @@ public class DocumentService : IDocumentService
     }
 
     private const long MaxFileSize = 50 * 1024 * 1024; // 50 MB
-    private static readonly string[] AllowedExtensions = { ".jpg", ".jpeg", ".png", ".txt", ".pdf", ".docx", ".md", ".yaml", ".json" };
+    private static readonly string[] AllowedExtensions = { ".jpg", ".jpeg", ".png", ".txt", ".pdf", ".docx", ".md", ".yaml", ".json", ".gif", ".html", ".htm", ".mhtml", ".epub", ".pptx", ".xlsx" };
 
     public async Task<UploadInitiateResponse> InitiateUploadAsync(Guid moduleId, string fileName, string contentType, long fileSize)
     {

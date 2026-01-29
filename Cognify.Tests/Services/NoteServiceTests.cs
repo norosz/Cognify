@@ -116,6 +116,17 @@ public class NoteServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task UpdateAsync_ShouldReturnNull_WhenUserDoesNotOwn()
+    {
+        var (_, noteId) = await SeedDataAsync(sameUser: false);
+        var dto = new UpdateNoteDto { Title = "Updated Title", Content = "Updated Content" };
+
+        var result = await _service.UpdateAsync(noteId, dto);
+
+        result.Should().BeNull();
+    }
+
+    [Fact]
     public async Task DeleteAsync_ShouldDelete_WhenUserOwns()
     {
         var (moduleId, noteId) = await SeedDataAsync(sameUser: true);
@@ -125,6 +136,65 @@ public class NoteServiceTests : IDisposable
         result.Should().BeTrue();
         var dbNote = await _context.Notes.FindAsync(noteId);
         dbNote.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task DeleteAsync_ShouldReturnFalse_WhenUserDoesNotOwn()
+    {
+        var (_, noteId) = await SeedDataAsync(sameUser: false);
+
+        var result = await _service.DeleteAsync(noteId);
+
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_ShouldIncludeEmbeddedImages_WhenAvailable()
+    {
+        var module = new Module { Id = Guid.NewGuid(), OwnerUserId = _userId, Title = "Module" };
+        var note = new Note
+        {
+            Id = Guid.NewGuid(),
+            ModuleId = module.Id,
+            Title = "Note",
+            Content = "Content",
+            EmbeddedImagesJson = "[{\"id\":\"img-1\",\"blobPath\":\"blob\",\"fileName\":\"img.png\",\"pageNumber\":2}]"
+        };
+
+        _context.Modules.Add(module);
+        _context.Notes.Add(note);
+        await _context.SaveChangesAsync();
+
+        _blobStorageMock
+            .Setup(b => b.GenerateDownloadSasToken("blob", It.IsAny<DateTimeOffset>(), "img.png"))
+            .Returns("https://download");
+
+        var result = await _service.GetByIdAsync(note.Id);
+
+        result.Should().NotBeNull();
+        result!.EmbeddedImages.Should().NotBeNull();
+        result.EmbeddedImages![0].DownloadUrl.Should().Be("https://download");
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_ShouldReturnNull_WhenUserDoesNotOwn()
+    {
+        var module = new Module { Id = Guid.NewGuid(), OwnerUserId = Guid.NewGuid(), Title = "Module" };
+        var note = new Note
+        {
+            Id = Guid.NewGuid(),
+            ModuleId = module.Id,
+            Title = "Note",
+            Content = "Content"
+        };
+
+        _context.Modules.Add(module);
+        _context.Notes.Add(note);
+        await _context.SaveChangesAsync();
+
+        var result = await _service.GetByIdAsync(note.Id);
+
+        result.Should().BeNull();
     }
 
     public void Dispose()

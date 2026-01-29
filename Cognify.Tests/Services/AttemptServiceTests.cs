@@ -17,6 +17,8 @@ public class AttemptServiceTests : IDisposable
     private readonly ApplicationDbContext _context;
     private readonly Mock<IUserContextService> _userContextMock;
     private readonly Mock<IKnowledgeStateService> _knowledgeStateMock;
+    private readonly Mock<IAiService> _aiServiceMock;
+    private readonly Mock<IAgentRunService> _agentRunServiceMock;
     private readonly AttemptService _attemptService;
     private readonly Guid _userId;
 
@@ -29,6 +31,8 @@ public class AttemptServiceTests : IDisposable
         _context = new ApplicationDbContext(options);
         _userContextMock = new Mock<IUserContextService>();
         _knowledgeStateMock = new Mock<IKnowledgeStateService>();
+        _aiServiceMock = new Mock<IAiService>();
+        _agentRunServiceMock = new Mock<IAgentRunService>();
         _userId = Guid.NewGuid();
 
         _userContextMock.Setup(uc => uc.GetCurrentUserId()).Returns(_userId);
@@ -36,7 +40,12 @@ public class AttemptServiceTests : IDisposable
             .Setup(ks => ks.ApplyAttemptResultAsync(It.IsAny<Attempt>(), It.IsAny<QuestionSet>(), It.IsAny<IReadOnlyCollection<KnowledgeInteractionInput>>()))
             .Returns(Task.CompletedTask);
 
-        _attemptService = new AttemptService(_context, _userContextMock.Object, _knowledgeStateMock.Object);
+        _attemptService = new AttemptService(
+            _context,
+            _userContextMock.Object,
+            _knowledgeStateMock.Object,
+            _aiServiceMock.Object,
+            _agentRunServiceMock.Object);
     }
 
     [Fact]
@@ -169,6 +178,181 @@ public class AttemptServiceTests : IDisposable
         var result = await _attemptService.SubmitAttemptAsync(dto);
 
         // Assert
+        result.Score.Should().Be(100);
+    }
+
+    [Fact]
+    public async Task GetAttemptByIdAsync_ShouldReturnAttempt_WhenOwned()
+    {
+        var attempt = new Attempt
+        {
+            Id = Guid.NewGuid(),
+            QuestionSetId = Guid.NewGuid(),
+            UserId = _userId,
+            AnswersJson = "{}",
+            Score = 75
+        };
+
+        _context.Attempts.Add(attempt);
+        await _context.SaveChangesAsync();
+
+        var result = await _attemptService.GetAttemptByIdAsync(attempt.Id);
+
+        result.Should().NotBeNull();
+        result!.Id.Should().Be(attempt.Id);
+    }
+
+    [Fact]
+    public async Task GetAttemptByIdAsync_ShouldReturnNull_WhenNotOwned()
+    {
+        var attempt = new Attempt
+        {
+            Id = Guid.NewGuid(),
+            QuestionSetId = Guid.NewGuid(),
+            UserId = Guid.NewGuid(),
+            AnswersJson = "{}",
+            Score = 75
+        };
+
+        _context.Attempts.Add(attempt);
+        await _context.SaveChangesAsync();
+
+        var result = await _attemptService.GetAttemptByIdAsync(attempt.Id);
+
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task SubmitAttemptAsync_ShouldGradeOpenText_WithAiFeedback()
+    {
+        var module = new Module { Id = Guid.NewGuid(), Title = "Module", OwnerUserId = _userId };
+        var noteId = Guid.NewGuid();
+        var note = new Note { Id = noteId, ModuleId = module.Id, Title = "Note", Module = module };
+        var qsId = Guid.NewGuid();
+        var question = new Question
+        {
+            Id = Guid.NewGuid(),
+            QuestionSetId = qsId,
+            Prompt = "Explain concept",
+            Type = QuestionType.OpenText,
+            OptionsJson = "[]",
+            CorrectAnswerJson = "\"Expected\"",
+            Explanation = "Details"
+        };
+
+        var questionSet = new QuestionSet
+        {
+            Id = qsId,
+            NoteId = noteId,
+            Title = "Open Text Quiz",
+            Note = note,
+            Questions = [question]
+        };
+
+        _context.Modules.Add(module);
+        _context.Notes.Add(note);
+        _context.QuestionSets.Add(questionSet);
+        await _context.SaveChangesAsync();
+
+        _agentRunServiceMock
+            .Setup(s => s.CreateAsync(_userId, AgentRunType.Grading, It.IsAny<string>(), question.Id.ToString(), "grading-v1"))
+            .ReturnsAsync(new AgentRun { Id = Guid.NewGuid(), UserId = _userId, Type = AgentRunType.Grading, Status = AgentRunStatus.Pending });
+
+        _aiServiceMock
+            .Setup(s => s.GradeAnswerAsync(question.Prompt, "My answer", It.IsAny<string>()))
+            .ReturnsAsync("Score: 80\nFeedback: Solid answer");
+
+        var dto = new SubmitAttemptDto
+        {
+            QuestionSetId = qsId,
+            Answers = new Dictionary<string, string>
+            {
+                { question.Id.ToString(), "My answer" }
+            }
+        };
+
+        var result = await _attemptService.SubmitAttemptAsync(dto);
+
+        result.Score.Should().Be(80);
+        _agentRunServiceMock.Verify(s => s.MarkCompletedAsync(It.IsAny<Guid>(), It.IsAny<string>(), null, null, null), Times.Once);
+    }
+
+    [Fact]
+    public async Task SubmitAttemptAsync_ShouldHandleMultipleQuestionTypes()
+    {
+        var module = new Module { Id = Guid.NewGuid(), Title = "Module", OwnerUserId = _userId };
+        var noteId = Guid.NewGuid();
+        var note = new Note { Id = noteId, ModuleId = module.Id, Title = "Note", Module = module };
+        var qsId = Guid.NewGuid();
+
+        var ordering = new Question
+        {
+            Id = Guid.NewGuid(),
+            QuestionSetId = qsId,
+            Prompt = "Order",
+            Type = QuestionType.Ordering,
+            OptionsJson = "[]",
+            CorrectAnswerJson = "\"A|B|C\""
+        };
+
+        var multiSelect = new Question
+        {
+            Id = Guid.NewGuid(),
+            QuestionSetId = qsId,
+            Prompt = "Select",
+            Type = QuestionType.MultipleSelect,
+            OptionsJson = "[]",
+            CorrectAnswerJson = "\"A|C\""
+        };
+
+        var matching = new Question
+        {
+            Id = Guid.NewGuid(),
+            QuestionSetId = qsId,
+            Prompt = "Match",
+            Type = QuestionType.Matching,
+            OptionsJson = "[]",
+            CorrectAnswerJson = "\"A:1|B:2\""
+        };
+
+        var trueFalse = new Question
+        {
+            Id = Guid.NewGuid(),
+            QuestionSetId = qsId,
+            Prompt = "True/False",
+            Type = QuestionType.TrueFalse,
+            OptionsJson = "[]",
+            CorrectAnswerJson = "\"True\""
+        };
+
+        var questionSet = new QuestionSet
+        {
+            Id = qsId,
+            NoteId = noteId,
+            Title = "Mixed Quiz",
+            Note = note,
+            Questions = [ordering, multiSelect, matching, trueFalse]
+        };
+
+        _context.Modules.Add(module);
+        _context.Notes.Add(note);
+        _context.QuestionSets.Add(questionSet);
+        await _context.SaveChangesAsync();
+
+        var dto = new SubmitAttemptDto
+        {
+            QuestionSetId = qsId,
+            Answers = new Dictionary<string, string>
+            {
+                { ordering.Id.ToString(), "A|B|C" },
+                { multiSelect.Id.ToString(), "A|C" },
+                { matching.Id.ToString(), "A:1|B:2" },
+                { trueFalse.Id.ToString(), "True" }
+            }
+        };
+
+        var result = await _attemptService.SubmitAttemptAsync(dto);
+
         result.Score.Should().Be(100);
     }
 

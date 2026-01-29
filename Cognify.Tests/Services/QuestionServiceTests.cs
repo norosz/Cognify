@@ -116,6 +116,67 @@ public class QuestionServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task GetByNoteIdAsync_ShouldFilterOutNotOwned()
+    {
+        var noteId = Guid.NewGuid();
+        var module = new Module { Id = Guid.NewGuid(), OwnerUserId = _userId, Title = "Test Module" };
+        var note = new Note { Id = noteId, ModuleId = module.Id, Title = "Note", Content = "Content" };
+
+        var otherModule = new Module { Id = Guid.NewGuid(), OwnerUserId = Guid.NewGuid(), Title = "Other" };
+        var otherNote = new Note { Id = Guid.NewGuid(), ModuleId = otherModule.Id, Title = "Other Note" };
+
+        _context.Modules.AddRange(module, otherModule);
+        _context.Notes.AddRange(note, otherNote);
+
+        var qs1 = new QuestionSet { NoteId = noteId, Title = "QS1" };
+        var qs2 = new QuestionSet { NoteId = otherNote.Id, Title = "QS2" };
+        _context.QuestionSets.AddRange(qs1, qs2);
+        await _context.SaveChangesAsync();
+
+        var result = await _questionService.GetByNoteIdAsync(noteId);
+
+        result.Should().HaveCount(1);
+        result[0].Title.Should().Be("QS1");
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_ShouldReturnNull_WhenNotOwned()
+    {
+        var noteId = Guid.NewGuid();
+        var module = new Module { Id = Guid.NewGuid(), OwnerUserId = Guid.NewGuid(), Title = "Other Module" };
+        var note = new Note { Id = noteId, ModuleId = module.Id, Title = "Note", Content = "Content" };
+        var qs = new QuestionSet { NoteId = noteId, Title = "QS" };
+
+        _context.Modules.Add(module);
+        _context.Notes.Add(note);
+        _context.QuestionSets.Add(qs);
+        await _context.SaveChangesAsync();
+
+        var result = await _questionService.GetByIdAsync(qs.Id);
+
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_ShouldReturnQuestionSet_WhenOwned()
+    {
+        var noteId = Guid.NewGuid();
+        var module = new Module { Id = Guid.NewGuid(), OwnerUserId = _userId, Title = "Test Module" };
+        var note = new Note { Id = noteId, ModuleId = module.Id, Title = "Note", Content = "Content" };
+        var qs = new QuestionSet { NoteId = noteId, Title = "QS" };
+
+        _context.Modules.Add(module);
+        _context.Notes.Add(note);
+        _context.QuestionSets.Add(qs);
+        await _context.SaveChangesAsync();
+
+        var result = await _questionService.GetByIdAsync(qs.Id);
+
+        result.Should().NotBeNull();
+        result!.Id.Should().Be(qs.Id);
+    }
+
+    [Fact]
     public async Task DeleteAsync_ShouldReturnTrue_WhenUserOwnsNote()
     {
          // Arrange

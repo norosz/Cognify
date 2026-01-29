@@ -7,7 +7,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Cognify.Server.Services;
 
-public class KnowledgeStateService(ApplicationDbContext context, IUserContextService userContext, IDecayPredictionService decayService, IMistakeAnalysisService mistakeService) : IKnowledgeStateService
+public class KnowledgeStateService(
+    ApplicationDbContext context,
+    IUserContextService userContext,
+    IDecayPredictionService decayService,
+    IMistakeAnalysisService mistakeService) : IKnowledgeStateService
 {
     private const double MinScore = 0.0;
     private const double MaxScore = 1.0;
@@ -41,6 +45,7 @@ public class KnowledgeStateService(ApplicationDbContext context, IUserContextSer
         var attemptScore = Clamp(attempt.Score / 100.0);
         state.MasteryScore = Clamp((state.MasteryScore * 0.7) + (attemptScore * 0.3));
         state.ConfidenceScore = Clamp((state.ConfidenceScore * 0.7) + (attemptScore * 0.3));
+
         state.ForgettingRisk = decayService.CalculateForgettingRisk(state.MasteryScore, state.LastReviewedAt, now);
         state.LastReviewedAt = now;
         state.NextReviewAt = decayService.CalculateNextReviewAt(state.MasteryScore, now);
@@ -65,12 +70,15 @@ public class KnowledgeStateService(ApplicationDbContext context, IUserContextSer
 
             context.LearningInteractions.Add(interactionEntity);
 
+            var mistakes = interaction.DetectedMistakes?.ToList() ?? mistakeService.DetectMistakes(interaction);
+
             var evaluation = new AnswerEvaluation
             {
                 LearningInteraction = interactionEntity,
-                Score = interaction.IsCorrect ? 1 : 0,
-                MaxScore = 1,
-                DetectedMistakesJson = BuildDetectedMistakesJson(interaction),
+                Score = interaction.Score > 0 ? interaction.Score : (interaction.IsCorrect ? 1 : 0),
+                MaxScore = interaction.MaxScore > 0 ? interaction.MaxScore : 1,
+                Feedback = interaction.Feedback,
+                DetectedMistakesJson = mistakes.Count == 0 ? null : JsonSerializer.Serialize(mistakes),
                 CreatedAt = now
             };
 
@@ -146,12 +154,6 @@ public class KnowledgeStateService(ApplicationDbContext context, IUserContextSer
         }
 
         return "General";
-    }
-
-    private string? BuildDetectedMistakesJson(KnowledgeInteractionInput interaction)
-    {
-        var mistakes = mistakeService.DetectMistakes(interaction);
-        return mistakes.Count == 0 ? null : JsonSerializer.Serialize(mistakes);
     }
 
     private static double Clamp(double value)
