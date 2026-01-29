@@ -3,6 +3,7 @@ using Cognify.Server.Models;
 using Cognify.Server.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
+using System.Text.Json;
 
 namespace Cognify.Server.Services;
 
@@ -200,7 +201,7 @@ public class AiBackgroundWorker(
                 }
 
                 var questions = await aiService.GenerateQuestionsAsync(
-                    note.Content,
+                    BuildAdaptiveContent(note.Content, await LoadAdaptiveContextAsync(db, quiz.UserId, quiz.NoteId, stoppingToken)),
                     (QuestionType)quiz.QuestionType,
                     (int)quiz.Difficulty,
                     quiz.QuestionCount);
@@ -302,6 +303,75 @@ public class AiBackgroundWorker(
         }
 
         return results;
+    }
+
+    private static string BuildAdaptiveContent(string baseContent, string? adaptiveContext)
+    {
+        if (string.IsNullOrWhiteSpace(adaptiveContext))
+        {
+            return baseContent;
+        }
+
+        return $$"""
+        {{baseContent}}
+
+        ---
+        Adaptive Guidance:
+        {{adaptiveContext}}
+
+        Instruction: Emphasize weak areas, common mistakes, and review gaps. Focus on clarity and targeted practice.
+        """;
+    }
+
+    private static async Task<string?> LoadAdaptiveContextAsync(
+        ApplicationDbContext db,
+        Guid userId,
+        Guid noteId,
+        CancellationToken stoppingToken)
+    {
+        var state = await db.UserKnowledgeStates
+            .AsNoTracking()
+            .FirstOrDefaultAsync(s => s.UserId == userId && s.SourceNoteId == noteId, stoppingToken);
+
+        if (state == null)
+        {
+            return null;
+        }
+
+        var mistakes = ParseMistakePatterns(state.MistakePatternsJson)
+            .OrderByDescending(kv => kv.Value)
+            .Take(3)
+            .Select(kv => $"{kv.Key} ({kv.Value})")
+            .ToList();
+
+        var mistakeSummary = mistakes.Count > 0
+            ? string.Join(", ", mistakes)
+            : "None recorded";
+
+        return $$"""
+        Topic: {{state.Topic}}
+        MasteryScore: {{state.MasteryScore:0.00}}
+        ForgettingRisk: {{state.ForgettingRisk:0.00}}
+        ConfidenceScore: {{state.ConfidenceScore:0.00}}
+        MistakePatterns: {{mistakeSummary}}
+        """.Trim();
+    }
+
+    private static Dictionary<string, int> ParseMistakePatterns(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return new Dictionary<string, int>();
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize<Dictionary<string, int>>(json) ?? new Dictionary<string, int>();
+        }
+        catch
+        {
+            return new Dictionary<string, int>();
+        }
     }
 
     private static async Task<string> OcrPdfImagesAsync(
