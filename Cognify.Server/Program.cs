@@ -31,6 +31,7 @@ public class Program
         builder.Services.AddScoped<IDocumentService, DocumentService>();
         builder.Services.AddScoped<INoteService, NoteService>();
         builder.Services.AddScoped<IKnowledgeStateService, KnowledgeStateService>();
+        builder.Services.AddScoped<IDecayPredictionService, DecayPredictionService>();
         builder.Services.AddScoped<IAdaptiveQuizService, AdaptiveQuizService>();
         builder.Services.AddScoped<ILearningAnalyticsService, LearningAnalyticsService>();
         

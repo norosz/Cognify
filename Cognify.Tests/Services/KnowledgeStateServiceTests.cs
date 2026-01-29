@@ -14,6 +14,7 @@ public class KnowledgeStateServiceTests : IDisposable
 {
     private readonly ApplicationDbContext _context;
     private readonly Mock<IUserContextService> _userContextMock;
+    private readonly Mock<IDecayPredictionService> _decayPredictionMock;
     private readonly KnowledgeStateService _service;
     private readonly Guid _userId;
 
@@ -25,10 +26,15 @@ public class KnowledgeStateServiceTests : IDisposable
 
         _context = new ApplicationDbContext(options);
         _userContextMock = new Mock<IUserContextService>();
+        _decayPredictionMock = new Mock<IDecayPredictionService>();
         _userId = Guid.NewGuid();
 
         _userContextMock.Setup(uc => uc.GetCurrentUserId()).Returns(_userId);
-        _service = new KnowledgeStateService(_context, _userContextMock.Object);
+        _decayPredictionMock
+            .Setup(x => x.Predict(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<DateTime>(), It.IsAny<DateTime?>(), It.IsAny<int>()))
+            .Returns((double mastery, double confidence, DateTime now, DateTime? last, int incorrect) => (now.AddDays(3), 0.5));
+
+        _service = new KnowledgeStateService(_context, _userContextMock.Object, _decayPredictionMock.Object);
     }
 
     [Fact]

@@ -7,7 +7,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Cognify.Server.Services;
 
-public class KnowledgeStateService(ApplicationDbContext context, IUserContextService userContext) : IKnowledgeStateService
+public class KnowledgeStateService(
+    ApplicationDbContext context,
+    IUserContextService userContext,
+    IDecayPredictionService decayPredictionService) : IKnowledgeStateService
 {
     private const double MinScore = 0.0;
     private const double MaxScore = 1.0;
@@ -41,13 +44,12 @@ public class KnowledgeStateService(ApplicationDbContext context, IUserContextSer
         var attemptScore = Clamp(attempt.Score / 100.0);
         state.MasteryScore = Clamp((state.MasteryScore * 0.7) + (attemptScore * 0.3));
         state.ConfidenceScore = Clamp((state.ConfidenceScore * 0.7) + (attemptScore * 0.3));
-        state.ForgettingRisk = Clamp(1 - state.MasteryScore);
-        state.LastReviewedAt = now;
-        state.NextReviewAt = CalculateNextReviewAt(state.MasteryScore, now);
+        var previousReview = state.LastReviewedAt;
         state.UpdatedAt = now;
 
         var questionLookup = questionSet.Questions?.ToDictionary(q => q.Id, q => q) ?? new Dictionary<Guid, Question>();
         var mistakeData = ParseMistakePatterns(state.MistakePatternsJson);
+        var incorrectCount = 0;
 
         foreach (var interaction in interactions)
         {
@@ -64,6 +66,11 @@ public class KnowledgeStateService(ApplicationDbContext context, IUserContextSer
             };
 
             context.LearningInteractions.Add(interactionEntity);
+
+            if (!interaction.IsCorrect)
+            {
+                incorrectCount++;
+            }
 
             var question = questionLookup.TryGetValue(interaction.QuestionId, out var found) ? found : null;
             var mistakes = DetectMistakes(question, interaction);
@@ -84,6 +91,16 @@ public class KnowledgeStateService(ApplicationDbContext context, IUserContextSer
             context.AnswerEvaluations.Add(evaluation);
         }
 
+        var prediction = decayPredictionService.Predict(
+            state.MasteryScore,
+            state.ConfidenceScore,
+            now,
+            previousReview,
+            incorrectCount);
+
+        state.ForgettingRisk = Clamp(prediction.ForgettingRisk);
+        state.NextReviewAt = prediction.NextReviewAt;
+        state.LastReviewedAt = now;
         state.MistakePatternsJson = JsonSerializer.Serialize(mistakeData);
 
         await context.SaveChangesAsync();
@@ -155,26 +172,6 @@ public class KnowledgeStateService(ApplicationDbContext context, IUserContextSer
         }
 
         return "General";
-    }
-
-    private static DateTime CalculateNextReviewAt(double masteryScore, DateTime now)
-    {
-        if (masteryScore >= 0.8)
-        {
-            return now.AddDays(14);
-        }
-
-        if (masteryScore >= 0.6)
-        {
-            return now.AddDays(7);
-        }
-
-        if (masteryScore >= 0.4)
-        {
-            return now.AddDays(3);
-        }
-
-        return now.AddDays(1);
     }
 
     private static Dictionary<string, int> ParseMistakePatterns(string? json)
