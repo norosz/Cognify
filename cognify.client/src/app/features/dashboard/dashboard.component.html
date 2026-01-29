@@ -6,6 +6,78 @@
     </button>
 </div>
 
+<div class="insights-grid">
+    <mat-card class="insight-card cognify-glass-card">
+        <mat-card-header>
+            <mat-card-title>Review Queue</mat-card-title>
+            <mat-card-subtitle>Topics due for review</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+            @if (isKnowledgeLoading()) {
+            <div class="loading-inline">
+                <mat-spinner diameter="28"></mat-spinner>
+            </div>
+            } @else {
+            @if (reviewQueue().length === 0) {
+            <div class="empty-inline">
+                <mat-icon>event_available</mat-icon>
+                <p>No topics are due right now.</p>
+            </div>
+            } @else {
+            <ul class="topic-list">
+                @for (item of reviewQueue(); track item.topic) {
+                <li>
+                    <span class="topic-name">{{ item.topic }}</span>
+                    <span class="topic-meta">Risk {{ (item.forgettingRisk * 100) | number: '1.0-0' }}%</span>
+                </li>
+                }
+            </ul>
+            }
+            }
+        </mat-card-content>
+        <mat-card-actions align="end">
+            <button mat-stroked-button color="primary" (click)="generateReviewQuiz()" [disabled]="isGenerating() || reviewQueue().length === 0">
+                Generate Review Quiz
+            </button>
+        </mat-card-actions>
+    </mat-card>
+
+    <mat-card class="insight-card cognify-glass-card">
+        <mat-card-header>
+            <mat-card-title>Weak Topics</mat-card-title>
+            <mat-card-subtitle>Highest forgetting risk</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+            @if (isKnowledgeLoading()) {
+            <div class="loading-inline">
+                <mat-spinner diameter="28"></mat-spinner>
+            </div>
+            } @else {
+            @if (weakTopics().length === 0) {
+            <div class="empty-inline">
+                <mat-icon>psychology</mat-icon>
+                <p>No knowledge data yet.</p>
+            </div>
+            } @else {
+            <ul class="topic-list">
+                @for (item of weakTopics(); track item.id) {
+                <li>
+                    <span class="topic-name">{{ item.topic }}</span>
+                    <span class="topic-meta">Mastery {{ (item.masteryScore * 100) | number: '1.0-0' }}%</span>
+                </li>
+                }
+            </ul>
+            }
+            }
+        </mat-card-content>
+        <mat-card-actions align="end">
+            <button mat-stroked-button color="primary" (click)="generateWeaknessQuiz()" [disabled]="isGenerating() || weakTopics().length === 0">
+                Generate Weakness Quiz
+            </button>
+        </mat-card-actions>
+    </mat-card>
+</div>
+
 <div class="modules-grid">
     @for (module of modules(); track module.id) {
     <mat-card class="module-card cognify-glass-card cursor-pointer" [routerLink]="['/modules', module.id]">
