@@ -281,6 +281,48 @@
             }
         </mat-card-content>
     </mat-card>
+
+    <mat-card class="analytics-card cognify-glass-card">
+        <mat-card-header>
+            <mat-card-title>Mistake Patterns</mat-card-title>
+            <mat-card-subtitle>Recurring error categories</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+            @if (isAnalyticsLoading()) {
+            <div class="loading-inline">
+                <mat-spinner diameter="28"></mat-spinner>
+            </div>
+            } @else {
+            @if (mistakePatterns().length === 0) {
+            <div class="empty-inline">
+                <mat-icon>insights</mat-icon>
+                <p>No mistake patterns yet.</p>
+            </div>
+            } @else {
+            <ul class="topic-list mistake-list">
+                @for (pattern of mistakePatterns(); track pattern.category) {
+                <li>
+                    <div class="mistake-row">
+                        <span class="topic-name">{{ pattern.category }}</span>
+                        <span class="topic-meta">{{ pattern.totalCount }}x</span>
+                    </div>
+                    @if ((pattern.topTopics.length || 0) > 0) {
+                    <div class="mistake-topics">
+                        <span class="text-secondary">Top topics:</span>
+                        <span class="mistake-topics-list">
+                            @for (topic of pattern.topTopics; track topic.topic) {
+                            <span class="mistake-topic">{{ topic.topic }} ({{ topic.count }})</span>
+                            }
+                        </span>
+                    </div>
+                    }
+                </li>
+                }
+            </ul>
+            }
+            }
+        </mat-card-content>
+    </mat-card>
     </div>
 
     <div class="modules-grid">

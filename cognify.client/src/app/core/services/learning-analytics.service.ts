@@ -6,7 +6,8 @@ import {
     PerformanceTrendsDto,
     TopicDistributionDto,
     RetentionHeatmapPointDto,
-    DecayForecastDto
+    DecayForecastDto,
+    MistakePatternSummaryDto
 } from '../models/analytics.models';
 
 @Injectable({
@@ -34,5 +35,9 @@ export class LearningAnalyticsService {
 
     getDecayForecast(params?: { maxTopics?: number; days?: number; stepDays?: number }): Observable<DecayForecastDto> {
         return this.http.get<DecayForecastDto>(`${this.apiUrl}/decay-forecast`, { params: params as any });
+    }
+
+    getMistakePatterns(params?: { maxItems?: number; maxTopics?: number }): Observable<MistakePatternSummaryDto[]> {
+        return this.http.get<MistakePatternSummaryDto[]>(`${this.apiUrl}/mistake-patterns`, { params: params as any });
     }
 }

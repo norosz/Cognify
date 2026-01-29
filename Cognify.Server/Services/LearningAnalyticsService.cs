@@ -34,4 +34,10 @@ public class LearningAnalyticsService(IUserContextService userContext, ILearning
         var userId = userContext.GetCurrentUserId();
         return await computationService.GetDecayForecastAsync(userId, maxTopics, days, stepDays);
     }
+
+    public async Task<List<MistakePatternSummaryDto>> GetMistakePatternsAsync(int maxItems, int maxTopics)
+    {
+        var userId = userContext.GetCurrentUserId();
+        return await computationService.GetMistakePatternsAsync(userId, maxItems, maxTopics);
+    }
 }

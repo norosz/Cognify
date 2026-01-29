@@ -139,6 +139,7 @@ The following items were previously documented as missing, but are present in th
 ### AI Learning Dashboard + Analytics
 - Analytics endpoints exist (summary/trends/topics/heatmap/forecast): [Cognify.Server/Controllers/LearningAnalyticsController.cs](Cognify.Server/Controllers/LearningAnalyticsController.cs#L1-L90)
 - Frontend dashboard consumes and visualizes these analytics: [cognify.client/src/app/features/dashboard/dashboard.component.ts](cognify.client/src/app/features/dashboard/dashboard.component.ts#L1-L160)
+- Mistake pattern summaries are exposed and rendered in the dashboard analytics grid: [Cognify.Server/Controllers/LearningAnalyticsController.cs](Cognify.Server/Controllers/LearningAnalyticsController.cs#L90-L140), [cognify.client/src/app/features/dashboard/dashboard.component.html](cognify.client/src/app/features/dashboard/dashboard.component.html)
 
 ### Durable background workers (replacing ad-hoc Task.Run)
 - AI extraction + quiz generation are processed via `BackgroundService` polling with `AgentRun` tracking: [Cognify.Server/Services/AiBackgroundWorker.cs](Cognify.Server/Services/AiBackgroundWorker.cs#L1-L220), [Cognify.Server/Models/AgentRun.cs](Cognify.Server/Models/AgentRun.cs#L1-L55)

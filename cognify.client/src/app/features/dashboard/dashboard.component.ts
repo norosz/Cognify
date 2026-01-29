@@ -23,7 +23,8 @@ import {
   PerformanceTrendsDto,
   TopicDistributionDto,
   RetentionHeatmapPointDto,
-  DecayForecastDto
+  DecayForecastDto,
+  MistakePatternSummaryDto
 } from '../../core/models/analytics.models';
 
 @Component({
@@ -62,6 +63,7 @@ export class DashboardComponent implements OnInit {
   topicDistribution = signal<TopicDistributionDto | null>(null);
   retentionHeatmap = signal<RetentionHeatmapPointDto[]>([]);
   decayForecast = signal<DecayForecastDto | null>(null);
+  mistakePatterns = signal<MistakePatternSummaryDto[]>([]);
 
   readinessOptions = signal<any>({});
   velocityOptions = signal<any>({});
@@ -110,7 +112,8 @@ export class DashboardComponent implements OnInit {
       trends: this.analyticsService.getTrends({ bucketDays: 7 }),
       topics: this.analyticsService.getTopics({ maxTopics: 20, maxWeakTopics: 5 }),
       heatmap: this.analyticsService.getRetentionHeatmap({ maxTopics: 12 }),
-      decay: this.analyticsService.getDecayForecast({ maxTopics: 5, days: 14, stepDays: 2 })
+      decay: this.analyticsService.getDecayForecast({ maxTopics: 5, days: 14, stepDays: 2 }),
+      mistakes: this.analyticsService.getMistakePatterns({ maxItems: 6, maxTopics: 3 })
     }).subscribe({
       next: (data) => {
         this.analyticsSummary.set(data.summary);
@@ -118,6 +121,7 @@ export class DashboardComponent implements OnInit {
         this.topicDistribution.set(data.topics);
         this.retentionHeatmap.set(data.heatmap);
         this.decayForecast.set(data.decay);
+        this.mistakePatterns.set(data.mistakes);
 
         this.readinessOptions.set(this.buildReadinessGaugeOptions(data.summary));
         this.velocityOptions.set(this.buildVelocitySparklineOptions(data.trends));
@@ -134,6 +138,7 @@ export class DashboardComponent implements OnInit {
         this.distributionOptions.set({});
         this.heatmapOptions.set({});
         this.decayOptions.set({});
+        this.mistakePatterns.set([]);
         this.isAnalyticsLoading.set(false);
       }
     });

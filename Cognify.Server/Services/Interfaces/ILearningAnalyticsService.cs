@@ -9,4 +9,5 @@ public interface ILearningAnalyticsService
     Task<TopicDistributionDto> GetTopicDistributionAsync(int maxTopics, int maxWeakTopics);
     Task<List<RetentionHeatmapPointDto>> GetRetentionHeatmapAsync(int maxTopics);
     Task<DecayForecastDto> GetDecayForecastAsync(int maxTopics, int days, int stepDays);
+    Task<List<MistakePatternSummaryDto>> GetMistakePatternsAsync(int maxItems, int maxTopics);
 }

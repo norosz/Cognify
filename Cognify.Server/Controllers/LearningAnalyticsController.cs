@@ -87,4 +87,23 @@ public class LearningAnalyticsController(ILearningAnalyticsService analyticsServ
         var forecast = await analyticsService.GetDecayForecastAsync(maxTopics, days, stepDays);
         return Ok(forecast);
     }
+
+    [HttpGet("mistake-patterns")]
+    public async Task<ActionResult<List<MistakePatternSummaryDto>>> GetMistakePatterns(
+        [FromQuery] int maxItems = 8,
+        [FromQuery] int maxTopics = 3)
+    {
+        if (maxItems is < 1 or > 50)
+        {
+            return Problem("maxItems must be between 1 and 50.", statusCode: StatusCodes.Status400BadRequest);
+        }
+
+        if (maxTopics is < 1 or > 10)
+        {
+            return Problem("maxTopics must be between 1 and 10.", statusCode: StatusCodes.Status400BadRequest);
+        }
+
+        var patterns = await analyticsService.GetMistakePatternsAsync(maxItems, maxTopics);
+        return Ok(patterns);
+    }
 }

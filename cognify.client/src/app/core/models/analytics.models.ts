@@ -62,3 +62,14 @@ export interface DecayForecastDto {
     stepDays: number;
     topics: DecayForecastTopicDto[];
 }
+
+export interface MistakePatternTopicDto {
+    topic: string;
+    count: number;
+}
+
+export interface MistakePatternSummaryDto {
+    category: string;
+    totalCount: number;
+    topTopics: MistakePatternTopicDto[];
+}

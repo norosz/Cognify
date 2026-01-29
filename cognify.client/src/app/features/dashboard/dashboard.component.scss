@@ -70,6 +70,31 @@
     }
 }
 
+.mistake-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.mistake-topics {
+    margin-top: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.85rem;
+}
+
+.mistake-topics-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+}
+
+.mistake-topic {
+    color: var(--text-secondary);
+}
+
 .topic-name {
     font-weight: 600;
     color: var(--text-primary);

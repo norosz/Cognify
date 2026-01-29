@@ -14,7 +14,6 @@
 ### 🎯 Adaptive Quiz Engine
 
 ### 📉 Decay & Mistake Intelligence
-- [ ] **[Backend/Frontend]** Surface user mistake patterns in analytics/knowledge views (DTO + UI)
 
 ### 📊 AI Learning Dashboard (Frontend)
 
@@ -32,6 +31,7 @@
 ### 🚨 Stabilization (Jan 29 Audit)
 
 ## ✅ Done
+- [x] **[Backend/Frontend]** Surface user mistake patterns in analytics/knowledge views (DTO + UI)
 - [x] **[Frontend]** Unblock Angular build and restore dashboard + note editor compilation
 - [x] **[Frontend]** Fix Dashboard template parsing errors (invalid control-flow + mismatched tags)
 - [x] **[Frontend]** Fix Dashboard analytics bindings (missing DTO fields + missing helper methods)

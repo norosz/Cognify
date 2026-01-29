@@ -246,6 +246,44 @@ public class LearningAnalyticsComputationService(ApplicationDbContext context, I
         };
     }
 
+    public async Task<List<MistakePatternSummaryDto>> GetMistakePatternsAsync(Guid userId, int maxItems, int maxTopics)
+    {
+        var itemLimit = Math.Max(1, maxItems);
+        var topicLimit = Math.Max(1, maxTopics);
+
+        var patterns = await context.UserMistakePatterns
+            .AsNoTracking()
+            .Where(p => p.UserId == userId)
+            .ToListAsync();
+
+        if (patterns.Count == 0)
+        {
+            return [];
+        }
+
+        return patterns
+            .GroupBy(p => p.Category)
+            .Select(group => new MistakePatternSummaryDto
+            {
+                Category = group.Key,
+                TotalCount = group.Sum(p => p.Count),
+                TopTopics = group
+                    .OrderByDescending(p => p.Count)
+                    .ThenBy(p => p.Topic)
+                    .Take(topicLimit)
+                    .Select(p => new MistakePatternTopicDto
+                    {
+                        Topic = p.Topic,
+                        Count = p.Count
+                    })
+                    .ToList()
+            })
+            .OrderByDescending(p => p.TotalCount)
+            .ThenBy(p => p.Category)
+            .Take(itemLimit)
+            .ToList();
+    }
+
     private async Task<double> CalculateLearningVelocityAsync(Guid userId, DateTime now)
     {
         var trends = await GetTrendsAsync(userId, now.AddDays(-30), now, 7);

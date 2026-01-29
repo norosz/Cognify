@@ -73,3 +73,16 @@ public record DecayForecastDto
     public int StepDays { get; init; }
     public List<DecayForecastTopicDto> Topics { get; init; } = [];
 }
+
+public record MistakePatternTopicDto
+{
+    public string Topic { get; init; } = string.Empty;
+    public int Count { get; init; }
+}
+
+public record MistakePatternSummaryDto
+{
+    public string Category { get; init; } = string.Empty;
+    public int TotalCount { get; init; }
+    public List<MistakePatternTopicDto> TopTopics { get; init; } = [];
+}
