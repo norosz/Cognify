@@ -32,6 +32,7 @@ public class Program
         builder.Services.AddScoped<INoteService, NoteService>();
         builder.Services.AddScoped<IKnowledgeStateService, KnowledgeStateService>();
         builder.Services.AddScoped<IAdaptiveQuizService, AdaptiveQuizService>();
+        builder.Services.AddScoped<ILearningAnalyticsService, LearningAnalyticsService>();
         
         // Register AI
         builder.Services.AddSingleton(sp => 
