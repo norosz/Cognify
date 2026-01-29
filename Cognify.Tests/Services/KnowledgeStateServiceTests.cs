@@ -28,7 +28,11 @@ public class KnowledgeStateServiceTests : IDisposable
         _userId = Guid.NewGuid();
 
         _userContextMock.Setup(uc => uc.GetCurrentUserId()).Returns(_userId);
-        _service = new KnowledgeStateService(_context, _userContextMock.Object);
+        _service = new KnowledgeStateService(
+            _context,
+            _userContextMock.Object,
+            new DecayPredictionService(),
+            new MistakeAnalysisService());
     }
 
     [Fact]

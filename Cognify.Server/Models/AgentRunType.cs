@@ -4,5 +4,6 @@ public enum AgentRunType
 {
     Extraction,
     QuizGeneration,
-    Grading
+    Grading,
+    Analytics
 }

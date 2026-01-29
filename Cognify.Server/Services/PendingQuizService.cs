@@ -80,6 +80,7 @@ public class PendingQuizService(ApplicationDbContext db, IAgentRunService agentR
         {
             NoteId = pending.NoteId,
             Title = pending.Title,
+            Difficulty = pending.Difficulty,
             Type = (QuestionType)pending.QuestionType
         };
 

@@ -26,6 +26,49 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-29 12:30
+**Author:** Antigravity
+
+**DONE**
+- Implemented Learning Analytics agent background worker with AgentRun tracking.
+- Refactored analytics computations into shared computation service and wired DI.
+- Incorporated TimeSpentSeconds and Difficulty into analytics scoring and velocity.
+- Added QuestionSet difficulty persistence and wired through pending save + attempts.
+- Updated frontend to include difficulty when creating quizzes and submitting attempts.
+- Added EF migration for QuestionSet difficulty.
+
+**CHANGED FILES**
+- Cognify.Server/Services/LearningAnalyticsBackgroundWorker.cs
+- Cognify.Server/Services/LearningAnalyticsComputationService.cs
+- Cognify.Server/Services/Interfaces/ILearningAnalyticsComputationService.cs
+- Cognify.Server/Services/LearningAnalyticsService.cs
+- Cognify.Server/Program.cs
+- Cognify.Server/Models/AgentRunType.cs
+- Cognify.Server/Models/QuestionSet.cs
+- Cognify.Server/Services/QuestionService.cs
+- Cognify.Server/Services/PendingQuizService.cs
+- Cognify.Server/Services/AttemptService.cs
+- Cognify.Server/Dtos/QuestionDTOs.cs
+- Cognify.Server/Migrations/20260129154500_AddQuestionSetDifficulty.cs
+- Cognify.Server/Migrations/ApplicationDbContextModelSnapshot.cs
+- cognify.client/src/app/features/modules/components/quiz-generation/quiz-generation.component.ts
+- cognify.client/src/app/features/modules/components/quiz-taking/quiz-taking.component.ts
+- cognify.client/src/app/core/models/quiz.models.ts
+
+**DECISIONS**
+- Analytics agent produces statistical summaries without external AI dependencies.
+- Difficulty is persisted on QuestionSet and used as a fallback for attempts.
+
+**NEXT**
+- Apply pending EF migration when database is running.
+- Run backend + frontend tests after migration.
+
+**BLOCKERS**
+- Database not running (migration deferred).
+
+---
+
+## ENTRY
 **Timestamp:** 2026-01-29 17:55  
 **Author:** GitHub Copilot  
 

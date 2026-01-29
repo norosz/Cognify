@@ -15,6 +15,11 @@ public class Attempt
 
     public double Score { get; set; }
 
+    public int? TimeSpentSeconds { get; set; }
+
+    [MaxLength(50)]
+    public string? Difficulty { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     // Navigation properties

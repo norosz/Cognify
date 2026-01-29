@@ -124,11 +124,13 @@ export class QuizGenerationComponent {
   }
 
   private getDifficultyLabel(value: number): string {
-    return value switch
-    {
-      1 => 'Beginner',
-      3 => 'Advanced',
-      _ => 'Intermediate'
-    };
+    switch (value) {
+      case 1:
+        return 'Beginner';
+      case 3:
+        return 'Advanced';
+      default:
+        return 'Intermediate';
+    }
   }
 }

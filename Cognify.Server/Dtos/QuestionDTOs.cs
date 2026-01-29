@@ -19,6 +19,7 @@ public record QuestionSetDto
     public string Title { get; init; } = string.Empty;
     public List<QuestionDto> Questions { get; init; } = [];
     public string Type { get; init; } = "MultipleChoice";
+    public string Difficulty { get; init; } = "Intermediate";
     public DateTime CreatedAt { get; init; }
 }
 
@@ -27,4 +28,5 @@ public record CreateQuestionSetDto
     public Guid NoteId { get; init; }
     public string Title { get; init; } = string.Empty;
     public List<QuestionDto> Questions { get; init; } = [];
+    public string? Difficulty { get; init; }
 }
