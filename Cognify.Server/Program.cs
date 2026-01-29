@@ -54,6 +54,7 @@ public class Program
         builder.Services.AddSingleton<IPdfTextExtractor, PdfTextExtractor>();
         builder.Services.AddSingleton<IPdfImageExtractor, PdfImageExtractor>();
         builder.Services.AddHostedService<AiBackgroundWorker>();
+        builder.Services.AddHostedService<LearningAnalyticsBackgroundWorker>();
 
         // Register Authentication
         var jwtSettings = builder.Configuration.GetSection("Jwt");
