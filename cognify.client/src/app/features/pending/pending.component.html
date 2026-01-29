@@ -100,7 +100,7 @@
 
                 <div class="items-grid">
                     <div *ngFor="let quiz of pendingQuizzes()" class="cognify-glass-card pending-card"
-                        [class.status-error]="quiz.status === 'Error'">
+                        [class.status-error]="quiz.status === 'Failed'">
                         <div class="card-header">
                             <mat-icon class="type-icon"
                                 [ngClass]="quiz.status.toLowerCase()">{{getQuizStatusIcon(quiz.status)}}</mat-icon>

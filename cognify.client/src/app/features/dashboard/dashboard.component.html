@@ -1,27 +1,18 @@
 <div class="dashboard-header">
-    <h1>My Modules</h1>
+    <div>
+        <h1>My Modules</h1>
+        <p class="text-secondary">Your learning workspace overview.</p>
+    </div>
     <button mat-raised-button color="primary" (click)="openCreateModuleDialog()">
-                    <span class="summary-label">Accuracy</span>
-                    <span class="summary-value">{{ (analyticsSummary()!.accuracyRate * 100) | number: '1.0-0' }}%</span>
+        <mat-icon>add</mat-icon>
+        Create Module
     </button>
 </div>
-                    <span class="summary-label">Avg Mastery</span>
-                    <span class="summary-value">{{ (analyticsSummary()!.averageMastery * 100) | number: '1.0-0' }}%</span>
+
+<div class="insights-grid">
     <mat-card class="insight-card cognify-glass-card">
         <mat-card-header>
-            <mat-card-title>Review Queue</mat-card-title>
-            <mat-card-subtitle>Topics due for review</mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-content>
-                    <span class="summary-label">Topics</span>
-                    <span class="summary-value">{{ analyticsSummary()!.totalTopics }}</span>
-                <mat-spinner diameter="28"></mat-spinner>
-            </div>
-            } @else {
-            @if (reviewQueue().length === 0) {
-            <div class="empty-inline">
-                <mat-icon>event_available</mat-icon>
-                <p>No topics are due right now.</p>
+            <mat-card-title>Summary</mat-card-title>
             <mat-card-subtitle>Last 30 days</mat-card-subtitle>
         </mat-card-header>
         <mat-card-content>
@@ -38,25 +29,97 @@
             } @else {
             <div class="summary-grid">
                 <div class="summary-item">
-                    <span class="summary-label">Avg Score</span>
-                    <span class="summary-value">{{ analyticsSummary()!.averageScore | number: '1.0-0' }}%</span>
+                    <span class="summary-label">Accuracy</span>
+                    <span class="summary-value">{{ (analyticsSummary()?.accuracyRate || 0) * 100 | number: '1.0-0' }}%</span>
                 </div>
                 <div class="summary-item">
-                    <span class="summary-label">Correct Rate</span>
-                    <span class="summary-value">{{ (analyticsSummary()!.correctRate * 100) | number: '1.0-0' }}%</span>
+                    <span class="summary-label">Avg Mastery</span>
+                    <span class="summary-value">{{ (analyticsSummary()?.averageMastery || 0) * 100 | number: '1.0-0' }}%</span>
                 </div>
                 <div class="summary-item">
                     <span class="summary-label">Attempts</span>
-                    <span class="summary-value">{{ analyticsSummary()!.totalAttempts }}</span>
+                    <span class="summary-value">{{ analyticsSummary()?.totalAttempts || 0 }}</span>
                 </div>
                 <div class="summary-item">
-                    <span class="summary-label">Active Topics</span>
-                    <span class="summary-value">{{ analyticsSummary()!.activeTopics }}</span>
+                    <span class="summary-label">Topics</span>
+                    <span class="summary-value">{{ analyticsSummary()?.totalTopics || 0 }}</span>
                 </div>
             </div>
             }
             }
         </mat-card-content>
+    </mat-card>
+
+    <mat-card class="insight-card cognify-glass-card">
+        <mat-card-header>
+            <mat-card-title>Review Queue</mat-card-title>
+            <mat-card-subtitle>Topics due for review</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+            @if (isKnowledgeLoading()) {
+            <div class="loading-inline">
+                <mat-spinner diameter="28"></mat-spinner>
+            </div>
+            } @else {
+            @if (reviewQueue().length === 0) {
+            <div class="empty-inline">
+                <mat-icon>event_available</mat-icon>
+                <p>No topics are due right now.</p>
+            </div>
+            } @else {
+            <ul class="topic-list">
+                @for (item of reviewQueue(); track item.topic) {
+                <li>
+                    <span class="topic-name">{{ item.topic }}</span>
+                    <span class="topic-meta">Due {{ item.nextReviewAt ? (item.nextReviewAt | date: 'MMM d') : 'soon' }}</span>
+                </li>
+                }
+            </ul>
+            }
+            }
+        </mat-card-content>
+        <mat-card-actions align="end">
+            <button mat-stroked-button color="primary" (click)="generateReviewQuiz()"
+                [disabled]="isGenerating() || reviewQueue().length === 0">
+                Generate Review Quiz
+            </button>
+        </mat-card-actions>
+    </mat-card>
+
+    <mat-card class="insight-card cognify-glass-card">
+        <mat-card-header>
+            <mat-card-title>Weak Topics</mat-card-title>
+            <mat-card-subtitle>Highest forgetting risk</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+            @if (isKnowledgeLoading()) {
+            <div class="loading-inline">
+                <mat-spinner diameter="28"></mat-spinner>
+            </div>
+            } @else {
+            @if (weakTopics().length === 0) {
+            <div class="empty-inline">
+                <mat-icon>auto_awesome</mat-icon>
+                <p>No weak topics yet.</p>
+            </div>
+            } @else {
+            <ul class="topic-list">
+                @for (item of weakTopics(); track item.topic) {
+                <li>
+                    <span class="topic-name">{{ item.topic }}</span>
+                    <span class="topic-meta">Risk {{ (item.forgettingRisk * 100) | number: '1.0-0' }}%</span>
+                </li>
+                }
+            </ul>
+            }
+            }
+        </mat-card-content>
+        <mat-card-actions align="end">
+            <button mat-stroked-button color="primary" (click)="generateWeaknessQuiz()"
+                [disabled]="isGenerating() || weakTopics().length === 0">
+                Generate Weakness Quiz
+            </button>
+        </mat-card-actions>
     </mat-card>
 </div>
 
@@ -104,7 +167,7 @@
                 <mat-spinner diameter="28"></mat-spinner>
             </div>
             } @else {
-            @if (!analyticsSummary()) {
+            @if (!performanceTrends() || (performanceTrends()?.points?.length || 0) === 0) {
             <div class="empty-inline">
                 <mat-icon>show_chart</mat-icon>
                 <p>No recent activity yet. Take a quiz to start tracking momentum.</p>
@@ -154,7 +217,7 @@
                 <mat-spinner diameter="28"></mat-spinner>
             </div>
             } @else {
-            @if (!analyticsSummary() || (retentionHeatmap()?.length || 0) === 0) {
+            @if ((retentionHeatmap().length || 0) === 0) {
             <div class="empty-inline">
                 <mat-icon>grid_view</mat-icon>
                 <p>No heatmap data yet. Keep practicing to visualize mastery.</p>
@@ -177,7 +240,7 @@
                 <mat-spinner diameter="28"></mat-spinner>
             </div>
             } @else {
-            @if (!analyticsSummary() || (decayForecast()?.topics?.length || 0) === 0) {
+            @if ((decayForecast()?.topics?.length || 0) === 0) {
             <div class="empty-inline">
                 <mat-icon>timeline</mat-icon>
                 <p>No decay forecast yet. Complete quizzes to unlock predictions.</p>
@@ -218,112 +281,54 @@
             }
         </mat-card-content>
     </mat-card>
-</div>
+    </div>
 
-<div class="modules-grid">
-    @for (module of modules(); track module.id) {
-    <mat-card class="module-card cognify-glass-card cursor-pointer" [routerLink]="['/modules', module.id]">
-        <mat-card-header>
-            <mat-card-title>{{ module.title }}</mat-card-title>
-            <mat-card-subtitle>Created {{ module.createdAt | date }}</mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-content>
-            <p>{{ module.description || 'No description provided.' }}</p>
+    <div class="modules-grid">
+        @for (module of modules(); track module.id) {
+        <mat-card class="module-card cognify-glass-card cursor-pointer" [routerLink]="['/modules', module.id]">
+            <mat-card-header>
+                <mat-card-title>{{ module.title }}</mat-card-title>
+                <mat-card-subtitle>Created {{ module.createdAt | date }}</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+                <p>{{ module.description || 'No description provided.' }}</p>
 
-            <div class="stats-row">
-                <div class="stat-item" matTooltip="Documents">
-                    <mat-icon>description</mat-icon>
-                    <span>{{ module.documentsCount || 0 }}</span>
+                <div class="stats-row">
+                    <div class="stat-item" matTooltip="Documents">
+                        <mat-icon>description</mat-icon>
+                        <span>{{ module.documentsCount || 0 }}</span>
+                    </div>
+                    <div class="stat-item" matTooltip="Notes">
+                        <mat-icon>event_note</mat-icon>
+                        <span>{{ module.notesCount || 0 }}</span>
+                    </div>
+                    <div class="stat-item" matTooltip="Quizzes">
+                        <mat-icon>school</mat-icon>
+                        <span>{{ module.quizzesCount || 0 }}</span>
+                    </div>
                 </div>
-                <div class="stat-item" matTooltip="Notes">
-                    <mat-icon>event_note</mat-icon>
-                    <span>{{ module.notesCount || 0 }}</span>
-                </div>
-                <div class="stat-item" matTooltip="Quizzes">
-                    <mat-icon>school</mat-icon>
-                    <span>{{ module.quizzesCount || 0 }}</span>
-                </div>
-            </div>
 
-        </mat-card-content>
-        <mat-card-actions align="end" (click)="$event.stopPropagation()">
-            <button mat-icon-button [matMenuTriggerFor]="menu">
-                <mat-icon>more_vert</mat-icon>
-            </button>
-            <mat-menu #menu="matMenu">
-                <button mat-menu-item (click)="openEditModuleDialog($event, module)">
-                    <mat-icon>edit</mat-icon> Edit
+            </mat-card-content>
+            <mat-card-actions align="end" (click)="$event.stopPropagation()">
+                <button mat-icon-button [matMenuTriggerFor]="menu">
+                    <mat-icon>more_vert</mat-icon>
                 </button>
-                <button mat-menu-item class="delete-item" (click)="deleteModule($event, module.id)">
-                    <mat-icon color="warn">delete</mat-icon> Delete
-                </button>
-            </mat-menu>
-        </mat-card-actions>
-    </mat-card>
-    } @empty {
-    <mat-card class="empty-state cognify-glass-card">
-        <mat-card-content class="empty-state-content">
-            <mat-icon class="huge-icon">library_books</mat-icon>
-            <p>No modules yet. Create your first one!</p>
-        </mat-card-content>
-    </mat-card>
-    }
-</div>
-
-<div class="visualizations-grid">
-    <mat-card class="visualization-card cognify-glass-card">
-        <mat-card-header>
-            <mat-card-title>Knowledge Map</mat-card-title>
-            <mat-card-subtitle>Mastery vs. forgetting risk</mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-content>
-            @if (!analyticsSummary()) {
-            <div class="empty-inline">
-                <mat-icon>grid_view</mat-icon>
-                <p>No topics to visualize yet.</p>
-            </div>
-            } @else {
-            <ul class="knowledge-map">
-                @for (topic of analyticsSummary()!.topics; track topic.topic) {
-                <li>
-                    <div class="knowledge-header">
-                        <span class="topic-name">{{ topic.topic }}</span>
-                        <span class="topic-meta">Mastery {{ (topic.masteryScore * 100) | number: '1.0-0' }}%</span>
-                    </div>
-                    <div class="bar-row">
-                        <div class="bar mastery" [style.width]="getMasteryWidth(topic.masteryScore)"></div>
-                    </div>
-                    <div class="bar-row">
-                        <div class="bar risk" [style.width]="getRiskWidth(topic.forgettingRisk)"></div>
-                    </div>
-                </li>
-                }
-            </ul>
-            }
-        </mat-card-content>
-    </mat-card>
-
-    <mat-card class="visualization-card cognify-glass-card">
-        <mat-card-header>
-            <mat-card-title>Memory Decay</mat-card-title>
-            <mat-card-subtitle>Average quiz score trend</mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-content>
-            @if (!analyticsSummary()) {
-            <div class="empty-inline">
-                <mat-icon>show_chart</mat-icon>
-                <p>No trend data yet.</p>
-            </div>
-            } @else {
-            <div class="trend-chart">
-                @for (point of analyticsSummary()!.trends; track point.date) {
-                <div class="trend-bar">
-                    <div class="trend-fill" [style.height]="getTrendHeight(point.averageScore)"></div>
-                    <span class="trend-label">{{ point.date | date: 'MM/dd' }}</span>
-                </div>
-                }
-            </div>
-            }
-        </mat-card-content>
-    </mat-card>
-</div>
+                <mat-menu #menu="matMenu">
+                    <button mat-menu-item (click)="openEditModuleDialog($event, module)">
+                        <mat-icon>edit</mat-icon> Edit
+                    </button>
+                    <button mat-menu-item class="delete-item" (click)="deleteModule($event, module.id)">
+                        <mat-icon color="warn">delete</mat-icon> Delete
+                    </button>
+                </mat-menu>
+            </mat-card-actions>
+        </mat-card>
+        } @empty {
+        <mat-card class="empty-state cognify-glass-card">
+            <mat-card-content class="empty-state-content">
+                <mat-icon class="huge-icon">library_books</mat-icon>
+                <p>No modules yet. Create your first one!</p>
+            </mat-card-content>
+        </mat-card>
+        }
+    </div>

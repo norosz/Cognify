@@ -52,6 +52,8 @@ export class PendingService {
     private apiUrl = '/api/pending';
 
     pendingCount = signal<number>(0);
+    extractedContents = signal<ExtractedContentDto[]>([]);
+    pendingQuizzes = signal<PendingQuizDto[]>([]);
 
     private pollingSubscription: Subscription | null = null;
     private lastExtractedState = new Map<string, string>();
@@ -91,6 +93,20 @@ export class PendingService {
         });
     }
 
+    refreshAll(): Observable<{ extracted: ExtractedContentDto[]; quizzes: PendingQuizDto[]; count: number }> {
+        return forkJoin({
+            extracted: this.getExtractedContents(),
+            quizzes: this.getPendingQuizzes(),
+            count: this.http.get<number>(`${this.apiUrl}/count`)
+        }).pipe(
+            tap(results => {
+                this.extractedContents.set(results.extracted);
+                this.pendingQuizzes.set(results.quizzes);
+                this.pendingCount.set(results.count);
+            })
+        );
+    }
+
     startPolling(): void {
         if (this.pollingSubscription) return;
 
@@ -104,6 +120,8 @@ export class PendingService {
         ).subscribe({
             next: (results) => {
                 this.pendingCount.set(results.count);
+                this.extractedContents.set(results.extracted);
+                this.pendingQuizzes.set(results.quizzes);
                 this.checkExtractedStatus(results.extracted);
                 this.checkQuizStatus(results.quizzes);
             },
@@ -171,7 +189,7 @@ export class PendingService {
                         ['/pending', { tab: 'quizzes' }],
                         'View Quiz'
                     );
-                } else if (item.status === 'Failed' || item.status === 'Error') {
+                } else if (item.status === 'Failed') {
                     this.notificationService.error(
                         `Failed to generate quiz "${item.title}": ${item.errorMessage}`
                     );

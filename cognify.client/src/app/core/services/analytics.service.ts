@@ -1,19 +1,18 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { LearningAnalyticsSummaryDto } from '../models/analytics.models';
+import { LearningAnalyticsService } from './learning-analytics.service';
 
 @Injectable({
   providedIn: 'root'
 })
+/**
+ * @deprecated Use LearningAnalyticsService instead. This wrapper exists to avoid contract drift.
+ */
 export class AnalyticsService {
-  private apiUrl = '/api/learning-analytics';
+  constructor(private analytics: LearningAnalyticsService) {}
 
-  constructor(private http: HttpClient) {}
-
-  getSummary(days = 30, trendDays = 14, maxTopics = 10): Observable<LearningAnalyticsSummaryDto> {
-    return this.http.get<LearningAnalyticsSummaryDto>(
-      `${this.apiUrl}/summary?days=${days}&trendDays=${trendDays}&maxTopics=${maxTopics}`
-    );
+  getSummary(_days = 30, _trendDays = 14, _maxTopics = 10): Observable<LearningAnalyticsSummaryDto> {
+    return this.analytics.getSummary();
   }
 }

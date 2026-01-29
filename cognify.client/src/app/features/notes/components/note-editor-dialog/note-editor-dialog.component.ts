@@ -37,7 +37,7 @@ const PREVIEW_VISIBLE_KEY = 'cognify_note_preview_visible';
 })
 export class NoteEditorDialogComponent implements OnInit {
     @ViewChild('editorTextarea') editorTextarea!: ElementRef<HTMLTextAreaElement>;
-    @ViewChild('previewContent') previewContent!: ElementRef<HTMLDivElement>;
+    @ViewChild('previewContent') previewContainer!: ElementRef<HTMLDivElement>;
 
     form: FormGroup;
     isEditMode = false;
@@ -82,7 +82,7 @@ export class NoteEditorDialogComponent implements OnInit {
         return this.form.get('content')?.value || '';
     }
 
-    get previewContent(): string {
+    get previewHtml(): string {
         const baseContent = this.contentValue;
         const embeddedMarkdown = this.buildEmbeddedImagesMarkdown(this.data.note?.embeddedImages);
         if (!embeddedMarkdown) {
@@ -100,11 +100,11 @@ export class NoteEditorDialogComponent implements OnInit {
      * Sync scroll from editor to preview
      */
     onEditorScroll(event: Event): void {
-        if (this.isSyncingScroll || !this.showPreview || !this.previewContent) return;
+        if (this.isSyncingScroll || !this.showPreview || !this.previewContainer) return;
 
         this.isSyncingScroll = true;
         const editor = event.target as HTMLTextAreaElement;
-        const preview = this.previewContent.nativeElement;
+        const preview = this.previewContainer.nativeElement;
 
         // Calculate scroll percentage
         const scrollPercentage = editor.scrollTop / (editor.scrollHeight - editor.clientHeight);

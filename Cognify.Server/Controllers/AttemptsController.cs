@@ -14,7 +14,7 @@ public class AttemptsController(IAttemptService attemptService) : ControllerBase
     public async Task<IActionResult> SubmitAttempt(Guid quizId, [FromBody] SubmitAttemptDto dto)
     {
         if (quizId != dto.QuizId)
-            return BadRequest("ID mismatch");
+            return Problem("ID mismatch", statusCode: StatusCodes.Status400BadRequest);
 
         try
         {
@@ -23,7 +23,7 @@ public class AttemptsController(IAttemptService attemptService) : ControllerBase
         }
         catch (KeyNotFoundException)
         {
-            return NotFound("Quiz not found");
+            return Problem("Quiz not found", statusCode: StatusCodes.Status404NotFound);
         }
     }
 

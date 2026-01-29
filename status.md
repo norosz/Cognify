@@ -2,7 +2,10 @@
 
 ## 📋 To Do
 
+### 🚨 Build/Run Blockers
+
 ###  Notes
+- [ ] **[UX]** Confirm Note preview renders reliably for long notes (scroll sync + KaTeX)
 
 ### 🤖 AI Generation, Agents & Quizzes
 
@@ -11,6 +14,7 @@
 ### 🎯 Adaptive Quiz Engine
 
 ### 📉 Decay & Mistake Intelligence
+- [ ] **[Backend/Frontend]** Surface user mistake patterns in analytics/knowledge views (DTO + UI)
 
 ### 📊 AI Learning Dashboard (Frontend)
 
@@ -18,12 +22,27 @@
 
 ### 💾 File Management Enhancements
 
+### 🔁 Contract & UX Consistency
+
+### 🧪 Quality Gates
+- [ ] **[Quality]** Add a build gate to catch Angular template integrity regressions (e.g., `ng build`)
+
 ## 🏗️ In Progress
 
-### 🤖 AI Agents & Pipelines (v2)
+### 🚨 Stabilization (Jan 29 Audit)
 
 ## ✅ Done
-- [x] **[Audit]** Close end-to-end gaps from Jan 29 inspection (images usability, file-type consistency, contract/docs drift)
+- [x] **[Frontend]** Unblock Angular build and restore dashboard + note editor compilation
+- [x] **[Frontend]** Fix Dashboard template parsing errors (invalid control-flow + mismatched tags)
+- [x] **[Frontend]** Fix Dashboard analytics bindings (missing DTO fields + missing helper methods)
+- [x] **[Frontend]** Restore minimal working dashboard (modules list + core analytics cards) before advanced visualizations
+- [x] **[Frontend]** Fix Note Editor preview binding collision (string vs element)
+- [x] **[Frontend]** Fix Angular TypeScript config (set explicit `rootDir`)
+- [x] **[Frontend]** Ensure Angular templates avoid self-closing custom component tags
+- [x] **[Frontend]** Align Pending failure status with backend enum (`Failed`, not `Error`)
+- [x] **[Frontend]** Remove duplicate Pending polling + duplicate toast notifications (single source of truth)
+- [x] **[Frontend]** Retire/deprecate legacy analytics client service (keep one canonical service)
+- [x] **[Backend]** Standardize error responses to RFC7807 `ProblemDetails` (avoid raw exception leakage)
 - [x] **[Backend]** Persist structured mistake categories (UserMistakePatterns)
 - [x] **[UX]** Add clearer empty/error states for analytics panels with guidance
 - [x] **[Frontend]** Surface which topic/note the adaptive quiz targeted in notifications

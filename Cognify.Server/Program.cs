@@ -143,8 +143,15 @@ public class Program
                 {
                     logger.LogError(exceptionFeature.Error, "Unhandled exception occurred: {Message}", exceptionFeature.Error.Message);
                 }
-                context.Response.StatusCode = 500;
-                await context.Response.WriteAsJsonAsync(new { error = "An error occurred processing your request." });
+                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                context.Response.ContentType = "application/problem+json";
+                var problem = new Microsoft.AspNetCore.Mvc.ProblemDetails
+                {
+                    Status = StatusCodes.Status500InternalServerError,
+                    Title = "An error occurred processing your request.",
+                    Detail = "An unexpected error occurred. Please try again later."
+                };
+                await context.Response.WriteAsJsonAsync(problem);
             });
         });
 

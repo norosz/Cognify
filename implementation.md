@@ -5,6 +5,20 @@ Scope: Evidence-based comparison of declared capabilities in the README/specs vs
 - Claimed capabilities source: [README.md](README.md), [PROJECT_SPEC.md](PROJECT_SPEC.md)
 - Codebase scanned: Cognify.Server (ASP.NET Core), cognify.client (Angular), Cognify.Tests, Cognify.AppHost
 
+## 0. Current Known Issues (Jan 29, 2026)
+
+This document previously focused on feature presence. The January 29 audit identified several **compile/runtime blockers** and **contract mismatches**. The frontend blockers and pending-status mismatches have now been addressed; remaining issues are listed below.
+
+### Remaining known issues
+- None from the Jan 29 blocker set. See [status.md](status.md) for open backlog items (mistake patterns UI, quality gates).
+
+### Resolved in Jan 29 stabilization
+- Dashboard template parsing errors and analytics binding drift resolved: [cognify.client/src/app/features/dashboard/dashboard.component.html](cognify.client/src/app/features/dashboard/dashboard.component.html)
+- Note editor preview binding collision resolved: [cognify.client/src/app/features/notes/components/note-editor-dialog/note-editor-dialog.component.html](cognify.client/src/app/features/notes/components/note-editor-dialog/note-editor-dialog.component.html)
+- TypeScript `rootDir` set and app template tags fixed: [cognify.client/tsconfig.json](cognify.client/tsconfig.json), [cognify.client/src/app/app.component.html](cognify.client/src/app/app.component.html)
+- Pending status alignment + duplicate polling removed by centralizing in core PendingService: [cognify.client/src/app/core/services/pending.service.ts](cognify.client/src/app/core/services/pending.service.ts), [cognify.client/src/app/features/pending/pending.component.ts](cognify.client/src/app/features/pending/pending.component.ts)
+- Error responses standardized to RFC7807 `ProblemDetails`: [Cognify.Server/Program.cs](Cognify.Server/Program.cs), [Cognify.Server/Controllers/AiController.cs](Cognify.Server/Controllers/AiController.cs), [Cognify.Server/Controllers/AdaptiveQuizzesController.cs](Cognify.Server/Controllers/AdaptiveQuizzesController.cs), [Cognify.Server/Controllers/LearningAnalyticsController.cs](Cognify.Server/Controllers/LearningAnalyticsController.cs)
+
 ## 1. Confirmed Implemented Features (with file evidence)
 
 ### Authentication (JWT)
@@ -50,11 +64,11 @@ Scope: Evidence-based comparison of declared capabilities in the README/specs vs
 - Startup validates the token against the backend (`/auth/me`) via `provideAppInitializer`: [cognify.client/src/app/app.config.ts](cognify.client/src/app/app.config.ts#L1-L55)
 
 - Main layout provides sidebar nav + pending badge and refreshes pending count on load: [cognify.client/src/app/core/layout/main-layout/main-layout.component.ts](cognify.client/src/app/core/layout/main-layout/main-layout.component.ts#L1-L40), [cognify.client/src/app/core/layout/main-layout/main-layout.component.html](cognify.client/src/app/core/layout/main-layout/main-layout.component.html#L1-L55)
-- Dashboard includes modules + review/weakness actions and analytics visualizations (gauges, trends, heatmap, decay forecast): [cognify.client/src/app/features/dashboard/dashboard.component.ts](cognify.client/src/app/features/dashboard/dashboard.component.ts#L1-L160)
+- Dashboard includes modules + review/weakness actions and analytics visualizations (gauges, trends, heatmap, decay forecast): [cognify.client/src/app/features/dashboard/dashboard.component.html](cognify.client/src/app/features/dashboard/dashboard.component.html), [cognify.client/src/app/features/dashboard/dashboard.component.ts](cognify.client/src/app/features/dashboard/dashboard.component.ts)
 
 - Module detail view is tabbed (documents/notes/quizzes), and supports upload dialog: [cognify.client/src/app/features/modules/module-detail/module-detail.component.ts](cognify.client/src/app/features/modules/module-detail/module-detail.component.ts#L1-L125)
 - Notes list supports create/edit/delete and initiates “pending quiz generation” from a note: [cognify.client/src/app/features/notes/components/notes-list/notes-list.component.ts](cognify.client/src/app/features/notes/components/notes-list/notes-list.component.ts#L1-L90)
-- Note editor supports Markdown+LaTeX preview (with scroll sync), and can import extracted text from a selected document by calling AI extract: [cognify.client/src/app/features/notes/components/note-editor-dialog/note-editor-dialog.component.ts](cognify.client/src/app/features/notes/components/note-editor-dialog/note-editor-dialog.component.ts#L1-L175)
+- Note editor implementation exists (Markdown+LaTeX preview, import extracted content), but the preview binding currently has a compile-time collision that must be fixed: [cognify.client/src/app/features/notes/components/note-editor-dialog/note-editor-dialog.component.html](cognify.client/src/app/features/notes/components/note-editor-dialog/note-editor-dialog.component.html), [cognify.client/src/app/features/notes/components/note-editor-dialog/note-editor-dialog.component.ts](cognify.client/src/app/features/notes/components/note-editor-dialog/note-editor-dialog.component.ts)
 - Markdown+LaTeX rendering is implemented via `marked` + KaTeX in a pipe: [cognify.client/src/app/shared/pipes/markdown-latex.pipe.ts](cognify.client/src/app/shared/pipes/markdown-latex.pipe.ts#L1-L180)
 
 - Documents list loads/deletes docs and can trigger extraction; extraction starts processing and pushes the user toward Pending: [cognify.client/src/app/features/modules/components/document-list/document-list.component.ts](cognify.client/src/app/features/modules/components/document-list/document-list.component.ts#L1-L170)
@@ -70,10 +84,18 @@ Scope: Evidence-based comparison of declared capabilities in the README/specs vs
 
 ## 2. Partially Implemented Features
 
+### Pending polling/notifications are implemented but duplicated
+- A global pending poller exists, and the Pending page also polls and emits notifications, causing redundant requests/toasts.
+- Evidence: [cognify.client/src/app/app.component.ts](cognify.client/src/app/app.component.ts), [cognify.client/src/app/features/pending/services/pending.service.ts](cognify.client/src/app/features/pending/services/pending.service.ts), [cognify.client/src/app/features/pending/pages/pending/pending.component.ts](cognify.client/src/app/features/pending/pages/pending/pending.component.ts)
+
 ### Embedded images are extracted but not fully integrated into Notes/UX
 - PDF extraction uploads embedded images and stores metadata: [Cognify.Server/Services/AiBackgroundWorker.cs](Cognify.Server/Services/AiBackgroundWorker.cs#L409-L452)
 - The extracted markdown currently appends an "Embedded Images" list (filenames/page numbers) rather than emitting resolvable `![...](...)` references: [Cognify.Server/Services/AiBackgroundWorker.cs](Cognify.Server/Services/AiBackgroundWorker.cs#L393-L407)
 - `MaterialExtraction.ImagesJson` is persisted, and Notes can store `EmbeddedImagesJson`, but the frontend rendering path for these images is not clearly wired end-to-end.
+
+### Pending failure status string is inconsistent between API and UI
+- Backend uses enum names (e.g., `Failed`), while parts of the UI check for `Error`.
+- Evidence: [Cognify.Server/Dtos/PendingQuizDtos.cs](Cognify.Server/Dtos/PendingQuizDtos.cs), [cognify.client/src/app/features/pending/pages/pending/pending.component.ts](cognify.client/src/app/features/pending/pages/pending/pending.component.ts)
 
 ### “AI graded open-ended questions”
 - OpenText questions are graded via the grading agent during attempt submission: [Cognify.Server/Services/AttemptService.cs](Cognify.Server/Services/AttemptService.cs#L150-L260)

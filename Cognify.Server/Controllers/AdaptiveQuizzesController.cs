@@ -16,17 +16,17 @@ public class AdaptiveQuizzesController(IAdaptiveQuizService adaptiveQuizService)
     {
         if (request.QuestionCount is < 1 or > 20)
         {
-            return BadRequest("QuestionCount must be between 1 and 20.");
+            return Problem("QuestionCount must be between 1 and 20.", statusCode: StatusCodes.Status400BadRequest);
         }
 
         if (request.MaxTopics is < 1 or > 20)
         {
-            return BadRequest("MaxTopics must be between 1 and 20.");
+            return Problem("MaxTopics must be between 1 and 20.", statusCode: StatusCodes.Status400BadRequest);
         }
 
         if (!IsValidQuestionType(request.QuestionType))
         {
-            return BadRequest("QuestionType is invalid. Allowed values: MultipleChoice, TrueFalse, OpenText, Matching, Ordering, MultipleSelect.");
+            return Problem("QuestionType is invalid. Allowed values: MultipleChoice, TrueFalse, OpenText, Matching, Ordering, MultipleSelect.", statusCode: StatusCodes.Status400BadRequest);
         }
 
         try
@@ -36,15 +36,15 @@ public class AdaptiveQuizzesController(IAdaptiveQuizService adaptiveQuizService)
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(ex.Message);
+            return Problem(ex.Message, statusCode: StatusCodes.Status404NotFound);
         }
         catch (UnauthorizedAccessException)
         {
-            return Forbid();
+            return Problem("Forbidden", statusCode: StatusCodes.Status403Forbidden);
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(ex.Message);
+            return Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
         }
     }
 

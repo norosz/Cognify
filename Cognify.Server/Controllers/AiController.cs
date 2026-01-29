@@ -45,13 +45,13 @@ public class AiController : ControllerBase
         var document = await _documentService.GetByIdAsync(documentId);
 
         if (document == null)
-            return NotFound("Document not found.");
+            return Problem("Document not found.", statusCode: StatusCodes.Status404NotFound);
 
         if (string.IsNullOrEmpty(document.BlobPath))
-            return BadRequest("Invalid document path.");
+            return Problem("Invalid document path.", statusCode: StatusCodes.Status400BadRequest);
 
         if (document.Status != Cognify.Server.Dtos.Documents.DocumentStatus.Uploaded)
-            return BadRequest("Document must be uploaded before extraction.");
+            return Problem("Document must be uploaded before extraction.", statusCode: StatusCodes.Status400BadRequest);
 
         // Basic extension check
         var extension = Path.GetExtension(document.FileName).ToLowerInvariant();
@@ -87,7 +87,7 @@ public class AiController : ControllerBase
             or "application/epub+zip";
         if (!isImage && !isPdf && !isText && !isOffice)
         {
-            return BadRequest("Only supported document formats can be extracted.");
+            return Problem("Only supported document formats can be extracted.", statusCode: StatusCodes.Status400BadRequest);
         }
 
         try
@@ -107,15 +107,19 @@ public class AiController : ControllerBase
     [HttpPost("questions/generate")]
     public async Task<IActionResult> GenerateQuestions([FromBody] GenerateQuestionsRequest request)
     {
-        if (request.Difficulty < 1 || request.Difficulty > 3) return BadRequest("Difficulty must be between 1 and 3.");
-        if (request.Count < 1 || request.Count > 20) return BadRequest("Count must be between 1 and 20.");
+        if (request.Difficulty < 1 || request.Difficulty > 3)
+            return Problem("Difficulty must be between 1 and 3.", statusCode: StatusCodes.Status400BadRequest);
+        if (request.Count < 1 || request.Count > 20)
+            return Problem("Count must be between 1 and 20.", statusCode: StatusCodes.Status400BadRequest);
+        if (!Guid.TryParse(request.NoteId, out var noteId))
+            return Problem("Invalid note id.", statusCode: StatusCodes.Status400BadRequest);
 
-        var note = await _noteService.GetByIdAsync(Guid.Parse(request.NoteId));
+        var note = await _noteService.GetByIdAsync(noteId);
         if (note == null)
-            return NotFound("Note not found.");
+            return Problem("Note not found.", statusCode: StatusCodes.Status404NotFound);
 
         if (string.IsNullOrWhiteSpace(note.Content))
-            return BadRequest("Note content is empty.");
+            return Problem("Note content is empty.", statusCode: StatusCodes.Status400BadRequest);
 
         try 
         {

@@ -37,7 +37,7 @@
                     <mat-icon>preview</mat-icon>
                     <span>Preview</span>
                 </div>
-                <div #previewContent class="preview-content markdown-body" [innerHTML]="previewContent | markdownLatex"
+                <div #previewContent class="preview-content markdown-body" [innerHTML]="previewHtml | markdownLatex"
                     (scroll)="onPreviewScroll($event)"></div>
             </div>
         </div>

@@ -25,12 +25,12 @@ public class LearningAnalyticsController(ILearningAnalyticsService analyticsServ
     {
         if (bucketDays is < 1 or > 90)
         {
-            return BadRequest("bucketDays must be between 1 and 90.");
+            return Problem("bucketDays must be between 1 and 90.", statusCode: StatusCodes.Status400BadRequest);
         }
 
         if (from.HasValue && to.HasValue && from > to)
         {
-            return BadRequest("from must be <= to.");
+            return Problem("from must be <= to.", statusCode: StatusCodes.Status400BadRequest);
         }
 
         var trends = await analyticsService.GetTrendsAsync(from, to, bucketDays);
@@ -42,12 +42,12 @@ public class LearningAnalyticsController(ILearningAnalyticsService analyticsServ
     {
         if (maxTopics is < 1 or > 100)
         {
-            return BadRequest("maxTopics must be between 1 and 100.");
+            return Problem("maxTopics must be between 1 and 100.", statusCode: StatusCodes.Status400BadRequest);
         }
 
         if (maxWeakTopics is < 0 or > 50)
         {
-            return BadRequest("maxWeakTopics must be between 0 and 50.");
+            return Problem("maxWeakTopics must be between 0 and 50.", statusCode: StatusCodes.Status400BadRequest);
         }
 
         var topics = await analyticsService.GetTopicDistributionAsync(maxTopics, maxWeakTopics);
@@ -59,7 +59,7 @@ public class LearningAnalyticsController(ILearningAnalyticsService analyticsServ
     {
         if (maxTopics is < 1 or > 200)
         {
-            return BadRequest("maxTopics must be between 1 and 200.");
+            return Problem("maxTopics must be between 1 and 200.", statusCode: StatusCodes.Status400BadRequest);
         }
 
         var points = await analyticsService.GetRetentionHeatmapAsync(maxTopics);
@@ -71,17 +71,17 @@ public class LearningAnalyticsController(ILearningAnalyticsService analyticsServ
     {
         if (maxTopics is < 1 or > 50)
         {
-            return BadRequest("maxTopics must be between 1 and 50.");
+            return Problem("maxTopics must be between 1 and 50.", statusCode: StatusCodes.Status400BadRequest);
         }
 
         if (days is < 1 or > 365)
         {
-            return BadRequest("days must be between 1 and 365.");
+            return Problem("days must be between 1 and 365.", statusCode: StatusCodes.Status400BadRequest);
         }
 
         if (stepDays is < 1 or > 30)
         {
-            return BadRequest("stepDays must be between 1 and 30.");
+            return Problem("stepDays must be between 1 and 30.", statusCode: StatusCodes.Status400BadRequest);
         }
 
         var forecast = await analyticsService.GetDecayForecastAsync(maxTopics, days, stepDays);

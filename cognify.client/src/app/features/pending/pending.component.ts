@@ -34,11 +34,10 @@ export class PendingComponent implements OnInit {
   private dialog = inject(MatDialog);
   private route = inject(ActivatedRoute); // Injected
 
-  extractedContents = signal<ExtractedContentDto[]>([]);
-  pendingQuizzes = signal<PendingQuizDto[]>([]);
+  extractedContents = this.pendingService.extractedContents;
+  pendingQuizzes = this.pendingService.pendingQuizzes;
   isLoading = signal<boolean>(false);
   selectedTabIndex = signal<number>(0); // Added
-  private refreshInterval: any;
 
   ngOnInit(): void {
     // Check matrix params (route.params) for tab selection
@@ -52,80 +51,15 @@ export class PendingComponent implements OnInit {
     });
 
     this.loadPendingItems();
-    this.startPolling();
-  }
-
-  ngOnDestroy(): void {
-    if (this.refreshInterval) {
-      clearInterval(this.refreshInterval);
-    }
-  }
-
-  startPolling(): void {
-    // Poll every 5 seconds to check for updates
-    this.refreshInterval = setInterval(() => {
-      // Poll if any quiz OR extraction is processing
-      const hasGeneratingQuiz = this.pendingQuizzes().some(q => q.status === 'Generating');
-      const hasProcessingExtraction = this.extractedContents().some(e => e.status === 'Processing');
-
-      // console.log('Polling check:', { hasGeneratingQuiz, hasProcessingExtraction });
-
-      if (hasGeneratingQuiz || hasProcessingExtraction) {
-        this.loadPendingItems(false); // Silent reload
-      }
-    }, 5000);
   }
 
   loadPendingItems(showLoading: boolean = true): void {
     if (showLoading) this.isLoading.set(true);
 
-    const prevQuizzes = this.pendingQuizzes();
-    const prevExtractions = this.extractedContents();
-
-    this.pendingService.getExtractedContents().subscribe({
-      next: (contents) => {
-        // Check for extraction completions
-        contents.forEach(current => {
-          const prev = prevExtractions.find(p => p.id === current.id);
-          if (prev && prev.status === 'Processing' && current.status === 'Ready') {
-            this.notificationService.success(
-              'Extraction Complete!',
-              ['/pending', { tab: 'extractions' }],
-              'View Pending Note'
-            );
-          }
-          if (prev && prev.status === 'Processing' && current.status === 'Error') {
-            this.notificationService.error(`Extraction failed: ${current.documentName}`);
-          }
-        });
-
-        this.extractedContents.set(contents);
-        this.isLoading.set(false);
-      },
+    this.pendingService.refreshAll().subscribe({
+      next: () => this.isLoading.set(false),
       error: () => this.isLoading.set(false)
     });
-
-    this.pendingService.getPendingQuizzes().subscribe({
-      next: (quizzes) => {
-        quizzes.forEach(current => {
-          const prev = prevQuizzes.find(p => p.id === current.id);
-          if (prev && prev.status === 'Generating' && current.status === 'Ready') {
-            this.notificationService.success(
-              `Quiz "${current.title}" is ready!`,
-              ['/pending', { tab: 'quizzes' }],
-              'View Quiz'
-            );
-          }
-          if (prev && prev.status === 'Generating' && current.status === 'Error') {
-            this.notificationService.error(`Quiz generation failed for "${current.title}"`);
-          }
-        });
-
-        this.pendingQuizzes.set(quizzes);
-      }
-    });
-
-    this.pendingService.refreshPendingCount();
   }
 
   viewExtractedContent(content: ExtractedContentDto): void {
@@ -209,7 +143,7 @@ export class PendingComponent implements OnInit {
     switch (status.toLowerCase()) {
       case 'ready': return 'check_circle';
       case 'generating': return 'sync';
-      case 'error': return 'error';
+      case 'failed': return 'error';
       default: return 'help';
     }
   }
