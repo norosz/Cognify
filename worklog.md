@@ -5,6 +5,27 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-29 19:55  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Verified fresh InitialCreate migration and snapshot are present and aligned with Quiz/QuizQuestion schema
+
+**CHANGED FILES**
+- None
+
+**DECISIONS**
+- Keep single InitialCreate migration for the fresh start
+
+**NEXT**
+- None
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
 **Timestamp:** 2026-01-29 19:40  
 **Author:** GitHub Copilot  
 
