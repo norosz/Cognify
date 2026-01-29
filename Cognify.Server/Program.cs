@@ -38,13 +38,21 @@ public class Program
         builder.Services.AddScoped<IAdaptiveQuizService, AdaptiveQuizService>();
         
         // Register AI
-        builder.Services.AddSingleton(sp => 
+        var openAiKey = builder.Configuration["OpenAI:ApiKey"];
+        if (builder.Environment.IsEnvironment("Testing"))
         {
-            var config = sp.GetRequiredService<IConfiguration>();
-            var apiKey = config["OpenAI:ApiKey"] ?? throw new InvalidOperationException("OpenAI API Key is missing");
-            return new OpenAIClient(apiKey);
-        });
-        builder.Services.AddScoped<IAiService, AiService>();
+            builder.Services.AddScoped<IAiService, NullAiService>();
+        }
+        else
+        {
+            if (string.IsNullOrWhiteSpace(openAiKey))
+            {
+                throw new InvalidOperationException("OpenAI API Key is missing");
+            }
+
+            builder.Services.AddSingleton(_ => new OpenAIClient(openAiKey));
+            builder.Services.AddScoped<IAiService, AiService>();
+        }
         builder.Services.AddScoped<IQuestionService, QuestionService>();
         builder.Services.AddScoped<IAttemptService, AttemptService>();
         builder.Services.AddScoped<IExtractedContentService, ExtractedContentService>();
@@ -54,7 +62,10 @@ public class Program
         builder.Services.AddScoped<IMaterialExtractionService, MaterialExtractionService>();
         builder.Services.AddSingleton<IPdfTextExtractor, PdfTextExtractor>();
         builder.Services.AddSingleton<IPdfImageExtractor, PdfImageExtractor>();
-        builder.Services.AddHostedService<AiBackgroundWorker>();
+        if (!builder.Environment.IsEnvironment("Testing"))
+        {
+            builder.Services.AddHostedService<AiBackgroundWorker>();
+        }
         builder.Services.AddHostedService<LearningAnalyticsBackgroundWorker>();
 
         // Register Authentication

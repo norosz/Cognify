@@ -1,11 +1,13 @@
-using Azure.AI.OpenAI;
-using OpenAI;
-using OpenAI.Chat;
-using Cognify.Server.Services.Interfaces;
-using Cognify.Server.Models.Ai;
-using Cognify.Server.Models;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
+using Azure.AI.OpenAI;
+using Cognify.Server.Dtos.Ai.Contracts;
+using Cognify.Server.Models;
+using Cognify.Server.Models.Ai;
+using Cognify.Server.Services.Interfaces;
+using OpenAI;
+using OpenAI.Chat;
 
 namespace Cognify.Server.Services;
 
@@ -108,6 +110,20 @@ public class AiService : IAiService
         }
     }
 
+    public async Task<QuizGenerationContractResponse> GenerateQuizAsync(QuizGenerationContractRequest request)
+    {
+        var questions = await GenerateQuestionsAsync(
+            request.NoteContent,
+            request.QuestionType,
+            request.Difficulty,
+            request.QuestionCount);
+
+        return new QuizGenerationContractResponse(
+            request.ContractVersion,
+            questions,
+            QuizRubric: null);
+    }
+
     public async Task<string> ParseHandwritingAsync(Stream imageStream, string contentType)
     {
         var model = _configuration["OpenAI:Model"] ?? "gpt-4o";
@@ -142,6 +158,12 @@ public class AiService : IAiService
         }
     }
 
+    public async Task<OcrContractResponse> ParseHandwritingAsync(Stream imageStream, OcrContractRequest request)
+    {
+        var extracted = await ParseHandwritingAsync(imageStream, request.ContentType);
+        return new OcrContractResponse(request.ContractVersion, extracted, BlocksJson: null, Confidence: null);
+    }
+
     public async Task<string> GradeAnswerAsync(string question, string answer, string context)
     {
         var model = _configuration["OpenAI:Model"] ?? "gpt-4o";
@@ -163,5 +185,48 @@ public class AiService : IAiService
 
         var completion = await chatClient.CompleteChatAsync([new UserChatMessage(prompt)]);
         return completion.Value.Content[0].Text;
+    }
+
+    public async Task<GradingContractResponse> GradeAnswerAsync(GradingContractRequest request)
+    {
+        var context = request.AnswerKey;
+        if (!string.IsNullOrWhiteSpace(request.Rubric))
+        {
+            context = $"{context}\n\nRubric:\n{request.Rubric}";
+        }
+
+        var analysis = await GradeAnswerAsync(request.QuestionPrompt, request.UserAnswer, context);
+        var score = TryParseScore(analysis);
+        var feedback = TryParseFeedback(analysis);
+
+        return new GradingContractResponse(
+            request.ContractVersion,
+            score ?? 0,
+            100,
+            feedback,
+            DetectedMistakes: null,
+            ConfidenceEstimate: null,
+            RawAnalysis: analysis);
+    }
+
+    private static double? TryParseScore(string analysis)
+    {
+        if (string.IsNullOrWhiteSpace(analysis)) return null;
+
+        var match = Regex.Match(analysis, @"Score\s*:\s*(\d{1,3})", RegexOptions.IgnoreCase);
+        if (match.Success && int.TryParse(match.Groups[1].Value, out var score))
+        {
+            return Math.Clamp(score, 0, 100);
+        }
+
+        return null;
+    }
+
+    private static string? TryParseFeedback(string analysis)
+    {
+        if (string.IsNullOrWhiteSpace(analysis)) return null;
+
+        var match = Regex.Match(analysis, @"Feedback\s*:\s*(.*)", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+        return match.Success ? match.Groups[1].Value.Trim() : null;
     }
 }

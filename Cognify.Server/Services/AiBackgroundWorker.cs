@@ -1,12 +1,13 @@
-using Cognify.Server.Data;
-using Cognify.Server.Models;
-using Cognify.Server.Services.Interfaces;
-using Microsoft.EntityFrameworkCore;
 using System.IO.Compression;
 using System.Net;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Cognify.Server.Data;
+using Cognify.Server.Dtos.Ai.Contracts;
+using Cognify.Server.Models;
+using Cognify.Server.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace Cognify.Server.Services;
 
@@ -213,11 +214,18 @@ public class AiBackgroundWorker(
                     continue;
                 }
 
-                var questions = await aiService.GenerateQuestionsAsync(
-                    BuildAdaptiveContent(note.Content, await LoadAdaptiveContextAsync(db, quiz.UserId, quiz.NoteId, stoppingToken)),
+                var adaptiveContext = await LoadAdaptiveContextAsync(db, quiz.UserId, quiz.NoteId, stoppingToken);
+                var request = new QuizGenerationContractRequest(
+                    AgentContractVersions.V2,
+                    BuildAdaptiveContent(note.Content, adaptiveContext),
                     (QuestionType)quiz.QuestionType,
                     (int)quiz.Difficulty,
-                    quiz.QuestionCount);
+                    quiz.QuestionCount,
+                    adaptiveContext,
+                    MistakeFocus: null);
+
+                var quizResponse = await aiService.GenerateQuizAsync(request);
+                var questions = quizResponse.Questions;
 
                 if (questions == null || questions.Count == 0)
                 {
@@ -233,7 +241,7 @@ public class AiBackgroundWorker(
                 {
                     Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
                 };
-                var questionsJson = System.Text.Json.JsonSerializer.Serialize(questions, options);
+                var questionsJson = System.Text.Json.JsonSerializer.Serialize(quizResponse, options);
                 await pendingService.UpdateStatusAsync(quiz.Id, PendingQuizStatus.Ready, questionsJson: questionsJson, actualQuestionCount: questions.Count);
                 if (quiz.AgentRunId.HasValue)
                 {
@@ -510,7 +518,13 @@ public class AiBackgroundWorker(
 
             var contentType = string.IsNullOrWhiteSpace(image.ContentType) ? "image/png" : image.ContentType;
             await using var ms = new MemoryStream(image.Bytes);
-            var extracted = await aiService.ParseHandwritingAsync(ms, contentType);
+            var request = new OcrContractRequest(
+                AgentContractVersions.V2,
+                contentType,
+                Language: null,
+                Hints: null);
+            var response = await aiService.ParseHandwritingAsync(ms, request);
+            var extracted = response.ExtractedText;
 
             if (string.IsNullOrWhiteSpace(extracted)) continue;
 

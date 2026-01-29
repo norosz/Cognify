@@ -1,15 +1,16 @@
 using Cognify.Server.Data;
-using Cognify.Server.DTOs;
-using Cognify.Server.Dtos.Knowledge;
-using Cognify.Server.Models;
-using Cognify.Server.Services.Interfaces;
-using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Linq;
-
-namespace Cognify.Server.Services;
+using Cognify.Server.Data;
+using Cognify.Server.DTOs;
+using Cognify.Server.Dtos.Ai.Contracts;
+using Cognify.Server.Dtos.Knowledge;
+using Cognify.Server.Models;
+using Cognify.Server.Services;
+using Cognify.Server.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 public class AttemptService(
     ApplicationDbContext context,
@@ -184,30 +185,42 @@ public class AttemptService(
     private async Task<QuestionEvaluation> ScoreOpenTextAsync(Guid userId, Question question, string userAnswer, string correctAnswer)
     {
         var context = BuildOpenTextContext(question, correctAnswer);
-        var inputHash = AgentRunService.ComputeHash($"grading:{question.Id}:{userAnswer}:{correctAnswer}");
-        var run = await agentRunService.CreateAsync(userId, AgentRunType.Grading, inputHash, correlationId: question.Id.ToString(), promptVersion: "grading-v1");
+        var inputHash = AgentRunService.ComputeHash($"grading:{AgentContractVersions.V2}:{question.Id}:{userAnswer}:{correctAnswer}");
+        var run = await agentRunService.CreateAsync(userId, AgentRunType.Grading, inputHash, correlationId: question.Id.ToString(), promptVersion: "grading-v2");
 
         try
         {
-            var analysis = await aiService.GradeAnswerAsync(question.Prompt, userAnswer, context);
-            var parsedScore = TryParseScore(analysis);
-            var normalizedScore = parsedScore.HasValue
-                ? Math.Clamp(parsedScore.Value / 100.0, 0, 1)
+            var request = new GradingContractRequest(
+                AgentContractVersions.V2,
+                question.Prompt,
+                userAnswer,
+                correctAnswer,
+                context,
+                KnownMistakePatterns: null);
+
+            var response = await aiService.GradeAnswerAsync(request);
+            var normalizedScore = response.MaxScore > 0
+                ? Math.Clamp(response.Score / response.MaxScore, 0, 1)
                 : 0;
 
             var output = JsonSerializer.Serialize(new
             {
-                score = parsedScore,
+                response.ContractVersion,
+                response.Score,
+                response.MaxScore,
                 normalizedScore,
-                analysis
+                response.Feedback,
+                response.DetectedMistakes,
+                response.ConfidenceEstimate,
+                response.RawAnalysis
             });
 
             await agentRunService.MarkCompletedAsync(run.Id, output);
-                return new QuestionEvaluation(
-                    normalizedScore,
-                    normalizedScore >= OpenTextCorrectThreshold,
-                    TryParseFeedback(analysis),
-                    BuildOpenTextMistakes(normalizedScore));
+            return new QuestionEvaluation(
+                normalizedScore,
+                normalizedScore >= OpenTextCorrectThreshold,
+                response.Feedback,
+                response.DetectedMistakes ?? BuildOpenTextMistakes(normalizedScore));
         }
         catch (Exception ex)
         {
