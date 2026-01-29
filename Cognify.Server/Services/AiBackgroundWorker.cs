@@ -2,6 +2,7 @@ using Cognify.Server.Data;
 using Cognify.Server.Models;
 using Cognify.Server.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
 
 namespace Cognify.Server.Services;
 
@@ -11,6 +12,7 @@ public class AiBackgroundWorker(
 {
     private static readonly TimeSpan PollInterval = TimeSpan.FromSeconds(5);
     private const int BatchSize = 5;
+    private const int MaxOcrImages = 10;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -90,18 +92,25 @@ public class AiBackgroundWorker(
                 if (contentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase))
                 {
                     text = await pdfTextExtractor.ExtractTextAsync(buffer, stoppingToken);
+
+                    buffer.Position = 0;
+                    var extractedImages = await pdfImageExtractor.ExtractImagesAsync(buffer, stoppingToken);
+
                     if (string.IsNullOrWhiteSpace(text))
                     {
-                        await extractionService.MarkAsErrorAsync(item.Id, "No selectable text found in PDF. Try an image-based document.");
+                        text = await OcrPdfImagesAsync(aiService, extractedImages, stoppingToken);
+                    }
+
+                    if (string.IsNullOrWhiteSpace(text))
+                    {
+                        await extractionService.MarkAsErrorAsync(item.Id, "No selectable text or images found in PDF.");
                         if (item.AgentRunId.HasValue)
                         {
-                            await agentRunService.MarkFailedAsync(item.AgentRunId.Value, "No selectable text found in PDF.");
+                            await agentRunService.MarkFailedAsync(item.AgentRunId.Value, "No selectable text or images found in PDF.");
                         }
                         continue;
                     }
 
-                    buffer.Position = 0;
-                    var extractedImages = await pdfImageExtractor.ExtractImagesAsync(buffer, stoppingToken);
                     images = await UploadPdfImagesAsync(blobService, item.Document.Id, extractedImages, stoppingToken);
 
                     if (images.Count > 0)
@@ -293,6 +302,45 @@ public class AiBackgroundWorker(
         }
 
         return results;
+    }
+
+    private static async Task<string> OcrPdfImagesAsync(
+        IAiService aiService,
+        List<PdfEmbeddedImage> images,
+        CancellationToken cancellationToken)
+    {
+        if (images.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        var builder = new StringBuilder();
+        var processed = 0;
+
+        foreach (var image in images)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (image.Bytes == null || image.Bytes.Length == 0) continue;
+
+            processed++;
+            if (processed > MaxOcrImages) break;
+
+            var contentType = string.IsNullOrWhiteSpace(image.ContentType) ? "image/png" : image.ContentType;
+            await using var ms = new MemoryStream(image.Bytes);
+            var extracted = await aiService.ParseHandwritingAsync(ms, contentType);
+
+            if (string.IsNullOrWhiteSpace(extracted)) continue;
+
+            if (builder.Length > 0)
+            {
+                builder.AppendLine().AppendLine("---").AppendLine();
+            }
+
+            builder.Append(extracted.Trim());
+        }
+
+        return builder.ToString();
     }
 
     private record ExtractionOutput(string Text, List<PdfImageMetadata> Images);
