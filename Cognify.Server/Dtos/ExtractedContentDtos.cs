@@ -1,3 +1,5 @@
+using Cognify.Server.Models;
+
 namespace Cognify.Server.Dtos;
 
 public record ExtractedContentDto(
@@ -8,7 +10,7 @@ public record ExtractedContentDto(
     string ModuleName,
     string Text,
     DateTime ExtractedAt,
-    string Status,
+    ExtractedContentStatus Status,
     string? ErrorMessage
 );
 

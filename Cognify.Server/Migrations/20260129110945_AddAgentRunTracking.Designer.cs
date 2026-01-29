@@ -4,6 +4,7 @@ using Cognify.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Cognify.Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260129110945_AddAgentRunTracking")]
+    partial class AddAgentRunTracking
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -84,41 +87,6 @@ namespace Cognify.Server.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("AgentRuns");
-                });
-
-            modelBuilder.Entity("Cognify.Server.Models.AnswerEvaluation", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<double?>("ConfidenceEstimate")
-                        .HasColumnType("float");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("DetectedMistakesJson")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Feedback")
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
-
-                    b.Property<Guid>("LearningInteractionId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<double>("MaxScore")
-                        .HasColumnType("float");
-
-                    b.Property<double>("Score")
-                        .HasColumnType("float");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("LearningInteractionId");
-
-                    b.ToTable("AnswerEvaluations");
                 });
 
             modelBuilder.Entity("Cognify.Server.Models.Attempt", b =>
@@ -233,48 +201,6 @@ namespace Cognify.Server.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("ExtractedContents");
-                });
-
-            modelBuilder.Entity("Cognify.Server.Models.LearningInteraction", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("AttemptId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool?>("IsCorrect")
-                        .HasColumnType("bit");
-
-                    b.Property<Guid?>("QuestionId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Topic")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserAnswer")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AttemptId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("LearningInteractions");
                 });
 
             modelBuilder.Entity("Cognify.Server.Models.Module", b =>
@@ -480,52 +406,6 @@ namespace Cognify.Server.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("Cognify.Server.Models.UserKnowledgeState", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<double>("ConfidenceScore")
-                        .HasColumnType("float");
-
-                    b.Property<double>("ForgettingRisk")
-                        .HasColumnType("float");
-
-                    b.Property<DateTime?>("LastReviewedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<double>("MasteryScore")
-                        .HasColumnType("float");
-
-                    b.Property<string>("MistakePatternsJson")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("NextReviewAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("SourceNoteId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Topic")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId", "Topic")
-                        .IsUnique();
-
-                    b.ToTable("UserKnowledgeStates");
-                });
-
             modelBuilder.Entity("Cognify.Server.Models.AgentRun", b =>
                 {
                     b.HasOne("Cognify.Server.Models.User", "User")
@@ -535,17 +415,6 @@ namespace Cognify.Server.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Cognify.Server.Models.AnswerEvaluation", b =>
-                {
-                    b.HasOne("Cognify.Server.Models.LearningInteraction", "LearningInteraction")
-                        .WithMany()
-                        .HasForeignKey("LearningInteractionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("LearningInteraction");
                 });
 
             modelBuilder.Entity("Cognify.Server.Models.Attempt", b =>
@@ -608,24 +477,6 @@ namespace Cognify.Server.Migrations
                     b.Navigation("Document");
 
                     b.Navigation("Module");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Cognify.Server.Models.LearningInteraction", b =>
-                {
-                    b.HasOne("Cognify.Server.Models.Attempt", "Attempt")
-                        .WithMany()
-                        .HasForeignKey("AttemptId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("Cognify.Server.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Attempt");
 
                     b.Navigation("User");
                 });
@@ -706,17 +557,6 @@ namespace Cognify.Server.Migrations
                         .IsRequired();
 
                     b.Navigation("Note");
-                });
-
-            modelBuilder.Entity("Cognify.Server.Models.UserKnowledgeState", b =>
-                {
-                    b.HasOne("Cognify.Server.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Cognify.Server.Models.Module", b =>

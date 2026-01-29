@@ -5,6 +5,192 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-29 13:10  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Generated EF Core migration for Phase 1 knowledge model schema
+- Fixed AttemptService tests to include module/note setup for knowledge topics
+- Ran backend tests (all passing)
+
+**CHANGED FILES**
+- Cognify.Server/Migrations/20260129113135_AddKnowledgeModel.cs
+- Cognify.Server/Migrations/20260129113135_AddKnowledgeModel.Designer.cs
+- Cognify.Server/Migrations/ApplicationDbContextModelSnapshot.cs
+- Cognify.Tests/Services/AttemptServiceTests.cs
+- status.md
+
+**DECISIONS**
+- Accepted OpenAI API key warnings during tests; functional tests still pass.
+
+**NEXT**
+- Wire Phase 1 knowledge state data into frontend review queue UI.
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
+**Timestamp:** 2026-01-29 12:45  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Added Phase 1 knowledge model entities and service scaffolding
+- Recorded learning interactions and evaluations when attempts are submitted
+- Added knowledge state API endpoints and unit tests
+
+**CHANGED FILES**
+- Cognify.Server/Models/UserKnowledgeState.cs
+- Cognify.Server/Models/LearningInteraction.cs
+- Cognify.Server/Models/AnswerEvaluation.cs
+- Cognify.Server/Dtos/Knowledge/KnowledgeStateDtos.cs
+- Cognify.Server/Dtos/Knowledge/KnowledgeInteractionInput.cs
+- Cognify.Server/Services/Interfaces/IKnowledgeStateService.cs
+- Cognify.Server/Services/KnowledgeStateService.cs
+- Cognify.Server/Controllers/KnowledgeStatesController.cs
+- Cognify.Server/Data/ApplicationDbContext.cs
+- Cognify.Server/Services/AttemptService.cs
+- Cognify.Server/Program.cs
+- Cognify.Tests/Services/AttemptServiceTests.cs
+- Cognify.Tests/Services/KnowledgeStateServiceTests.cs
+- status.md
+
+**DECISIONS**
+- Used a simple score-based update and review scheduling heuristic for the Phase 1 knowledge model.
+
+**NEXT**
+- Create EF Core migration for new knowledge model tables (pending approval per project rules).
+- Wire Phase 1 knowledge state into frontend (review queue + weak topics) once backend schema is ready.
+
+**BLOCKERS**
+- Migration creation not requested; database schema changes are pending approval.
+
+---
+
+## ENTRY
+**Timestamp:** 2026-01-29 11:15  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Added AgentRun tracking (entity, enums, service) and linked it to pending extraction/quiz flows
+- Updated background worker to persist AI run status/output and registered AgentRun service
+- Created EF migration for AgentRun tracking and new FK columns
+
+**CHANGED FILES**
+- Cognify.Server/Models/AgentRun.cs
+- Cognify.Server/Models/AgentRunStatus.cs
+- Cognify.Server/Models/AgentRunType.cs
+- Cognify.Server/Models/ExtractedContent.cs
+- Cognify.Server/Models/PendingQuiz.cs
+- Cognify.Server/Services/Interfaces/IAgentRunService.cs
+- Cognify.Server/Services/AgentRunService.cs
+- Cognify.Server/Services/ExtractedContentService.cs
+- Cognify.Server/Services/PendingQuizService.cs
+- Cognify.Server/Services/AiBackgroundWorker.cs
+- Cognify.Server/Data/ApplicationDbContext.cs
+- Cognify.Server/Program.cs
+- Cognify.Server/Migrations/20260129110945_AddAgentRunTracking.cs
+- Cognify.Server/Migrations/20260129110945_AddAgentRunTracking.Designer.cs
+- Cognify.Server/Migrations/ApplicationDbContextModelSnapshot.cs
+- Cognify.Tests/Services/ExtractedContentServiceTests.cs
+- Cognify.Tests/Services/PendingQuizServiceTests.cs
+- status.md
+
+**DECISIONS**
+- Used existing pending tables with nullable AgentRun links to avoid breaking current workflows.
+
+**NEXT**
+- Decide if AgentRun metadata should surface via API/UX for debugging.
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
+**Timestamp:** 2026-01-29 11:25  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Ran full test suite (`dotnet test`) per request
+
+**CHANGED FILES**
+- None
+
+**DECISIONS**
+- None
+
+**NEXT**
+- Proceed to Phase 1 if requested
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
+**Timestamp:** 2026-01-29 11:35  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Added AgentRunService unit tests
+
+**CHANGED FILES**
+- Cognify.Tests/Services/AgentRunServiceTests.cs
+- worklog.md
+
+**DECISIONS**
+- Focused on service lifecycle tests to validate AgentRun persistence and status transitions.
+
+**NEXT**
+- Run tests if requested
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
+**Timestamp:** 2026-01-29 10:15  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Phase 0 refactor: replaced AI fire-and-forget `Task.Run` with durable background worker for pending extraction/quiz processing
+- Normalized extracted content status to enum (stored as string) and updated services/tests
+- Fixed AI prompt difficulty level bug
+- Removed legacy frontend quiz generation endpoint usage
+
+**CHANGED FILES**
+- Cognify.Server/Models/ExtractedContentStatus.cs
+- Cognify.Server/Models/ExtractedContent.cs
+- Cognify.Server/Data/ApplicationDbContext.cs
+- Cognify.Server/Services/ExtractedContentService.cs
+- Cognify.Server/Dtos/ExtractedContentDtos.cs
+- Cognify.Server/Services/AiPrompts.cs
+- Cognify.Server/Services/AiService.cs
+- Cognify.Server/Services/PendingQuizService.cs
+- Cognify.Server/Services/AiBackgroundWorker.cs
+- Cognify.Server/Program.cs
+- Cognify.Server/Controllers/AiController.cs
+- cognify.client/src/app/features/modules/services/quiz.service.ts
+- Cognify.Tests/Services/ExtractedContentServiceTests.cs
+- Cognify.Tests/Controllers/AiControllerTests.cs
+- Cognify.Tests/Services/PendingQuizServiceTests.cs
+- status.md
+
+**DECISIONS**
+- Implemented durable processing using existing PendingQuiz/ExtractedContent tables to avoid schema changes.
+
+**NEXT**
+- Validate migration and consider adding prompt/version metadata to API responses if needed.
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
 **Timestamp:** 2026-01-25 13:38  
 **Author:** Antigravity  
 

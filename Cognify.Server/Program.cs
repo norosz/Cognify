@@ -30,6 +30,7 @@ public class Program
         builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
         builder.Services.AddScoped<IDocumentService, DocumentService>();
         builder.Services.AddScoped<INoteService, NoteService>();
+        builder.Services.AddScoped<IKnowledgeStateService, KnowledgeStateService>();
         
         // Register AI
         builder.Services.AddSingleton(sp => 
@@ -43,6 +44,8 @@ public class Program
         builder.Services.AddScoped<IAttemptService, AttemptService>();
         builder.Services.AddScoped<IExtractedContentService, ExtractedContentService>();
         builder.Services.AddScoped<IPendingQuizService, PendingQuizService>();
+        builder.Services.AddScoped<IAgentRunService, AgentRunService>();
+        builder.Services.AddHostedService<AiBackgroundWorker>();
 
         // Register Authentication
         var jwtSettings = builder.Configuration.GetSection("Jwt");

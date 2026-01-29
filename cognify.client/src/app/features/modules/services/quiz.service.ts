@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { CreateQuestionSetDto, QuestionDto, QuestionSetDto, AttemptDto, SubmitAttemptDto } from '../../../core/models/quiz.models';
+import { CreateQuestionSetDto, QuestionSetDto, AttemptDto, SubmitAttemptDto } from '../../../core/models/quiz.models';
 
 @Injectable({
     providedIn: 'root'
@@ -10,10 +10,6 @@ export class QuizService {
     private apiUrl = '/api';
 
     constructor(private http: HttpClient) { }
-
-    generateQuestions(noteId: string): Observable<QuestionDto[]> {
-        return this.http.post<QuestionDto[]>(`${this.apiUrl}/ai/questions/from-note/${noteId}`, {});
-    }
 
     createQuestionSet(dto: CreateQuestionSetDto): Observable<QuestionSetDto> {
         return this.http.post<QuestionSetDto>(`${this.apiUrl}/question-sets`, dto);

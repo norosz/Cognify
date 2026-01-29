@@ -12,8 +12,12 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<QuestionSet> QuestionSets => Set<QuestionSet>();
     public DbSet<Question> Questions => Set<Question>();
     public DbSet<Attempt> Attempts => Set<Attempt>();
+    public DbSet<UserKnowledgeState> UserKnowledgeStates => Set<UserKnowledgeState>();
+    public DbSet<LearningInteraction> LearningInteractions => Set<LearningInteraction>();
+    public DbSet<AnswerEvaluation> AnswerEvaluations => Set<AnswerEvaluation>();
     public DbSet<ExtractedContent> ExtractedContents => Set<ExtractedContent>();
     public DbSet<PendingQuiz> PendingQuizzes => Set<PendingQuiz>();
+    public DbSet<AgentRun> AgentRuns => Set<AgentRun>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -67,6 +71,39 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasForeignKey(a => a.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        // Knowledge Model Relationships
+        modelBuilder.Entity<UserKnowledgeState>()
+            .HasOne(s => s.User)
+            .WithMany()
+            .HasForeignKey(s => s.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<UserKnowledgeState>()
+            .HasIndex(s => new { s.UserId, s.Topic })
+            .IsUnique();
+
+        modelBuilder.Entity<LearningInteraction>()
+            .HasOne(i => i.User)
+            .WithMany()
+            .HasForeignKey(i => i.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<LearningInteraction>()
+            .HasOne(i => i.Attempt)
+            .WithMany()
+            .HasForeignKey(i => i.AttemptId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<LearningInteraction>()
+            .Property(i => i.Type)
+            .HasConversion<string>();
+
+        modelBuilder.Entity<AnswerEvaluation>()
+            .HasOne(a => a.LearningInteraction)
+            .WithMany()
+            .HasForeignKey(a => a.LearningInteractionId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         // ExtractedContent Relationships
         modelBuilder.Entity<ExtractedContent>()
             .HasOne(e => e.User)
@@ -86,12 +123,29 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasForeignKey(e => e.ModuleId)
             .OnDelete(DeleteBehavior.NoAction); // Prevent multiple cascade paths
 
+        modelBuilder.Entity<ExtractedContent>()
+            .Property(e => e.Status)
+            .HasConversion<string>();
+
         // PendingQuiz Relationships
         modelBuilder.Entity<PendingQuiz>()
             .HasOne(p => p.User)
             .WithMany()
             .HasForeignKey(p => p.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // AgentRun Relationships
+        modelBuilder.Entity<AgentRun>()
+            .HasOne(a => a.User)
+            .WithMany()
+            .HasForeignKey(a => a.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PendingQuiz>()
+            .HasOne(p => p.AgentRun)
+            .WithMany()
+            .HasForeignKey(p => p.AgentRunId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         modelBuilder.Entity<PendingQuiz>()
             .HasOne(p => p.Note)
@@ -104,5 +158,19 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .WithMany()
             .HasForeignKey(p => p.ModuleId)
             .OnDelete(DeleteBehavior.NoAction); // Prevent multiple cascade paths
+
+        modelBuilder.Entity<ExtractedContent>()
+            .HasOne(e => e.AgentRun)
+            .WithMany()
+            .HasForeignKey(e => e.AgentRunId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<AgentRun>()
+            .Property(a => a.Type)
+            .HasConversion<string>();
+
+        modelBuilder.Entity<AgentRun>()
+            .Property(a => a.Status)
+            .HasConversion<string>();
     }
 }

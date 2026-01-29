@@ -2,11 +2,8 @@ using Cognify.Server.Data;
 using Cognify.Server.Models;
 using Cognify.Server.Models.Ai;
 using Cognify.Server.Services;
-using Cognify.Server.Services.Interfaces;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Moq;
 using System.Text.Json;
 using Xunit;
 
@@ -15,7 +12,6 @@ namespace Cognify.Tests.Services;
 public class PendingQuizServiceTests : IDisposable
 {
     private readonly ApplicationDbContext _context;
-    private readonly Mock<IServiceProvider> _serviceProviderMock;
     private readonly PendingQuizService _service;
     private readonly Guid _userId;
 
@@ -26,10 +22,10 @@ public class PendingQuizServiceTests : IDisposable
             .Options;
 
         _context = new ApplicationDbContext(options);
-        _serviceProviderMock = new Mock<IServiceProvider>();
         _userId = Guid.NewGuid();
 
-        _service = new PendingQuizService(_context, _serviceProviderMock.Object);
+        var agentRunService = new AgentRunService(_context);
+        _service = new PendingQuizService(_context, agentRunService);
     }
 
     [Fact]
@@ -39,19 +35,6 @@ public class PendingQuizServiceTests : IDisposable
         var noteId = Guid.NewGuid();
         var moduleId = Guid.NewGuid();
         
-        // Mock scope factory for the background task
-        var scopeFactoryMock = new Mock<IServiceScopeFactory>();
-        var scopeMock = new Mock<IServiceScope>();
-        scopeFactoryMock.Setup(x => x.CreateScope()).Returns(scopeMock.Object);
-        scopeMock.Setup(x => x.ServiceProvider).Returns(_serviceProviderMock.Object);
-        
-        // We need to setup service provider to return IServiceScopeFactory likely? 
-        // Actually CreateAsync uses serviceProvider directly to create scope?
-        // Line 42: using var scope = serviceProvider.CreateScope(); 
-        // CreateScope is an extension method on IServiceProvider, which calls GetRequiredService<IServiceScopeFactory>().CreateScope()
-        
-        _serviceProviderMock.Setup(x => x.GetService(typeof(IServiceScopeFactory))).Returns(scopeFactoryMock.Object);
-
         // Act
         var result = await _service.CreateAsync(_userId, noteId, moduleId, "Test Quiz", QuizDifficulty.Intermediate, 1, 5);
 
