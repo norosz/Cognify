@@ -161,4 +161,35 @@ public static class AiPrompts
                 {{content}}
                 """;
         }
+
+    public static string BuildGradingPromptWithRubric(
+        string question,
+        string answer,
+        string context,
+        string? knownMistakePatterns)
+    {
+        return $$"""
+        You are an expert grading assistant. Grade the student's answer against the context and rubric.
+
+        ### Input
+        Question: {{question}}
+        Student Answer: {{answer}}
+        Context/Correct Answer Key: {{context}}
+        Known Mistake Patterns (if any): {{knownMistakePatterns ?? "(none)"}}
+
+        ### Mandatory Output Format
+        Return a SINGLE JSON object with the following structure:
+        {
+          "score": 0-100,
+          "feedback": "Concise feedback with actionable guidance",
+          "detectedMistakes": ["MistakeCategory1", "MistakeCategory2"],
+          "confidenceEstimate": 0.0-1.0
+        }
+
+        ### Rules
+        1. NO conversational filler. DO NOT wrap the JSON output in markdown code blocks.
+        2. Ensure valid JSON syntax.
+        3. Use LaTeX for math expressions ($...$). Use Markdown for emphasis where helpful.
+        """;
+    }
 }

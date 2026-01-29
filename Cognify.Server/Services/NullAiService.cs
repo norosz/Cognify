@@ -40,7 +40,7 @@ public class NullAiService : IAiService
             100,
             "AI grading disabled.",
             DetectedMistakes: null,
-            ConfidenceEstimate: null,
+            ConfidenceEstimate: 0,
             RawAnalysis: null));
     }
 }
