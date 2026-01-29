@@ -100,10 +100,12 @@ export class QuizGenerationComponent {
 
   save() {
     this.loading.set(true);
+    const difficultyLabel = this.getDifficultyLabel(this.difficulty);
     const dto = {
       noteId: this.data.noteId,
       title: 'Generated Quiz',
-      questions: this.questions()
+      questions: this.questions(),
+      difficulty: difficultyLabel
     };
 
     this.quizService.createQuestionSet(dto).subscribe({
@@ -119,5 +121,14 @@ export class QuizGenerationComponent {
 
   close() {
     this.dialogRef.close();
+  }
+
+  private getDifficultyLabel(value: number): string {
+    return value switch
+    {
+      1 => 'Beginner',
+      3 => 'Advanced',
+      _ => 'Intermediate'
+    };
   }
 }

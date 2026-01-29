@@ -1,4 +1,4 @@
-import { ApplicationConfig, provideZoneChangeDetection, inject, provideAppInitializer } from '@angular/core';
+import { ApplicationConfig, provideZoneChangeDetection, inject, provideAppInitializer, importProvidersFrom } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
@@ -8,6 +8,7 @@ import { catchError } from 'rxjs/operators';
 import { routes } from './app.routes';
 import { authInterceptor } from './core/auth/auth.interceptor';
 import { AuthService } from './core/auth/auth.service';
+import { NgxEchartsModule } from 'ngx-echarts';
 
 function initializeApp(): Promise<void> | void {
   const authService = inject(AuthService);
@@ -38,6 +39,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),
     provideAnimationsAsync(),
-    provideAppInitializer(initializeApp)
+    provideAppInitializer(initializeApp),
+    importProvidersFrom(NgxEchartsModule.forRoot({ echarts: () => import('echarts') }))
   ]
 };
