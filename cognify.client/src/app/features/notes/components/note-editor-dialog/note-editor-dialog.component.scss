@@ -253,6 +253,54 @@ form {
     }
 }
 
+ .embedded-images {
+     margin-top: 16px;
+
+     h3 {
+         margin: 0 0 8px;
+         font-size: 14px;
+         color: var(--text-primary);
+     }
+
+     .image-list {
+         display: flex;
+         flex-direction: column;
+         gap: 8px;
+     }
+
+     .image-item {
+         display: flex;
+         align-items: center;
+         justify-content: space-between;
+         padding: 8px 10px;
+         border: 1px solid var(--border);
+         border-radius: 8px;
+         background: var(--bg-secondary);
+     }
+
+     .image-info {
+         display: inline-flex;
+         gap: 8px;
+         align-items: center;
+
+         mat-icon {
+             font-size: 18px;
+             width: 18px;
+             height: 18px;
+             color: var(--text-secondary);
+         }
+     }
+
+     .image-name {
+         font-size: 13px;
+         font-weight: 600;
+     }
+
+     .image-meta {
+         font-size: 12px;
+         color: var(--text-secondary);
+     }
+ }
 // Button alignment
 button {
     gap: 8px;

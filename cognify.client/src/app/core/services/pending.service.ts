@@ -14,6 +14,17 @@ export interface ExtractedContentDto {
     extractedAt: string;
     status: 'Processing' | 'Ready' | 'Error';
     errorMessage?: string;
+    images?: ExtractedImageMetadataDto[] | null;
+}
+
+export interface ExtractedImageMetadataDto {
+    id: string;
+    blobPath: string;
+    fileName: string;
+    pageNumber: number;
+    width?: number | null;
+    height?: number | null;
+    downloadUrl?: string | null;
 }
 
 export interface PendingQuizDto {

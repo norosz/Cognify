@@ -11,6 +11,24 @@
     <mat-label>Content</mat-label>
     <textarea matInput [(ngModel)]="text" rows="12"></textarea>
   </mat-form-field>
+
+  <div class="image-section" *ngIf="images().length">
+    <h3>Embedded Images</h3>
+    <div class="image-list">
+      <div class="image-item" *ngFor="let image of images()">
+        <div class="image-info">
+          <mat-icon>photo</mat-icon>
+          <div>
+            <div class="image-name">{{image.fileName}}</div>
+            <div class="image-meta">Page {{image.pageNumber}}</div>
+          </div>
+        </div>
+        <a *ngIf="image.downloadUrl" mat-button color="primary" [href]="image.downloadUrl" target="_blank">
+          Open
+        </a>
+      </div>
+    </div>
+  </div>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
