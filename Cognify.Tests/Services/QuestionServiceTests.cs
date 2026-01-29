@@ -10,14 +10,14 @@ using Xunit;
 
 namespace Cognify.Tests.Services;
 
-public class QuestionServiceTests : IDisposable
+public class QuizServiceTests : IDisposable
 {
     private readonly ApplicationDbContext _context;
     private readonly Mock<IUserContextService> _userContextMock;
-    private readonly QuestionService _questionService;
+    private readonly QuizService _quizService;
     private readonly Guid _userId;
 
-    public QuestionServiceTests()
+    public QuizServiceTests()
     {
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
@@ -29,11 +29,11 @@ public class QuestionServiceTests : IDisposable
 
         _userContextMock.Setup(uc => uc.GetCurrentUserId()).Returns(_userId);
 
-        _questionService = new QuestionService(_context, _userContextMock.Object);
+        _quizService = new QuizService(_context, _userContextMock.Object);
     }
 
     [Fact]
-    public async Task CreateAsync_ShouldCreateQuestionSet_WhenUserOwnsNote()
+    public async Task CreateAsync_ShouldCreateQuiz_WhenUserOwnsNote()
     {
         // Arrange
         var noteId = Guid.NewGuid();
@@ -44,17 +44,17 @@ public class QuestionServiceTests : IDisposable
         _context.Notes.Add(note);
         await _context.SaveChangesAsync();
 
-        var dto = new CreateQuestionSetDto 
+        var dto = new CreateQuizDto 
         { 
             NoteId = noteId,
             Questions = 
             [
-                new QuestionDto { Prompt = "Q1", Type = "MultipleChoice", Options = ["A", "B"], CorrectAnswer = "A", Explanation = "Exp" }
+                new QuizQuestionDto { Prompt = "Q1", Type = "MultipleChoice", Options = ["A", "B"], CorrectAnswer = "A", Explanation = "Exp" }
             ]
         };
 
         // Act
-        var result = await _questionService.CreateAsync(dto);
+        var result = await _quizService.CreateAsync(dto);
 
         // Assert
         result.Should().NotBeNull();
@@ -62,7 +62,7 @@ public class QuestionServiceTests : IDisposable
         result.Questions.Should().HaveCount(1);
         result.Questions[0].Prompt.Should().Be("Q1");
         
-        var saved = await _context.QuestionSets.Include(q => q.Questions).FirstOrDefaultAsync(q => q.Id == result.Id);
+        var saved = await _context.Quizzes.Include(q => q.Questions).FirstOrDefaultAsync(q => q.Id == result.Id);
         saved.Should().NotBeNull();
         saved!.Type.Should().Be(QuestionType.MultipleChoice);
         saved!.Questions.Should().HaveCount(1);
@@ -81,17 +81,17 @@ public class QuestionServiceTests : IDisposable
         _context.Notes.Add(note);
         await _context.SaveChangesAsync();
 
-        var dto = new CreateQuestionSetDto { NoteId = noteId };
+        var dto = new CreateQuizDto { NoteId = noteId };
 
         // Act
-        Func<Task> act = async () => await _questionService.CreateAsync(dto);
+        Func<Task> act = async () => await _quizService.CreateAsync(dto);
 
         // Assert
         await act.Should().ThrowAsync<UnauthorizedAccessException>();
     }
 
     [Fact]
-    public async Task GetByNoteIdAsync_ShouldReturnQuestionSets_WhenUserOwnsModule()
+    public async Task GetByNoteIdAsync_ShouldReturnQuizzes_WhenUserOwnsModule()
     {
         // Arrange
         var noteId = Guid.NewGuid();
@@ -101,14 +101,14 @@ public class QuestionServiceTests : IDisposable
         _context.Modules.Add(module);
         _context.Notes.Add(note);
         
-        var qs1 = new QuestionSet { NoteId = noteId, Title = "QS1", CreatedAt = DateTime.UtcNow.AddMinutes(-5) };
-        var qs2 = new QuestionSet { NoteId = noteId, Title = "QS2", CreatedAt = DateTime.UtcNow };
-        _context.QuestionSets.AddRange(qs1, qs2);
+        var qs1 = new Quiz { NoteId = noteId, Title = "QS1", CreatedAt = DateTime.UtcNow.AddMinutes(-5) };
+        var qs2 = new Quiz { NoteId = noteId, Title = "QS2", CreatedAt = DateTime.UtcNow };
+        _context.Quizzes.AddRange(qs1, qs2);
         
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _questionService.GetByNoteIdAsync(noteId);
+        var result = await _quizService.GetByNoteIdAsync(noteId);
 
         // Assert
         result.Should().HaveCount(2);
@@ -128,12 +128,12 @@ public class QuestionServiceTests : IDisposable
         _context.Modules.AddRange(module, otherModule);
         _context.Notes.AddRange(note, otherNote);
 
-        var qs1 = new QuestionSet { NoteId = noteId, Title = "QS1" };
-        var qs2 = new QuestionSet { NoteId = otherNote.Id, Title = "QS2" };
-        _context.QuestionSets.AddRange(qs1, qs2);
+        var qs1 = new Quiz { NoteId = noteId, Title = "QS1" };
+        var qs2 = new Quiz { NoteId = otherNote.Id, Title = "QS2" };
+        _context.Quizzes.AddRange(qs1, qs2);
         await _context.SaveChangesAsync();
 
-        var result = await _questionService.GetByNoteIdAsync(noteId);
+        var result = await _quizService.GetByNoteIdAsync(noteId);
 
         result.Should().HaveCount(1);
         result[0].Title.Should().Be("QS1");
@@ -145,32 +145,32 @@ public class QuestionServiceTests : IDisposable
         var noteId = Guid.NewGuid();
         var module = new Module { Id = Guid.NewGuid(), OwnerUserId = Guid.NewGuid(), Title = "Other Module" };
         var note = new Note { Id = noteId, ModuleId = module.Id, Title = "Note", Content = "Content" };
-        var qs = new QuestionSet { NoteId = noteId, Title = "QS" };
+        var qs = new Quiz { NoteId = noteId, Title = "QS" };
 
         _context.Modules.Add(module);
         _context.Notes.Add(note);
-        _context.QuestionSets.Add(qs);
+        _context.Quizzes.Add(qs);
         await _context.SaveChangesAsync();
 
-        var result = await _questionService.GetByIdAsync(qs.Id);
+        var result = await _quizService.GetByIdAsync(qs.Id);
 
         result.Should().BeNull();
     }
 
     [Fact]
-    public async Task GetByIdAsync_ShouldReturnQuestionSet_WhenOwned()
+    public async Task GetByIdAsync_ShouldReturnQuiz_WhenOwned()
     {
         var noteId = Guid.NewGuid();
         var module = new Module { Id = Guid.NewGuid(), OwnerUserId = _userId, Title = "Test Module" };
         var note = new Note { Id = noteId, ModuleId = module.Id, Title = "Note", Content = "Content" };
-        var qs = new QuestionSet { NoteId = noteId, Title = "QS" };
+        var qs = new Quiz { NoteId = noteId, Title = "QS" };
 
         _context.Modules.Add(module);
         _context.Notes.Add(note);
-        _context.QuestionSets.Add(qs);
+        _context.Quizzes.Add(qs);
         await _context.SaveChangesAsync();
 
-        var result = await _questionService.GetByIdAsync(qs.Id);
+        var result = await _quizService.GetByIdAsync(qs.Id);
 
         result.Should().NotBeNull();
         result!.Id.Should().Be(qs.Id);
@@ -183,19 +183,19 @@ public class QuestionServiceTests : IDisposable
         var noteId = Guid.NewGuid();
         var module = new Module { Id = Guid.NewGuid(), OwnerUserId = _userId, Title = "Test Module" };
         var note = new Note { Id = noteId, ModuleId = module.Id, Title = "Note", Content = "Content" };
-        var qs = new QuestionSet { NoteId = noteId, Title = "QS" };
+        var qs = new Quiz { NoteId = noteId, Title = "QS" };
         
         _context.Modules.Add(module);
         _context.Notes.Add(note);
-        _context.QuestionSets.Add(qs);
+        _context.Quizzes.Add(qs);
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _questionService.DeleteAsync(qs.Id);
+        var result = await _quizService.DeleteAsync(qs.Id);
 
         // Assert
         result.Should().BeTrue();
-        var deleted = await _context.QuestionSets.FindAsync(qs.Id);
+        var deleted = await _context.Quizzes.FindAsync(qs.Id);
         deleted.Should().BeNull();
     }
     
@@ -207,19 +207,19 @@ public class QuestionServiceTests : IDisposable
         var noteId = Guid.NewGuid();
         var module = new Module { Id = Guid.NewGuid(), OwnerUserId = otherUserId, Title = "Other Module" };
         var note = new Note { Id = noteId, ModuleId = module.Id, Title = "Note", Content = "Content" };
-        var qs = new QuestionSet { NoteId = noteId, Title = "QS" };
+        var qs = new Quiz { NoteId = noteId, Title = "QS" };
         
         _context.Modules.Add(module);
         _context.Notes.Add(note);
-        _context.QuestionSets.Add(qs);
+        _context.Quizzes.Add(qs);
         await _context.SaveChangesAsync();
 
         // Act
-        var result = await _questionService.DeleteAsync(qs.Id);
+        var result = await _quizService.DeleteAsync(qs.Id);
 
         // Assert
         result.Should().BeFalse();
-        var exists = await _context.QuestionSets.FindAsync(qs.Id);
+        var exists = await _context.Quizzes.FindAsync(qs.Id);
         exists.Should().NotBeNull();
     }
 

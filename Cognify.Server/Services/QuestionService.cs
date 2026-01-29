@@ -7,9 +7,9 @@ using System.Text.Json;
 
 namespace Cognify.Server.Services;
 
-public class QuestionService(ApplicationDbContext context, IUserContextService userContext) : IQuestionService
+public class QuizService(ApplicationDbContext context, IUserContextService userContext) : IQuizService
 {
-    public async Task<QuestionSetDto> CreateAsync(CreateQuestionSetDto dto)
+    public async Task<QuizDto> CreateAsync(CreateQuizDto dto)
     {
         var userId = userContext.GetCurrentUserId();
         
@@ -20,7 +20,7 @@ public class QuestionService(ApplicationDbContext context, IUserContextService u
              throw new UnauthorizedAccessException("User does not own the note.");
         }
 
-        var questionSet = new QuestionSet
+        var quiz = new Quiz
         {
             NoteId = dto.NoteId,
             Title = dto.Title,
@@ -30,9 +30,9 @@ public class QuestionService(ApplicationDbContext context, IUserContextService u
             CreatedAt = DateTime.UtcNow
         };
 
-        var questions = dto.Questions.Select(q => new Question
+        var questions = dto.Questions.Select(q => new QuizQuestion
         {
-            QuestionSetId = questionSet.Id,
+            QuizId = quiz.Id,
             Prompt = q.Prompt,
             Type = Enum.TryParse<QuestionType>(q.Type, true, out var t) ? t : QuestionType.MultipleChoice,
             OptionsJson = JsonSerializer.Serialize(q.Options),
@@ -40,46 +40,46 @@ public class QuestionService(ApplicationDbContext context, IUserContextService u
             Explanation = q.Explanation
         }).ToList();
 
-        questionSet.Questions = questions;
+        quiz.Questions = questions;
 
-        context.QuestionSets.Add(questionSet);
+        context.Quizzes.Add(quiz);
         await context.SaveChangesAsync();
 
-        return MapToDto(questionSet);
+        return MapToDto(quiz);
     }
 
-    public async Task<QuestionSetDto?> GetByIdAsync(Guid id)
+    public async Task<QuizDto?> GetByIdAsync(Guid id)
     {
         var userId = userContext.GetCurrentUserId();
         
-        var qs = await context.QuestionSets
+        var quiz = await context.Quizzes
             .AsNoTracking()
-            .Include(qs => qs.Questions)
-            .Include(qs => qs.Note)
+            .Include(q => q.Questions)
+            .Include(q => q.Note)
             .ThenInclude(n => n!.Module)
-            .FirstOrDefaultAsync(qs => qs.Id == id);
+            .FirstOrDefaultAsync(q => q.Id == id);
             
-        if (qs == null || qs.Note == null || qs.Note.Module == null || qs.Note.Module.OwnerUserId != userId)
+        if (quiz == null || quiz.Note == null || quiz.Note.Module == null || quiz.Note.Module.OwnerUserId != userId)
             return null;
 
-        return MapToDto(qs);
+        return MapToDto(quiz);
     }
 
-    public async Task<List<QuestionSetDto>> GetByNoteIdAsync(Guid noteId)
+    public async Task<List<QuizDto>> GetByNoteIdAsync(Guid noteId)
     {
          var userId = userContext.GetCurrentUserId();
          
-         var list = await context.QuestionSets
+         var list = await context.Quizzes
             .AsNoTracking()
-            .Include(qs => qs.Questions)
-            .Include(qs => qs.Note)
+            .Include(q => q.Questions)
+            .Include(q => q.Note)
             .ThenInclude(n => n!.Module)
-            .Where(qs => qs.NoteId == noteId)
-            .OrderByDescending(qs => qs.CreatedAt)
+            .Where(q => q.NoteId == noteId)
+            .OrderByDescending(q => q.CreatedAt)
             .ToListAsync();
             
          // Filter by ownership
-         return list.Where(qs => qs.Note?.Module?.OwnerUserId == userId)
+         return list.Where(q => q.Note?.Module?.OwnerUserId == userId)
                     .Select(MapToDto)
                     .ToList();
     }
@@ -87,31 +87,31 @@ public class QuestionService(ApplicationDbContext context, IUserContextService u
     public async Task<bool> DeleteAsync(Guid id)
     {
         var userId = userContext.GetCurrentUserId();
-         var qs = await context.QuestionSets
-            .Include(qs => qs.Note)
+         var quiz = await context.Quizzes
+            .Include(q => q.Note)
             .ThenInclude(n => n!.Module)
-            .FirstOrDefaultAsync(qs => qs.Id == id);
+            .FirstOrDefaultAsync(q => q.Id == id);
             
-        if (qs == null || qs.Note?.Module?.OwnerUserId != userId)
+        if (quiz == null || quiz.Note?.Module?.OwnerUserId != userId)
             return false;
             
-        context.QuestionSets.Remove(qs);
+        context.Quizzes.Remove(quiz);
         await context.SaveChangesAsync();
         return true;
     }
 
-    private static QuestionSetDto MapToDto(QuestionSet qs)
+    private static QuizDto MapToDto(Quiz quiz)
     {
-        return new QuestionSetDto
+        return new QuizDto
         {
-            Id = qs.Id,
-            NoteId = qs.NoteId,
-            Title = qs.Title,
-            Type = qs.Type.ToString(),
-            Difficulty = qs.Difficulty.ToString(),
-            QuizRubric = qs.RubricJson,
-            CreatedAt = qs.CreatedAt,
-            Questions = qs.Questions?.Select(q => new QuestionDto
+            Id = quiz.Id,
+            NoteId = quiz.NoteId,
+            Title = quiz.Title,
+            Type = quiz.Type.ToString(),
+            Difficulty = quiz.Difficulty.ToString(),
+            QuizRubric = quiz.RubricJson,
+            CreatedAt = quiz.CreatedAt,
+            Questions = quiz.Questions?.Select(q => new QuizQuestionDto
             {
                 Id = q.Id,
                 Prompt = q.Prompt,

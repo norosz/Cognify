@@ -18,7 +18,7 @@ public class AttemptsControllerTests
 
         var result = await controller.SubmitAttempt(Guid.NewGuid(), new SubmitAttemptDto
         {
-            QuestionSetId = Guid.NewGuid()
+            QuizId = Guid.NewGuid()
         });
 
         result.Should().BeOfType<BadRequestObjectResult>();
@@ -28,14 +28,14 @@ public class AttemptsControllerTests
     public async Task SubmitAttempt_ReturnsOk_OnSuccess()
     {
         var attemptService = new Mock<IAttemptService>();
-        var questionSetId = Guid.NewGuid();
-        var dto = new SubmitAttemptDto { QuestionSetId = questionSetId };
-        var expected = new AttemptDto { Id = Guid.NewGuid(), QuestionSetId = questionSetId, UserId = Guid.NewGuid(), Score = 100 };
+        var quizId = Guid.NewGuid();
+        var dto = new SubmitAttemptDto { QuizId = quizId };
+        var expected = new AttemptDto { Id = Guid.NewGuid(), QuizId = quizId, UserId = Guid.NewGuid(), Score = 100 };
 
         attemptService.Setup(s => s.SubmitAttemptAsync(dto)).ReturnsAsync(expected);
         var controller = new AttemptsController(attemptService.Object);
 
-        var result = await controller.SubmitAttempt(questionSetId, dto);
+        var result = await controller.SubmitAttempt(quizId, dto);
 
         var ok = result.Should().BeOfType<OkObjectResult>().Subject;
         ok.Value.Should().BeEquivalentTo(expected);
@@ -45,13 +45,13 @@ public class AttemptsControllerTests
     public async Task SubmitAttempt_ReturnsNotFound_WhenMissing()
     {
         var attemptService = new Mock<IAttemptService>();
-        var questionSetId = Guid.NewGuid();
-        var dto = new SubmitAttemptDto { QuestionSetId = questionSetId };
+        var quizId = Guid.NewGuid();
+        var dto = new SubmitAttemptDto { QuizId = quizId };
 
         attemptService.Setup(s => s.SubmitAttemptAsync(dto)).ThrowsAsync(new KeyNotFoundException());
         var controller = new AttemptsController(attemptService.Object);
 
-        var result = await controller.SubmitAttempt(questionSetId, dto);
+        var result = await controller.SubmitAttempt(quizId, dto);
 
         result.Should().BeOfType<NotFoundObjectResult>();
     }
@@ -60,16 +60,16 @@ public class AttemptsControllerTests
     public async Task GetMyAttempts_ReturnsOk()
     {
         var attemptService = new Mock<IAttemptService>();
-        var questionSetId = Guid.NewGuid();
+        var quizId = Guid.NewGuid();
         var attempts = new List<AttemptDto>
         {
-            new AttemptDto { Id = Guid.NewGuid(), QuestionSetId = questionSetId, UserId = Guid.NewGuid(), Score = 80 }
+            new AttemptDto { Id = Guid.NewGuid(), QuizId = quizId, UserId = Guid.NewGuid(), Score = 80 }
         };
 
-        attemptService.Setup(s => s.GetAttemptsAsync(questionSetId)).ReturnsAsync(attempts);
+        attemptService.Setup(s => s.GetAttemptsAsync(quizId)).ReturnsAsync(attempts);
         var controller = new AttemptsController(attemptService.Object);
 
-        var result = await controller.GetMyAttempts(questionSetId);
+        var result = await controller.GetMyAttempts(quizId);
 
         var ok = result.Should().BeOfType<OkObjectResult>().Subject;
         ok.Value.Should().BeEquivalentTo(attempts);

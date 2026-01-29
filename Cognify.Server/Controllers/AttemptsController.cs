@@ -7,13 +7,13 @@ namespace Cognify.Server.Controllers;
 
 [Authorize]
 [ApiController]
-[Route("api/question-sets/{questionSetId}/attempts")]
+[Route("api/quizzes/{quizId}/attempts")]
 public class AttemptsController(IAttemptService attemptService) : ControllerBase
 {
     [HttpPost]
-    public async Task<IActionResult> SubmitAttempt(Guid questionSetId, [FromBody] SubmitAttemptDto dto)
+    public async Task<IActionResult> SubmitAttempt(Guid quizId, [FromBody] SubmitAttemptDto dto)
     {
-        if (questionSetId != dto.QuestionSetId)
+        if (quizId != dto.QuizId)
             return BadRequest("ID mismatch");
 
         try
@@ -23,14 +23,14 @@ public class AttemptsController(IAttemptService attemptService) : ControllerBase
         }
         catch (KeyNotFoundException)
         {
-            return NotFound("Question set not found");
+            return NotFound("Quiz not found");
         }
     }
 
     [HttpGet("me")]
-    public async Task<IActionResult> GetMyAttempts(Guid questionSetId)
+    public async Task<IActionResult> GetMyAttempts(Guid quizId)
     {
-        var attempts = await attemptService.GetAttemptsAsync(questionSetId);
+        var attempts = await attemptService.GetAttemptsAsync(quizId);
         return Ok(attempts);
     }
 }

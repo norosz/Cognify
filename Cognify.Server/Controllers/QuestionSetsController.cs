@@ -7,15 +7,15 @@ namespace Cognify.Server.Controllers;
 
 [Authorize]
 [ApiController]
-[Route("api/question-sets")]
-public class QuestionSetsController(IQuestionService questionService) : ControllerBase
+[Route("api/quizzes")]
+public class QuizzesController(IQuizService quizService) : ControllerBase
 {
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateQuestionSetDto dto)
+    public async Task<IActionResult> Create([FromBody] CreateQuizDto dto)
     {
         try
         {
-            var result = await questionService.CreateAsync(dto);
+            var result = await quizService.CreateAsync(dto);
             return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
         }
         catch (UnauthorizedAccessException)
@@ -27,7 +27,7 @@ public class QuestionSetsController(IQuestionService questionService) : Controll
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var result = await questionService.GetByIdAsync(id);
+        var result = await quizService.GetByIdAsync(id);
         if (result == null)
             return NotFound();
 
@@ -38,14 +38,14 @@ public class QuestionSetsController(IQuestionService questionService) : Controll
     public async Task<IActionResult> GetByNote([FromQuery] Guid noteId)
     {
         // Require noteId?
-        var results = await questionService.GetByNoteIdAsync(noteId);
+        var results = await quizService.GetByNoteIdAsync(noteId);
         return Ok(results);
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var success = await questionService.DeleteAsync(id);
+        var success = await quizService.DeleteAsync(id);
         if (!success)
             return NotFound(); // Or Forbidden, but service returns boolean
             

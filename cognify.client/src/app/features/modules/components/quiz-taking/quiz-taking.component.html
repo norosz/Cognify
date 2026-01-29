@@ -1,4 +1,4 @@
-<div *ngIf="!questionSet() && !error()">
+<div *ngIf="!quiz() && !error()">
     <p>Loading quiz...</p>
 </div>
 
@@ -7,7 +7,7 @@
     <button mat-button (click)="close()">Close</button>
 </div>
 
-<ng-container *ngIf="questionSet() as qs">
+<ng-container *ngIf="quiz() as qs">
     <h2 mat-dialog-title class="accent-text dialog-header-flush">
         <mat-icon class="header-icon">{{ getQuizTypeInfo(qs.type).icon }}</mat-icon>
         <span class="title-text">{{qs.title || 'Quiz'}}</span>

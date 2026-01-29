@@ -123,7 +123,7 @@ describe('PendingComponent', () => {
     describe('saveQuiz', () => {
         it('should call pendingService.saveQuiz and show success notification', fakeAsync(() => {
             const quiz = mockQuizzes[0];
-            pendingServiceSpy.saveQuiz.and.returnValue(of({ questionSetId: 'qs-1' }));
+            pendingServiceSpy.saveQuiz.and.returnValue(of({ quizId: 'qs-1' }));
 
             component.saveQuiz(quiz);
             tick();

@@ -267,8 +267,8 @@ public class PendingControllerTests
     [Fact]
     public async Task SavePendingQuiz_ShouldReturnOk_WhenSaved()
     {
-        var questionSet = new QuestionSet { Id = Guid.NewGuid(), NoteId = Guid.NewGuid(), Title = "Quiz" };
-        _pendingQuizServiceMock.Setup(s => s.SaveAsQuizAsync(It.IsAny<Guid>(), _userId)).ReturnsAsync(questionSet);
+        var quiz = new Quiz { Id = Guid.NewGuid(), NoteId = Guid.NewGuid(), Title = "Quiz" };
+        _pendingQuizServiceMock.Setup(s => s.SaveAsQuizAsync(It.IsAny<Guid>(), _userId)).ReturnsAsync(quiz);
 
         var controller = CreateController();
         var result = await controller.SavePendingQuiz(Guid.NewGuid());

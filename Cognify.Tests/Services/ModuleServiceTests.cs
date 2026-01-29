@@ -36,12 +36,12 @@ public class ModuleServiceTests : IDisposable
     {
         var module = new Module { Id = Guid.NewGuid(), OwnerUserId = _userId, Title = "Module" };
         var note = new Note { Id = Guid.NewGuid(), ModuleId = module.Id, Title = "Note" };
-        var questionSet = new QuestionSet { Id = Guid.NewGuid(), NoteId = note.Id, Title = "Quiz" };
+        var quiz = new Quiz { Id = Guid.NewGuid(), NoteId = note.Id, Title = "Quiz" };
         var document = new Document { Id = Guid.NewGuid(), ModuleId = module.Id, FileName = "doc.pdf", BlobPath = "blob" };
 
         _context.Modules.Add(module);
         _context.Notes.Add(note);
-        _context.QuestionSets.Add(questionSet);
+        _context.Quizzes.Add(quiz);
         _context.Documents.Add(document);
         await _context.SaveChangesAsync();
 
@@ -70,12 +70,12 @@ public class ModuleServiceTests : IDisposable
     {
         var module = new Module { Id = Guid.NewGuid(), OwnerUserId = _userId, Title = "Module" };
         var note = new Note { Id = Guid.NewGuid(), ModuleId = module.Id, Title = "Note" };
-        var questionSet = new QuestionSet { Id = Guid.NewGuid(), NoteId = note.Id, Title = "Quiz" };
+        var quiz = new Quiz { Id = Guid.NewGuid(), NoteId = note.Id, Title = "Quiz" };
         var document = new Document { Id = Guid.NewGuid(), ModuleId = module.Id, FileName = "doc.pdf", BlobPath = "blob" };
 
         _context.Modules.Add(module);
         _context.Notes.Add(note);
-        _context.QuestionSets.Add(questionSet);
+        _context.Quizzes.Add(quiz);
         _context.Documents.Add(document);
         await _context.SaveChangesAsync();
 

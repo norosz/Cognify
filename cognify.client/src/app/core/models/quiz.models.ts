@@ -1,4 +1,4 @@
-export interface QuestionDto {
+export interface QuizQuestionDto {
     id?: string;
     prompt: string;
     type: 'MultipleChoice' | 'TrueFalse' | 'OpenText' | 'Matching' | 'Ordering' | 'MultipleSelect'; // 'Mixed' used in generation only
@@ -8,27 +8,27 @@ export interface QuestionDto {
     explanation?: string;
 }
 
-export interface QuestionSetDto {
+export interface QuizDto {
     id: string;
     noteId: string;
     title: string;
-    questions: QuestionDto[];
+    questions: QuizQuestionDto[];
     type: string;
     difficulty?: string;
     quizRubric?: string | null;
     createdAt: string;
 }
 
-export interface CreateQuestionSetDto {
+export interface CreateQuizDto {
     noteId: string;
     title: string;
-    questions: QuestionDto[];
+    questions: QuizQuestionDto[];
     difficulty?: string;
     quizRubric?: string | null;
 }
 
 export interface SubmitAttemptDto {
-    questionSetId: string;
+    quizId: string;
     answers: { [key: string]: string }; // questionId (index/guid) -> answer
     timeSpentSeconds?: number;
     difficulty?: string;
@@ -36,7 +36,7 @@ export interface SubmitAttemptDto {
 
 export interface AttemptDto {
     id: string;
-    questionSetId: string;
+    quizId: string;
     userId: string;
     score: number;
     answers: { [key: string]: string };

@@ -149,7 +149,7 @@ public class PendingQuizServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task SaveAsQuizAsync_ShouldCreateQuestionSet_And_DeletePendingQuiz()
+    public async Task SaveAsQuizAsync_ShouldCreateQuiz_And_DeletePendingQuiz()
     {
         // Arrange
         var noteId = Guid.NewGuid();
@@ -187,7 +187,7 @@ public class PendingQuizServiceTests : IDisposable
         result.Title.Should().Be("Saved Quiz");
         result.NoteId.Should().Be(noteId);
 
-        var dbQs = await _context.QuestionSets.Include(q => q.Questions).FirstOrDefaultAsync(q => q.Id == result.Id);
+        var dbQs = await _context.Quizzes.Include(q => q.Questions).FirstOrDefaultAsync(q => q.Id == result.Id);
         dbQs.Should().NotBeNull();
         dbQs!.Type.Should().Be(QuestionType.MultipleChoice);
         dbQs!.Questions.Should().HaveCount(1);
@@ -233,7 +233,7 @@ public class PendingQuizServiceTests : IDisposable
 
         var result = await _service.SaveAsQuizAsync(pendingId, _userId);
 
-        var dbQs = await _context.QuestionSets.FirstOrDefaultAsync(q => q.Id == result.Id);
+        var dbQs = await _context.Quizzes.FirstOrDefaultAsync(q => q.Id == result.Id);
         dbQs.Should().NotBeNull();
         dbQs!.RubricJson.Should().Be(rubric);
     }
@@ -347,7 +347,7 @@ public class PendingQuizServiceTests : IDisposable
 
         var result = await _service.SaveAsQuizAsync(pendingId, _userId);
 
-        var dbQuestion = await _context.Questions.FirstOrDefaultAsync(q => q.QuestionSetId == result.Id);
+        var dbQuestion = await _context.QuizQuestions.FirstOrDefaultAsync(q => q.QuizId == result.Id);
         dbQuestion.Should().NotBeNull();
         dbQuestion!.CorrectAnswerJson.Should().Be("\"A|B\"");
     }

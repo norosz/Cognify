@@ -22,6 +22,6 @@ public class Note
 
     // Navigation properties
     public Module? Module { get; set; }
-    public ICollection<QuestionSet> QuestionSets { get; set; } = [];
+    public ICollection<Quiz> Quizzes { get; set; } = [];
     public Material? SourceMaterial { get; set; }
 }

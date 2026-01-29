@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { CreateQuestionSetDto, QuestionSetDto, AttemptDto, SubmitAttemptDto } from '../../../core/models/quiz.models';
+import { CreateQuizDto, QuizDto, AttemptDto, SubmitAttemptDto } from '../../../core/models/quiz.models';
 
 @Injectable({
     providedIn: 'root'
@@ -11,27 +11,27 @@ export class QuizService {
 
     constructor(private http: HttpClient) { }
 
-    createQuestionSet(dto: CreateQuestionSetDto): Observable<QuestionSetDto> {
-        return this.http.post<QuestionSetDto>(`${this.apiUrl}/question-sets`, dto);
+    createQuiz(dto: CreateQuizDto): Observable<QuizDto> {
+        return this.http.post<QuizDto>(`${this.apiUrl}/quizzes`, dto);
     }
 
-    getQuestionSet(id: string): Observable<QuestionSetDto> {
-        return this.http.get<QuestionSetDto>(`${this.apiUrl}/question-sets/${id}`);
+    getQuiz(id: string): Observable<QuizDto> {
+        return this.http.get<QuizDto>(`${this.apiUrl}/quizzes/${id}`);
     }
 
-    getQuestionSetsByNote(noteId: string): Observable<QuestionSetDto[]> {
-        return this.http.get<QuestionSetDto[]>(`${this.apiUrl}/question-sets?noteId=${noteId}`);
+    getQuizzesByNote(noteId: string): Observable<QuizDto[]> {
+        return this.http.get<QuizDto[]>(`${this.apiUrl}/quizzes?noteId=${noteId}`);
     }
 
-    deleteQuestionSet(id: string): Observable<void> {
-        return this.http.delete<void>(`${this.apiUrl}/question-sets/${id}`);
+    deleteQuiz(id: string): Observable<void> {
+        return this.http.delete<void>(`${this.apiUrl}/quizzes/${id}`);
     }
 
     submitAttempt(dto: SubmitAttemptDto): Observable<AttemptDto> {
-        return this.http.post<AttemptDto>(`${this.apiUrl}/question-sets/${dto.questionSetId}/attempts`, dto);
+        return this.http.post<AttemptDto>(`${this.apiUrl}/quizzes/${dto.quizId}/attempts`, dto);
     }
 
-    getAttempts(questionSetId: string): Observable<AttemptDto[]> {
-        return this.http.get<AttemptDto[]>(`${this.apiUrl}/question-sets/${questionSetId}/attempts/me`);
+    getAttempts(quizId: string): Observable<AttemptDto[]> {
+        return this.http.get<AttemptDto[]>(`${this.apiUrl}/quizzes/${quizId}/attempts/me`);
     }
 }

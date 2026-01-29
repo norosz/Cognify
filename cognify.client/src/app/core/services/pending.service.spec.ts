@@ -96,12 +96,12 @@ describe('PendingService', () => {
     describe('saveQuiz', () => {
         it('should POST to save quiz', () => {
             service.saveQuiz('quiz-123').subscribe(result => {
-                expect(result.questionSetId).toBe('qs-456');
+                expect(result.quizId).toBe('qs-456');
             });
 
             const req = httpMock.expectOne('/api/pending/quizzes/quiz-123/save');
             expect(req.request.method).toBe('POST');
-            req.flush({ questionSetId: 'qs-456' });
+            req.flush({ quizId: 'qs-456' });
         });
     });
 

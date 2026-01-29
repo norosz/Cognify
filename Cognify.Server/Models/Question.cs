@@ -2,11 +2,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Cognify.Server.Models;
 
-public class Question
+public class QuizQuestion
 {
     public Guid Id { get; set; } = Guid.NewGuid();
 
-    public Guid QuestionSetId { get; set; }
+    public Guid QuizId { get; set; }
 
     public QuestionType Type { get; set; }
 
@@ -22,7 +22,7 @@ public class Question
     public string? Explanation { get; set; }
 
     // Navigation properties
-    public QuestionSet? QuestionSet { get; set; }
+    public Quiz? Quiz { get; set; }
 }
 
 public enum QuestionType

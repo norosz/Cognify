@@ -214,15 +214,15 @@ public class PendingController(
     }
 
     /// <summary>
-    /// Save pending quiz as a real QuestionSet.
+    /// Save pending quiz as a real Quiz.
     /// </summary>
     [HttpPost("quizzes/{id}/save")]
     public async Task<ActionResult> SavePendingQuiz(Guid id)
     {
         try
         {
-            var questionSet = await pendingQuizService.SaveAsQuizAsync(id, GetUserId());
-            return Ok(new { questionSetId = questionSet.Id });
+            var quiz = await pendingQuizService.SaveAsQuizAsync(id, GetUserId());
+            return Ok(new { quizId = quiz.Id });
         }
         catch (InvalidOperationException ex)
         {

@@ -4,7 +4,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { QuizService } from '../../services/quiz.service';
 import { of } from 'rxjs';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { QuestionSetDto } from '../../../../core/models/quiz.models';
+import { QuizDto } from '../../../../core/models/quiz.models';
 
 describe('QuizTakingComponent', () => {
   let component: QuizTakingComponent;
@@ -12,7 +12,7 @@ describe('QuizTakingComponent', () => {
   let mockDialogRef: jasmine.SpyObj<MatDialogRef<QuizTakingComponent>>;
   let mockQuizService: jasmine.SpyObj<QuizService>;
 
-  const mockQuestionSet: QuestionSetDto = {
+  const mockQuiz: QuizDto = {
     id: 'qs-1',
     noteId: 'note-1',
     title: 'Test Quiz',
@@ -29,7 +29,7 @@ describe('QuizTakingComponent', () => {
       imports: [QuizTakingComponent, NoopAnimationsModule],
       providers: [
         { provide: MatDialogRef, useValue: mockDialogRef },
-        { provide: MAT_DIALOG_DATA, useValue: { questionSet: mockQuestionSet } },
+        { provide: MAT_DIALOG_DATA, useValue: { quiz: mockQuiz } },
         { provide: QuizService, useValue: mockQuizService }
       ]
     }).compileComponents();
@@ -41,13 +41,13 @@ describe('QuizTakingComponent', () => {
 
   it('should create and init with data', () => {
     expect(component).toBeTruthy();
-    expect(component.questionSet()).toEqual(mockQuestionSet);
+    expect(component.quiz()).toEqual(mockQuiz);
   });
 
   it('should submit attempt', () => {
     component.answers['q1'] = 'A';
     mockQuizService.submitAttempt.and.returnValue(of({
-      id: 'att-1', questionSetId: 'qs-1', userId: 'u1', score: 100, answers: { 'q1': 'A' }, createdAt: ''
+      id: 'att-1', quizId: 'qs-1', userId: 'u1', score: 100, answers: { 'q1': 'A' }, createdAt: ''
     }));
 
     component.submit();

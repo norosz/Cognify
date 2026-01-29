@@ -5,6 +5,72 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-29 19:40  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Renamed QuestionSet/Question domain to Quiz/QuizQuestion across backend and frontend
+- Updated API routes, DTOs, services, and tests to use quiz naming and quizId fields
+- Added migration to rename tables/columns and updated model snapshot
+
+**CHANGED FILES**
+- Cognify.Server/Models/QuestionSet.cs
+- Cognify.Server/Models/Question.cs
+- Cognify.Server/Models/Attempt.cs
+- Cognify.Server/Models/Note.cs
+- Cognify.Server/Data/ApplicationDbContext.cs
+- Cognify.Server/Dtos/QuestionDTOs.cs
+- Cognify.Server/Dtos/AttemptDTOs.cs
+- Cognify.Server/Services/Interfaces/IQuestionService.cs
+- Cognify.Server/Services/Interfaces/IAttemptService.cs
+- Cognify.Server/Services/Interfaces/IKnowledgeStateService.cs
+- Cognify.Server/Services/Interfaces/IPendingQuizService.cs
+- Cognify.Server/Services/QuestionService.cs
+- Cognify.Server/Services/PendingQuizService.cs
+- Cognify.Server/Services/AttemptService.cs
+- Cognify.Server/Services/KnowledgeStateService.cs
+- Cognify.Server/Services/ModuleService.cs
+- Cognify.Server/Controllers/QuestionSetsController.cs
+- Cognify.Server/Controllers/AttemptsController.cs
+- Cognify.Server/Controllers/PendingController.cs
+- Cognify.Server/Program.cs
+- Cognify.Server/Migrations/ApplicationDbContextModelSnapshot.cs
+- Cognify.Server/Migrations/20260129190000_RenameQuestionSetToQuiz.cs
+- Cognify.Tests/Services/QuestionServiceTests.cs
+- Cognify.Tests/Services/PendingQuizServiceTests.cs
+- Cognify.Tests/Services/KnowledgeStateServiceTests.cs
+- Cognify.Tests/Services/AttemptServiceTests.cs
+- Cognify.Tests/Services/ModuleServiceTests.cs
+- Cognify.Tests/Services/LearningAnalyticsServiceTests.cs
+- Cognify.Tests/Controllers/AttemptsControllerTests.cs
+- Cognify.Tests/Controllers/QuestionSetsControllerTests.cs
+- Cognify.Tests/Controllers/PendingControllerTests.cs
+- cognify.client/src/app/core/models/quiz.models.ts
+- cognify.client/src/app/features/modules/services/quiz.service.ts
+- cognify.client/src/app/features/modules/components/quiz-taking/quiz-taking.component.ts
+- cognify.client/src/app/features/modules/components/quiz-taking/quiz-taking.component.html
+- cognify.client/src/app/features/modules/components/quiz-list/quiz-list.component.ts
+- cognify.client/src/app/features/modules/components/quiz-generation/quiz-generation.component.ts
+- cognify.client/src/app/core/services/pending.service.ts
+- cognify.client/src/app/core/services/pending.service.spec.ts
+- cognify.client/src/app/features/pending/pending.component.spec.ts
+- cognify.client/src/app/features/modules/components/quiz-taking/quiz-taking.component.spec.ts
+- cognify.client/src/app/features/modules/components/quiz-generation/quiz-generation.component.spec.ts
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Use a rename migration to preserve existing quiz data while updating schema names.
+
+**NEXT**
+- Run backend and frontend tests to validate the rename.
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
 **Timestamp:** 2026-01-29 18:19  
 **Author:** GitHub Copilot  
 

@@ -55,8 +55,8 @@ public class LearningAnalyticsServiceTests : IDisposable
             });
 
         _context.Attempts.AddRange(
-            new Attempt { UserId = _userId, QuestionSetId = Guid.NewGuid(), AnswersJson = "{}", Score = 90, CreatedAt = DateTime.UtcNow.AddDays(-1) },
-            new Attempt { UserId = _userId, QuestionSetId = Guid.NewGuid(), AnswersJson = "{}", Score = 60, CreatedAt = DateTime.UtcNow }
+            new Attempt { UserId = _userId, QuizId = Guid.NewGuid(), AnswersJson = "{}", Score = 90, CreatedAt = DateTime.UtcNow.AddDays(-1) },
+            new Attempt { UserId = _userId, QuizId = Guid.NewGuid(), AnswersJson = "{}", Score = 60, CreatedAt = DateTime.UtcNow }
         );
 
         await _context.SaveChangesAsync();

@@ -65,8 +65,8 @@ public class KnowledgeStateServiceTests : IDisposable
     {
         var module = new Module { Id = Guid.NewGuid(), Title = "Biology", OwnerUserId = _userId };
         var note = new Note { Id = Guid.NewGuid(), ModuleId = module.Id, Title = "Cell Structure", Module = module };
-        var questionSet = new QuestionSet { Id = Guid.NewGuid(), NoteId = note.Id, Title = "Quiz", Note = note };
-        var attempt = new Attempt { Id = Guid.NewGuid(), UserId = _userId, QuestionSetId = questionSet.Id, AnswersJson = "{}", Score = 50 };
+        var quiz = new Quiz { Id = Guid.NewGuid(), NoteId = note.Id, Title = "Quiz", Note = note };
+        var attempt = new Attempt { Id = Guid.NewGuid(), UserId = _userId, QuizId = quiz.Id, AnswersJson = "{}", Score = 50 };
 
         var interactions = new List<KnowledgeInteractionInput>
         {
@@ -74,7 +74,7 @@ public class KnowledgeStateServiceTests : IDisposable
             new() { QuestionId = Guid.NewGuid(), UserAnswer = "B", IsCorrect = false, ConfidenceEstimate = 0.4 }
         };
 
-        await _service.ApplyAttemptResultAsync(attempt, questionSet, interactions);
+        await _service.ApplyAttemptResultAsync(attempt, quiz, interactions);
 
         var state = await _context.UserKnowledgeStates.FirstOrDefaultAsync(s => s.UserId == _userId);
         state.Should().NotBeNull();

@@ -9,8 +9,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Module> Modules => Set<Module>();
     public DbSet<Document> Documents => Set<Document>();
     public DbSet<Note> Notes => Set<Note>();
-    public DbSet<QuestionSet> QuestionSets => Set<QuestionSet>();
-    public DbSet<Question> Questions => Set<Question>();
+    public DbSet<Quiz> Quizzes => Set<Quiz>();
+    public DbSet<QuizQuestion> QuizQuestions => Set<QuizQuestion>();
     public DbSet<Attempt> Attempts => Set<Attempt>();
     public DbSet<UserKnowledgeState> UserKnowledgeStates => Set<UserKnowledgeState>();
     public DbSet<LearningInteraction> LearningInteractions => Set<LearningInteraction>();
@@ -53,11 +53,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasForeignKey(m => m.ModuleId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Note - QuestionSet (One-to-Many)
+        // Note - Quiz (One-to-Many)
         modelBuilder.Entity<Note>()
-            .HasMany(n => n.QuestionSets)
-            .WithOne(qs => qs.Note)
-            .HasForeignKey(qs => qs.NoteId)
+            .HasMany(n => n.Quizzes)
+            .WithOne(q => q.Note)
+            .HasForeignKey(q => q.NoteId)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Note>()
@@ -66,22 +66,22 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasForeignKey(n => n.SourceMaterialId)
             .OnDelete(DeleteBehavior.SetNull);
 
-        // QuestionSet - Question (One-to-Many)
-        modelBuilder.Entity<QuestionSet>()
-            .HasMany(qs => qs.Questions)
-            .WithOne(q => q.QuestionSet)
-            .HasForeignKey(q => q.QuestionSetId)
+        // Quiz - QuizQuestion (One-to-Many)
+        modelBuilder.Entity<Quiz>()
+            .HasMany(q => q.Questions)
+            .WithOne(qq => qq.Quiz)
+            .HasForeignKey(qq => qq.QuizId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<QuestionSet>()
-            .Property(qs => qs.Difficulty)
+        modelBuilder.Entity<Quiz>()
+            .Property(q => q.Difficulty)
             .HasConversion<string>();
 
         // Attempt Relationships
         modelBuilder.Entity<Attempt>()
-            .HasOne(a => a.QuestionSet)
+            .HasOne(a => a.Quiz)
             .WithMany()
-            .HasForeignKey(a => a.QuestionSetId)
+            .HasForeignKey(a => a.QuizId)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Attempt>()

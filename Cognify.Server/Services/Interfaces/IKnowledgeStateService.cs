@@ -5,7 +5,7 @@ namespace Cognify.Server.Services.Interfaces;
 
 public interface IKnowledgeStateService
 {
-    Task ApplyAttemptResultAsync(Attempt attempt, QuestionSet questionSet, IReadOnlyCollection<KnowledgeInteractionInput> interactions);
+    Task ApplyAttemptResultAsync(Attempt attempt, Quiz quiz, IReadOnlyCollection<KnowledgeInteractionInput> interactions);
     Task<List<UserKnowledgeStateDto>> GetMyStatesAsync();
     Task<List<ReviewQueueItemDto>> GetReviewQueueAsync(int maxItems = 10);
 }

@@ -10,7 +10,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormsModule } from '@angular/forms';
 import { QuizService } from '../../services/quiz.service';
-import { QuestionSetDto, SubmitAttemptDto, AttemptDto } from '../../../../core/models/quiz.models';
+import { QuizDto, SubmitAttemptDto, AttemptDto } from '../../../../core/models/quiz.models';
 
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { MarkdownLatexPipe } from '../../../../shared/pipes/markdown-latex.pipe';
@@ -35,7 +35,7 @@ import { MarkdownLatexPipe } from '../../../../shared/pipes/markdown-latex.pipe'
   styleUrl: './quiz-taking.component.scss'
 })
 export class QuizTakingComponent {
-  questionSet = signal<QuestionSetDto | null>(null);
+  quiz = signal<QuizDto | null>(null);
   answers: { [key: string]: string } = {}; // questionId -> answer
   private startedAt = Date.now();
 
@@ -52,12 +52,12 @@ export class QuizTakingComponent {
   constructor(
     private quizService: QuizService,
     private dialogRef: MatDialogRef<QuizTakingComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { questionSetId: string, questionSet?: QuestionSetDto }
+    @Inject(MAT_DIALOG_DATA) public data: { quizId: string, quiz?: QuizDto }
   ) {
-    if (data.questionSet) {
-      this.initQuiz(data.questionSet);
+    if (data.quiz) {
+      this.initQuiz(data.quiz);
     } else {
-      this.loadQuiz(data.questionSetId);
+      this.loadQuiz(data.quizId);
     }
   }
 
@@ -74,14 +74,14 @@ export class QuizTakingComponent {
   }
 
   loadQuiz(id: string) {
-    this.quizService.getQuestionSet(id).subscribe({
+    this.quizService.getQuiz(id).subscribe({
       next: (qs) => this.initQuiz(qs),
       error: (err) => this.error.set('Failed to load quiz.')
     });
   }
 
-  initQuiz(qs: QuestionSetDto) {
-    this.questionSet.set(qs);
+  initQuiz(qs: QuizDto) {
+    this.quiz.set(qs);
     this.startedAt = Date.now();
     // Initialize interactive states
     qs.questions.forEach(q => {
@@ -175,13 +175,13 @@ export class QuizTakingComponent {
   }
 
   submit() {
-    const qs = this.questionSet();
+    const qs = this.quiz();
     if (!qs) return;
 
     this.submitting.set(true);
     const elapsedSeconds = Math.max(0, Math.round((Date.now() - this.startedAt) / 1000));
     const dto: SubmitAttemptDto = {
-      questionSetId: qs.id,
+      quizId: qs.id,
       answers: this.answers,
       timeSpentSeconds: elapsedSeconds,
       difficulty: qs.difficulty ?? 'Intermediate'

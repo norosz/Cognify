@@ -77,7 +77,7 @@ public class PendingQuizService(ApplicationDbContext db, IAgentRunService agentR
             .FirstOrDefaultAsync(p => p.Id == id);
     }
 
-    public async Task<QuestionSet> SaveAsQuizAsync(Guid pendingQuizId, Guid userId)
+    public async Task<Quiz> SaveAsQuizAsync(Guid pendingQuizId, Guid userId)
     {
         var pending = await db.PendingQuizzes.FindAsync(pendingQuizId)
             ?? throw new InvalidOperationException("Pending quiz not found.");
@@ -91,9 +91,9 @@ public class PendingQuizService(ApplicationDbContext db, IAgentRunService agentR
         if (string.IsNullOrEmpty(pending.QuestionsJson))
             throw new InvalidOperationException("No questions generated.");
 
-        // Create QuestionSet
+        // Create Quiz
         var quizRubric = ParseQuizRubric(pending.QuestionsJson);
-        var questionSet = new QuestionSet
+        var quiz = new Quiz
         {
             NoteId = pending.NoteId,
             Title = pending.Title,
@@ -102,7 +102,7 @@ public class PendingQuizService(ApplicationDbContext db, IAgentRunService agentR
             RubricJson = quizRubric
         };
 
-        db.QuestionSets.Add(questionSet);
+        db.Quizzes.Add(quiz);
         await db.SaveChangesAsync();
 
         // Parse and create Questions
@@ -116,16 +116,16 @@ public class PendingQuizService(ApplicationDbContext db, IAgentRunService agentR
                 // GeneratedQuestion already has typed QuestionType
                 var flattenedAnswer = FlattenCorrectAnswer(gq.CorrectAnswer) ?? (gq.Pairs != null ? string.Join("|", gq.Pairs) : "");
 
-                var question = new Question
+                var question = new QuizQuestion
                 {
-                    QuestionSetId = questionSet.Id,
+                    QuizId = quiz.Id,
                     Type = gq.Type,
                     Prompt = gq.Text,
                     OptionsJson = JsonSerializer.Serialize(gq.Type == QuestionType.Matching ? (gq.Pairs ?? []) : (gq.Options ?? [])),
                     CorrectAnswerJson = JsonSerializer.Serialize(flattenedAnswer),
                     Explanation = gq.Explanation
                 };
-                db.Questions.Add(question);
+                db.QuizQuestions.Add(question);
             }
             await db.SaveChangesAsync();
         }
@@ -134,7 +134,7 @@ public class PendingQuizService(ApplicationDbContext db, IAgentRunService agentR
         db.PendingQuizzes.Remove(pending);
         await db.SaveChangesAsync();
 
-        return questionSet;
+        return quiz;
     }
 
     private static List<GeneratedQuestion> ParseGeneratedQuestions(string json, JsonSerializerOptions options)

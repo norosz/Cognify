@@ -77,8 +77,8 @@ export class PendingService {
         return this.http.post<PendingQuizDto>(`${this.apiUrl}/quizzes`, request);
     }
 
-    saveQuiz(id: string): Observable<{ questionSetId: string }> {
-        return this.http.post<{ questionSetId: string }>(`${this.apiUrl}/quizzes/${id}/save`, {});
+    saveQuiz(id: string): Observable<{ quizId: string }> {
+        return this.http.post<{ quizId: string }>(`${this.apiUrl}/quizzes/${id}/save`, {});
     }
 
     deletePendingQuiz(id: string): Observable<void> {

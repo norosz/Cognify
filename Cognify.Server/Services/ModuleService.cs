@@ -22,7 +22,7 @@ public class ModuleService(ApplicationDbContext context, IUserContextService use
                 CreatedAt = m.CreatedAt,
                 DocumentsCount = m.Documents.Count(),
                 NotesCount = m.Notes.Count(),
-                QuizzesCount = m.Notes.SelectMany(n => n.QuestionSets).Count()
+                QuizzesCount = m.Notes.SelectMany(n => n.Quizzes).Count()
             })
             .ToListAsync();
     }
@@ -33,7 +33,7 @@ public class ModuleService(ApplicationDbContext context, IUserContextService use
         var module = await context.Modules
             .Include(m => m.Documents)
             .Include(m => m.Notes)
-            .ThenInclude(n => n.QuestionSets)
+            .ThenInclude(n => n.Quizzes)
             .FirstOrDefaultAsync(m => m.Id == id && m.OwnerUserId == userId);
 
         if (module == null) return null;
@@ -46,7 +46,7 @@ public class ModuleService(ApplicationDbContext context, IUserContextService use
             CreatedAt = module.CreatedAt,
             DocumentsCount = module.Documents.Count,
             NotesCount = module.Notes.Count,
-            QuizzesCount = module.Notes.SelectMany(n => n.QuestionSets).Count()
+            QuizzesCount = module.Notes.SelectMany(n => n.Quizzes).Count()
         };
     }
 

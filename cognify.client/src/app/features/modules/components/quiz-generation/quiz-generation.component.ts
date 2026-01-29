@@ -11,7 +11,7 @@ import { MatSliderModule } from '@angular/material/slider';
 import { FormsModule } from '@angular/forms';
 import { QuizService } from '../../services/quiz.service';
 import { AiService } from '../../../../core/services/ai.service';
-import { QuestionDto } from '../../../../core/models/quiz.models';
+import { QuizQuestionDto } from '../../../../core/models/quiz.models';
 import { QuestionType, GenerateQuestionsRequest } from '../../../../core/models/ai.models';
 import { MatInputModule } from '@angular/material/input';
 
@@ -36,7 +36,7 @@ import { MatInputModule } from '@angular/material/input';
 })
 export class QuizGenerationComponent {
   loading = signal<boolean>(false);
-  questions = signal<QuestionDto[]>([]);
+  questions = signal<QuizQuestionDto[]>([]);
   error = signal<string | null>(null);
 
   // Form Controls
@@ -74,7 +74,7 @@ export class QuizGenerationComponent {
 
     this.aiService.generateQuestions(req).subscribe({
       next: (generated) => {
-        const dtos: QuestionDto[] = generated.map(g => {
+        const dtos: QuizQuestionDto[] = generated.map(g => {
           // For Matching, use pairs as options so they are saved to backend
           const options = (g.type === QuestionType.Matching && g.pairs) ? g.pairs : (g.options || []);
 
@@ -108,7 +108,7 @@ export class QuizGenerationComponent {
       difficulty: difficultyLabel
     };
 
-    this.quizService.createQuestionSet(dto).subscribe({
+    this.quizService.createQuiz(dto).subscribe({
       next: (res) => {
         this.dialogRef.close(res);
       },

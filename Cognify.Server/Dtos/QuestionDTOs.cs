@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace Cognify.Server.DTOs;
 
-public record QuestionDto
+public record QuizQuestionDto
 {
     public Guid? Id { get; init; }
     public string Prompt { get; init; } = string.Empty;
@@ -12,23 +12,23 @@ public record QuestionDto
     public string Explanation { get; init; } = string.Empty;
 }
 
-public record QuestionSetDto
+public record QuizDto
 {
     public Guid Id { get; init; }
     public Guid NoteId { get; init; }
     public string Title { get; init; } = string.Empty;
-    public List<QuestionDto> Questions { get; init; } = [];
+    public List<QuizQuestionDto> Questions { get; init; } = [];
     public string Type { get; init; } = "MultipleChoice";
     public string Difficulty { get; init; } = "Intermediate";
     public string? QuizRubric { get; init; }
     public DateTime CreatedAt { get; init; }
 }
 
-public record CreateQuestionSetDto
+public record CreateQuizDto
 {
     public Guid NoteId { get; init; }
     public string Title { get; init; } = string.Empty;
-    public List<QuestionDto> Questions { get; init; } = [];
+    public List<QuizQuestionDto> Questions { get; init; } = [];
     public string? Difficulty { get; init; }
     public string? QuizRubric { get; init; }
 }

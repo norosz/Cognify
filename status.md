@@ -32,7 +32,6 @@
 
 ### 🤖 AI Agents & Pipelines (v2)
 - [x] **[Backend]** Implement `Material`, `MaterialExtraction`, `Note` (Updated) Entities
-- [ ] **[Backend]** Implement `Quiz`, `QuizQuestion`, `QuizRubric` Entities
 - [x] **[Backend]** Implement `LearningInteraction`, `AnswerEvaluation`, `UserKnowledgeState` Entities
 - [x] **[Backend]** Migrate DB to v2 Schema
 - [x] **[Agent]** Extract embedded images + metadata for PDF materials
@@ -138,4 +137,5 @@
 - [x] **[Backend]** Create `UserKnowledgeState` Entity (Topic, Mastery, Confidence)
 - [x] **[Backend]** Implement `KnowledgeStateService` (Update logic)
 - [x] **[Backend]** Add `LearningInteraction` + `AnswerEvaluation` entities
+- [x] **[Backend]** Implement `Quiz`, `QuizQuestion`, `QuizRubric` Entities (renamed + migrated)
 

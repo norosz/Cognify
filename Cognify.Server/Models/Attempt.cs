@@ -6,7 +6,7 @@ public class Attempt
 {
     public Guid Id { get; set; } = Guid.NewGuid();
 
-    public Guid QuestionSetId { get; set; }
+    public Guid QuizId { get; set; }
 
     public Guid UserId { get; set; }
 
@@ -23,6 +23,6 @@ public class Attempt
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     // Navigation properties
-    public QuestionSet? QuestionSet { get; set; }
+    public Quiz? Quiz { get; set; }
     public User? User { get; set; }
 }

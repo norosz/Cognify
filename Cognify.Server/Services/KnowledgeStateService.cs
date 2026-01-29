@@ -16,9 +16,9 @@ public class KnowledgeStateService(
     private const double MinScore = 0.0;
     private const double MaxScore = 1.0;
 
-    public async Task ApplyAttemptResultAsync(Attempt attempt, QuestionSet questionSet, IReadOnlyCollection<KnowledgeInteractionInput> interactions)
+    public async Task ApplyAttemptResultAsync(Attempt attempt, Quiz quiz, IReadOnlyCollection<KnowledgeInteractionInput> interactions)
     {
-        var topic = BuildTopic(questionSet);
+        var topic = BuildTopic(quiz);
         var now = DateTime.UtcNow;
 
         var state = await context.UserKnowledgeStates
@@ -30,7 +30,7 @@ public class KnowledgeStateService(
             {
                 UserId = attempt.UserId,
                 Topic = topic,
-                SourceNoteId = questionSet.NoteId,
+                SourceNoteId = quiz.NoteId,
                 MasteryScore = 0.5,
                 ConfidenceScore = 0.5,
                 ForgettingRisk = 0.5,
@@ -142,16 +142,16 @@ public class KnowledgeStateService(
         };
     }
 
-    private static string BuildTopic(QuestionSet questionSet)
+    private static string BuildTopic(Quiz quiz)
     {
-        if (!string.IsNullOrWhiteSpace(questionSet.Note?.Title))
+        if (!string.IsNullOrWhiteSpace(quiz.Note?.Title))
         {
-            if (!string.IsNullOrWhiteSpace(questionSet.Note.Module?.Title))
+            if (!string.IsNullOrWhiteSpace(quiz.Note.Module?.Title))
             {
-                return $"{questionSet.Note.Module.Title} / {questionSet.Note.Title}";
+                return $"{quiz.Note.Module.Title} / {quiz.Note.Title}";
             }
 
-            return questionSet.Note.Title;
+            return quiz.Note.Title;
         }
 
         return "General";

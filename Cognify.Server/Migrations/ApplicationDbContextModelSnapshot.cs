@@ -138,7 +138,7 @@ namespace Cognify.Server.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<Guid>("QuestionSetId")
+                    b.Property<Guid>("QuizId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<double>("Score")
@@ -152,7 +152,7 @@ namespace Cognify.Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("QuestionSetId");
+                    b.HasIndex("QuizId");
 
                     b.HasIndex("UserId");
 
@@ -490,41 +490,7 @@ namespace Cognify.Server.Migrations
                     b.ToTable("PendingQuizzes");
                 });
 
-            modelBuilder.Entity("Cognify.Server.Models.Question", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("CorrectAnswerJson")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Explanation")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("OptionsJson")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Prompt")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("QuestionSetId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("QuestionSetId");
-
-                    b.ToTable("Questions");
-                });
-
-            modelBuilder.Entity("Cognify.Server.Models.QuestionSet", b =>
+            modelBuilder.Entity("Cognify.Server.Models.Quiz", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -555,7 +521,41 @@ namespace Cognify.Server.Migrations
 
                     b.HasIndex("NoteId");
 
-                    b.ToTable("QuestionSets");
+                    b.ToTable("Quizzes");
+                });
+
+            modelBuilder.Entity("Cognify.Server.Models.QuizQuestion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CorrectAnswerJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Explanation")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OptionsJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Prompt")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("QuizId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QuizId");
+
+                    b.ToTable("QuizQuestions");
                 });
 
             modelBuilder.Entity("Cognify.Server.Models.User", b =>
@@ -655,9 +655,9 @@ namespace Cognify.Server.Migrations
 
             modelBuilder.Entity("Cognify.Server.Models.Attempt", b =>
                 {
-                    b.HasOne("Cognify.Server.Models.QuestionSet", "QuestionSet")
+                    b.HasOne("Cognify.Server.Models.Quiz", "Quiz")
                         .WithMany()
-                        .HasForeignKey("QuestionSetId")
+                        .HasForeignKey("QuizId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -667,7 +667,7 @@ namespace Cognify.Server.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("QuestionSet");
+                    b.Navigation("Quiz");
 
                     b.Navigation("User");
                 });
@@ -835,26 +835,26 @@ namespace Cognify.Server.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Cognify.Server.Models.Question", b =>
-                {
-                    b.HasOne("Cognify.Server.Models.QuestionSet", "QuestionSet")
-                        .WithMany("Questions")
-                        .HasForeignKey("QuestionSetId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("QuestionSet");
-                });
-
-            modelBuilder.Entity("Cognify.Server.Models.QuestionSet", b =>
+            modelBuilder.Entity("Cognify.Server.Models.Quiz", b =>
                 {
                     b.HasOne("Cognify.Server.Models.Note", "Note")
-                        .WithMany("QuestionSets")
+                        .WithMany("Quizzes")
                         .HasForeignKey("NoteId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Note");
+                });
+
+            modelBuilder.Entity("Cognify.Server.Models.QuizQuestion", b =>
+                {
+                    b.HasOne("Cognify.Server.Models.Quiz", "Quiz")
+                        .WithMany("Questions")
+                        .HasForeignKey("QuizId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Quiz");
                 });
 
             modelBuilder.Entity("Cognify.Server.Models.UserKnowledgeState", b =>
@@ -884,10 +884,10 @@ namespace Cognify.Server.Migrations
 
             modelBuilder.Entity("Cognify.Server.Models.Note", b =>
                 {
-                    b.Navigation("QuestionSets");
+                    b.Navigation("Quizzes");
                 });
 
-            modelBuilder.Entity("Cognify.Server.Models.QuestionSet", b =>
+            modelBuilder.Entity("Cognify.Server.Models.Quiz", b =>
                 {
                     b.Navigation("Questions");
                 });

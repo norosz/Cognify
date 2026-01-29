@@ -26,21 +26,21 @@ public class AttemptService(
     {
         var userId = userContext.GetCurrentUserId();
         
-        var questionSet = await context.QuestionSets
-            .Include(qs => qs.Questions)
-            .Include(qs => qs.Note)
+        var quiz = await context.Quizzes
+            .Include(q => q.Questions)
+            .Include(q => q.Note)
             .ThenInclude(n => n.Module)
-            .FirstOrDefaultAsync(qs => qs.Id == dto.QuestionSetId);
+            .FirstOrDefaultAsync(q => q.Id == dto.QuizId);
 
-        if (questionSet == null)
-             throw new KeyNotFoundException("Question set not found.");
+           if (quiz == null)
+               throw new KeyNotFoundException("Quiz not found.");
 
         double totalScore = 0;
-        int totalQuestions = questionSet.Questions.Count;
+        int totalQuestions = quiz.Questions.Count;
 
         var interactions = new List<KnowledgeInteractionInput>();
 
-        foreach (var question in questionSet.Questions)
+        foreach (var question in quiz.Questions)
         {
             var qIdStr = question.Id.ToString();
             // Case insensitive key lookup could be nice, but GUIDs are usually standard.
@@ -63,7 +63,7 @@ public class AttemptService(
                 }
             }
 
-            var evaluation = await EvaluateQuestionAsync(userId, question, userAnswer, questionSet.RubricJson);
+            var evaluation = await EvaluateQuestionAsync(userId, question, userAnswer, quiz.RubricJson);
             totalScore += evaluation.Score;
 
             interactions.Add(new KnowledgeInteractionInput
@@ -84,29 +84,29 @@ public class AttemptService(
         var attempt = new Attempt
         {
             UserId = userId,
-            QuestionSetId = dto.QuestionSetId,
+            QuizId = dto.QuizId,
             AnswersJson = JsonSerializer.Serialize(dto.Answers),
             Score = score,
             TimeSpentSeconds = dto.TimeSpentSeconds,
-            Difficulty = dto.Difficulty ?? questionSet.Difficulty.ToString(),
+            Difficulty = dto.Difficulty ?? quiz.Difficulty.ToString(),
             CreatedAt = DateTime.UtcNow
         };
 
         context.Attempts.Add(attempt);
         await context.SaveChangesAsync();
 
-        await knowledgeStateService.ApplyAttemptResultAsync(attempt, questionSet, interactions);
+        await knowledgeStateService.ApplyAttemptResultAsync(attempt, quiz, interactions);
 
         return MapToDto(attempt);
     }
 
-    public async Task<List<AttemptDto>> GetAttemptsAsync(Guid questionSetId)
+    public async Task<List<AttemptDto>> GetAttemptsAsync(Guid quizId)
     {
         var userId = userContext.GetCurrentUserId();
         
         var attempts = await context.Attempts
             .AsNoTracking()
-            .Where(a => a.QuestionSetId == questionSetId && a.UserId == userId)
+            .Where(a => a.QuizId == quizId && a.UserId == userId)
             .OrderByDescending(a => a.CreatedAt)
             .ToListAsync();
 
@@ -127,7 +127,7 @@ public class AttemptService(
         return new AttemptDto
         {
             Id = attempt.Id,
-            QuestionSetId = attempt.QuestionSetId,
+            QuizId = attempt.QuizId,
             UserId = attempt.UserId,
             Score = attempt.Score,
             Answers = TryDeserializeAttempts(attempt.AnswersJson),
@@ -149,7 +149,7 @@ public class AttemptService(
         }
     }
 
-    private async Task<QuestionEvaluation> EvaluateQuestionAsync(Guid userId, Question question, string? userAnswer, string? quizRubric)
+    private async Task<QuestionEvaluation> EvaluateQuestionAsync(Guid userId, QuizQuestion question, string? userAnswer, string? quizRubric)
     {
         if (string.IsNullOrWhiteSpace(userAnswer))
         {
@@ -183,7 +183,7 @@ public class AttemptService(
         }
     }
 
-    private async Task<QuestionEvaluation> ScoreOpenTextAsync(Guid userId, Question question, string userAnswer, string correctAnswer, string? quizRubric)
+    private async Task<QuestionEvaluation> ScoreOpenTextAsync(Guid userId, QuizQuestion question, string userAnswer, string correctAnswer, string? quizRubric)
     {
         var context = BuildOpenTextContext(question, correctAnswer, quizRubric);
         var inputHash = AgentRunService.ComputeHash($"grading:{AgentContractVersions.V2}:{question.Id}:{userAnswer}:{correctAnswer}");
@@ -237,7 +237,7 @@ public class AttemptService(
         }
     }
 
-    private static string BuildOpenTextContext(Question question, string correctAnswer, string? quizRubric)
+    private static string BuildOpenTextContext(QuizQuestion question, string correctAnswer, string? quizRubric)
     {
         var builder = new StringBuilder();
         builder.AppendLine("Reference Answer:");

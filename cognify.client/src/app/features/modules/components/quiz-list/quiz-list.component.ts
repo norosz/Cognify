@@ -7,12 +7,12 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { NoteService } from '../../../../core/services/note.service';
 import { QuizService } from '../../services/quiz.service';
-import { QuestionSetDto } from '../../../../core/models/quiz.models';
+import { QuizDto } from '../../../../core/models/quiz.models';
 import { QuizTakingComponent } from '../quiz-taking/quiz-taking.component';
 import { forkJoin, map, switchMap, of } from 'rxjs';
 
 interface QuizItem {
-  quiz: QuestionSetDto;
+  quiz: QuizDto;
   noteTitle: string;
 }
 
@@ -56,7 +56,7 @@ export class QuizListComponent implements OnInit {
 
         // 2. For each note, get quizzes
         const requests = notes.map(note =>
-          this.quizService.getQuestionSetsByNote(note.id).pipe(
+          this.quizService.getQuizzesByNote(note.id).pipe(
             map(quizzes => quizzes.map(q => ({ quiz: q, noteTitle: note.title } as QuizItem)))
           )
         );
@@ -77,16 +77,16 @@ export class QuizListComponent implements OnInit {
     });
   }
 
-  takeQuiz(quiz: QuestionSetDto) {
+  takeQuiz(quiz: QuizDto) {
     this.dialog.open(QuizTakingComponent, {
       width: '600px',
-      data: { questionSet: quiz }
+      data: { quiz }
     });
   }
 
-  deleteQuiz(quiz: QuestionSetDto) {
+  deleteQuiz(quiz: QuizDto) {
     if (confirm('Delete this quiz?')) {
-      this.quizService.deleteQuestionSet(quiz.id).subscribe(() => this.loadQuizzes());
+      this.quizService.deleteQuiz(quiz.id).subscribe(() => this.loadQuizzes());
     }
   }
 

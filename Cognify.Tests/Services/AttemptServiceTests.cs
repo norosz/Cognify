@@ -38,7 +38,7 @@ public class AttemptServiceTests : IDisposable
 
         _userContextMock.Setup(uc => uc.GetCurrentUserId()).Returns(_userId);
         _knowledgeStateMock
-            .Setup(ks => ks.ApplyAttemptResultAsync(It.IsAny<Attempt>(), It.IsAny<QuestionSet>(), It.IsAny<IReadOnlyCollection<KnowledgeInteractionInput>>()))
+            .Setup(ks => ks.ApplyAttemptResultAsync(It.IsAny<Attempt>(), It.IsAny<Quiz>(), It.IsAny<IReadOnlyCollection<KnowledgeInteractionInput>>())))
             .Returns(Task.CompletedTask);
 
         _attemptService = new AttemptService(
@@ -57,20 +57,20 @@ public class AttemptServiceTests : IDisposable
         var noteId = Guid.NewGuid();
         var note = new Note { Id = noteId, ModuleId = module.Id, Title = "Note", Module = module };
         var qsId = Guid.NewGuid();
-        var question1 = new Question 
+        var question1 = new QuizQuestion 
         { 
             Id = Guid.NewGuid(), 
-            QuestionSetId = qsId,
+            QuizId = qsId,
             Prompt = "Q1",
             Type = QuestionType.MultipleChoice,
             OptionsJson = "[\"A\",\"B\"]",
             CorrectAnswerJson = "\"A\"",
             Explanation = "Exp"
         };
-        var question2 = new Question 
+        var question2 = new QuizQuestion 
         { 
             Id = Guid.NewGuid(), 
-            QuestionSetId = qsId,
+            QuizId = qsId,
             Prompt = "Q2",
             Type = QuestionType.MultipleChoice,
             OptionsJson = "[\"C\",\"D\"]",
@@ -78,7 +78,7 @@ public class AttemptServiceTests : IDisposable
             Explanation = "Exp"
         };
 
-        var questionSet = new QuestionSet 
+        var quiz = new Quiz 
         { 
             Id = qsId, 
             NoteId = noteId,
@@ -89,12 +89,12 @@ public class AttemptServiceTests : IDisposable
 
         _context.Modules.Add(module);
         _context.Notes.Add(note);
-        _context.QuestionSets.Add(questionSet);
+        _context.Quizzes.Add(quiz);
         await _context.SaveChangesAsync();
 
         var dto = new SubmitAttemptDto
         {
-            QuestionSetId = qsId,
+            QuizId = qsId,
             Answers = new Dictionary<string, string>
             {
                 { question1.Id.ToString(), "A" }, // Correct
@@ -116,7 +116,7 @@ public class AttemptServiceTests : IDisposable
 
         _knowledgeStateMock.Verify(ks => ks.ApplyAttemptResultAsync(
             It.IsAny<Attempt>(),
-            It.IsAny<QuestionSet>(),
+            It.IsAny<Quiz>(),
             It.IsAny<IReadOnlyCollection<KnowledgeInteractionInput>>()), Times.Once);
     }
 
@@ -125,9 +125,9 @@ public class AttemptServiceTests : IDisposable
     {
          // Arrange
         var qsId = Guid.NewGuid();
-        var attempt1 = new Attempt { Id = Guid.NewGuid(), QuestionSetId = qsId, UserId = _userId, CreatedAt = DateTime.UtcNow.AddMinutes(-5), AnswersJson = "{}", Score = 100 };
-        var attempt2 = new Attempt { Id = Guid.NewGuid(), QuestionSetId = qsId, UserId = _userId, CreatedAt = DateTime.UtcNow, AnswersJson = "{}", Score = 0 };
-        var otherAttempt = new Attempt { Id = Guid.NewGuid(), QuestionSetId = qsId, UserId = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, AnswersJson = "{}", Score = 0 };
+        var attempt1 = new Attempt { Id = Guid.NewGuid(), QuizId = qsId, UserId = _userId, CreatedAt = DateTime.UtcNow.AddMinutes(-5), AnswersJson = "{}", Score = 100 };
+        var attempt2 = new Attempt { Id = Guid.NewGuid(), QuizId = qsId, UserId = _userId, CreatedAt = DateTime.UtcNow, AnswersJson = "{}", Score = 0 };
+        var otherAttempt = new Attempt { Id = Guid.NewGuid(), QuizId = qsId, UserId = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, AnswersJson = "{}", Score = 0 };
 
         _context.Attempts.AddRange(attempt1, attempt2, otherAttempt);
         await _context.SaveChangesAsync();
@@ -149,10 +149,10 @@ public class AttemptServiceTests : IDisposable
         var noteId = Guid.NewGuid();
         var note = new Note { Id = noteId, ModuleId = module.Id, Title = "Note", Module = module };
         var qsId = Guid.NewGuid();
-        var question = new Question 
+        var question = new QuizQuestion 
         { 
             Id = Guid.NewGuid(), 
-            QuestionSetId = qsId,
+            QuizId = qsId,
             Prompt = "Q1",
             Type = QuestionType.MultipleChoice,
             OptionsJson = "[\"A\",\"B\"]",
@@ -160,15 +160,15 @@ public class AttemptServiceTests : IDisposable
             Explanation = ""
         };
 
-        var questionSet = new QuestionSet { Id = qsId, NoteId = noteId, Title = "Test Quiz", Note = note, Questions = [question] };
+        var quiz = new Quiz { Id = qsId, NoteId = noteId, Title = "Test Quiz", Note = note, Questions = [question] };
         _context.Modules.Add(module);
         _context.Notes.Add(note);
-        _context.QuestionSets.Add(questionSet);
+        _context.Quizzes.Add(quiz);
         await _context.SaveChangesAsync();
 
         var dto = new SubmitAttemptDto
         {
-            QuestionSetId = qsId,
+            QuizId = qsId,
             Answers = new Dictionary<string, string>
             {
                 { question.Id.ToString().ToUpper(), "A" } 
@@ -188,7 +188,7 @@ public class AttemptServiceTests : IDisposable
         var attempt = new Attempt
         {
             Id = Guid.NewGuid(),
-            QuestionSetId = Guid.NewGuid(),
+            QuizId = Guid.NewGuid(),
             UserId = _userId,
             AnswersJson = "{}",
             Score = 75
@@ -209,7 +209,7 @@ public class AttemptServiceTests : IDisposable
         var attempt = new Attempt
         {
             Id = Guid.NewGuid(),
-            QuestionSetId = Guid.NewGuid(),
+            QuizId = Guid.NewGuid(),
             UserId = Guid.NewGuid(),
             AnswersJson = "{}",
             Score = 75
@@ -230,10 +230,10 @@ public class AttemptServiceTests : IDisposable
         var noteId = Guid.NewGuid();
         var note = new Note { Id = noteId, ModuleId = module.Id, Title = "Note", Module = module };
         var qsId = Guid.NewGuid();
-        var question = new Question
+        var question = new QuizQuestion
         {
             Id = Guid.NewGuid(),
-            QuestionSetId = qsId,
+            QuizId = qsId,
             Prompt = "Explain concept",
             Type = QuestionType.OpenText,
             OptionsJson = "[]",
@@ -241,7 +241,7 @@ public class AttemptServiceTests : IDisposable
             Explanation = "Details"
         };
 
-        var questionSet = new QuestionSet
+        var quiz = new Quiz
         {
             Id = qsId,
             NoteId = noteId,
@@ -252,7 +252,7 @@ public class AttemptServiceTests : IDisposable
 
         _context.Modules.Add(module);
         _context.Notes.Add(note);
-        _context.QuestionSets.Add(questionSet);
+        _context.Quizzes.Add(quiz);
         await _context.SaveChangesAsync();
 
         _agentRunServiceMock
@@ -272,7 +272,7 @@ public class AttemptServiceTests : IDisposable
 
         var dto = new SubmitAttemptDto
         {
-            QuestionSetId = qsId,
+            QuizId = qsId,
             Answers = new Dictionary<string, string>
             {
                 { question.Id.ToString(), "My answer" }
@@ -285,7 +285,7 @@ public class AttemptServiceTests : IDisposable
         _agentRunServiceMock.Verify(s => s.MarkCompletedAsync(It.IsAny<Guid>(), It.IsAny<string>(), null, null, null), Times.Once);
         _knowledgeStateMock.Verify(ks => ks.ApplyAttemptResultAsync(
             It.IsAny<Attempt>(),
-            It.IsAny<QuestionSet>(),
+            It.IsAny<Quiz>(),
             It.Is<IReadOnlyCollection<KnowledgeInteractionInput>>(inputs =>
                 inputs.Any(i => i.DetectedMistakes != null
                                 && i.DetectedMistakes.Contains("ConceptGap")
@@ -301,47 +301,47 @@ public class AttemptServiceTests : IDisposable
         var note = new Note { Id = noteId, ModuleId = module.Id, Title = "Note", Module = module };
         var qsId = Guid.NewGuid();
 
-        var ordering = new Question
+        var ordering = new QuizQuestion
         {
             Id = Guid.NewGuid(),
-            QuestionSetId = qsId,
+            QuizId = qsId,
             Prompt = "Order",
             Type = QuestionType.Ordering,
             OptionsJson = "[]",
             CorrectAnswerJson = "\"A|B|C\""
         };
 
-        var multiSelect = new Question
+        var multiSelect = new QuizQuestion
         {
             Id = Guid.NewGuid(),
-            QuestionSetId = qsId,
+            QuizId = qsId,
             Prompt = "Select",
             Type = QuestionType.MultipleSelect,
             OptionsJson = "[]",
             CorrectAnswerJson = "\"A|C\""
         };
 
-        var matching = new Question
+        var matching = new QuizQuestion
         {
             Id = Guid.NewGuid(),
-            QuestionSetId = qsId,
+            QuizId = qsId,
             Prompt = "Match",
             Type = QuestionType.Matching,
             OptionsJson = "[]",
             CorrectAnswerJson = "\"A:1|B:2\""
         };
 
-        var trueFalse = new Question
+        var trueFalse = new QuizQuestion
         {
             Id = Guid.NewGuid(),
-            QuestionSetId = qsId,
+            QuizId = qsId,
             Prompt = "True/False",
             Type = QuestionType.TrueFalse,
             OptionsJson = "[]",
             CorrectAnswerJson = "\"True\""
         };
 
-        var questionSet = new QuestionSet
+        var quiz = new Quiz
         {
             Id = qsId,
             NoteId = noteId,
@@ -352,12 +352,12 @@ public class AttemptServiceTests : IDisposable
 
         _context.Modules.Add(module);
         _context.Notes.Add(note);
-        _context.QuestionSets.Add(questionSet);
+        _context.Quizzes.Add(quiz);
         await _context.SaveChangesAsync();
 
         var dto = new SubmitAttemptDto
         {
-            QuestionSetId = qsId,
+            QuizId = qsId,
             Answers = new Dictionary<string, string>
             {
                 { ordering.Id.ToString(), "A|B|C" },

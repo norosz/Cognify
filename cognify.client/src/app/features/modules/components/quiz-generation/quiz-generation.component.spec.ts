@@ -16,7 +16,7 @@ describe('QuizGenerationComponent', () => {
 
   beforeEach(async () => {
     mockDialogRef = jasmine.createSpyObj('MatDialogRef', ['close']);
-    mockQuizService = jasmine.createSpyObj('QuizService', ['createQuestionSet']);
+    mockQuizService = jasmine.createSpyObj('QuizService', ['createQuiz']);
     mockAiService = jasmine.createSpyObj('AiService', ['generateQuestions']);
 
     await TestBed.configureTestingModule({
@@ -71,12 +71,12 @@ describe('QuizGenerationComponent', () => {
     expect(component.loading()).toBe(false);
   });
 
-  it('should call quizService.createQuestionSet on save', () => {
-    mockQuizService.createQuestionSet.and.returnValue(of<any>({ id: 'qs-1' }));
+  it('should call quizService.createQuiz on save', () => {
+    mockQuizService.createQuiz.and.returnValue(of<any>({ id: 'qs-1' }));
 
     component.save();
 
-    expect(mockQuizService.createQuestionSet).toHaveBeenCalled();
+    expect(mockQuizService.createQuiz).toHaveBeenCalled();
     expect(mockDialogRef.close).toHaveBeenCalledWith({ id: 'qs-1' });
   });
 });
