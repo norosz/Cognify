@@ -20,6 +20,7 @@ public record QuestionSetDto
     public List<QuestionDto> Questions { get; init; } = [];
     public string Type { get; init; } = "MultipleChoice";
     public string Difficulty { get; init; } = "Intermediate";
+    public string? QuizRubric { get; init; }
     public DateTime CreatedAt { get; init; }
 }
 
@@ -29,4 +30,5 @@ public record CreateQuestionSetDto
     public string Title { get; init; } = string.Empty;
     public List<QuestionDto> Questions { get; init; } = [];
     public string? Difficulty { get; init; }
+    public string? QuizRubric { get; init; }
 }

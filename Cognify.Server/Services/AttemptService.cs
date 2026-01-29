@@ -63,7 +63,7 @@ public class AttemptService(
                 }
             }
 
-            var evaluation = await EvaluateQuestionAsync(userId, question, userAnswer);
+            var evaluation = await EvaluateQuestionAsync(userId, question, userAnswer, questionSet.RubricJson);
             totalScore += evaluation.Score;
 
             interactions.Add(new KnowledgeInteractionInput
@@ -148,7 +148,7 @@ public class AttemptService(
         }
     }
 
-    private async Task<QuestionEvaluation> EvaluateQuestionAsync(Guid userId, Question question, string? userAnswer)
+    private async Task<QuestionEvaluation> EvaluateQuestionAsync(Guid userId, Question question, string? userAnswer, string? quizRubric)
     {
         if (string.IsNullOrWhiteSpace(userAnswer))
         {
@@ -175,16 +175,16 @@ public class AttemptService(
                 return ScoreFromBoolean(PairsEqual(ParsePairs(userAnswer), ParsePairs(correctAnswer)));
 
             case QuestionType.OpenText:
-                return await ScoreOpenTextAsync(userId, question, userAnswer, correctAnswer);
+                return await ScoreOpenTextAsync(userId, question, userAnswer, correctAnswer, quizRubric);
 
             default:
                 return ScoreFromBoolean(string.Equals(normalizedUser, normalizedCorrect, StringComparison.OrdinalIgnoreCase));
         }
     }
 
-    private async Task<QuestionEvaluation> ScoreOpenTextAsync(Guid userId, Question question, string userAnswer, string correctAnswer)
+    private async Task<QuestionEvaluation> ScoreOpenTextAsync(Guid userId, Question question, string userAnswer, string correctAnswer, string? quizRubric)
     {
-        var context = BuildOpenTextContext(question, correctAnswer);
+        var context = BuildOpenTextContext(question, correctAnswer, quizRubric);
         var inputHash = AgentRunService.ComputeHash($"grading:{AgentContractVersions.V2}:{question.Id}:{userAnswer}:{correctAnswer}");
         var run = await agentRunService.CreateAsync(userId, AgentRunType.Grading, inputHash, correlationId: question.Id.ToString(), promptVersion: "grading-v2");
 
@@ -199,6 +199,12 @@ public class AttemptService(
                 KnownMistakePatterns: null);
 
             var response = await aiService.GradeAnswerAsync(request);
+            if (response == null)
+            {
+                await agentRunService.MarkFailedAsync(run.Id, "AI grading returned null response.");
+                return new QuestionEvaluation(0, false, null, BuildOpenTextMistakes(0));
+            }
+
             var normalizedScore = response.MaxScore > 0
                 ? Math.Clamp(response.Score / response.MaxScore, 0, 1)
                 : 0;
@@ -229,7 +235,7 @@ public class AttemptService(
         }
     }
 
-    private static string BuildOpenTextContext(Question question, string correctAnswer)
+    private static string BuildOpenTextContext(Question question, string correctAnswer, string? quizRubric)
     {
         var builder = new StringBuilder();
         builder.AppendLine("Reference Answer:");
@@ -240,6 +246,13 @@ public class AttemptService(
             builder.AppendLine();
             builder.AppendLine("Explanation:");
             builder.AppendLine(question.Explanation);
+        }
+
+        if (!string.IsNullOrWhiteSpace(quizRubric))
+        {
+            builder.AppendLine();
+            builder.AppendLine("Quiz Rubric:");
+            builder.AppendLine(quizRubric);
         }
 
         var context = builder.ToString();

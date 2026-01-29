@@ -15,6 +15,7 @@ export interface QuestionSetDto {
     questions: QuestionDto[];
     type: string;
     difficulty?: string;
+    quizRubric?: string | null;
     createdAt: string;
 }
 
@@ -23,6 +24,7 @@ export interface CreateQuestionSetDto {
     title: string;
     questions: QuestionDto[];
     difficulty?: string;
+    quizRubric?: string | null;
 }
 
 export interface SubmitAttemptDto {

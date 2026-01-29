@@ -77,12 +77,14 @@ public class PendingQuizService(ApplicationDbContext db, IAgentRunService agentR
             throw new InvalidOperationException("No questions generated.");
 
         // Create QuestionSet
+        var quizRubric = ParseQuizRubric(pending.QuestionsJson);
         var questionSet = new QuestionSet
         {
             NoteId = pending.NoteId,
             Title = pending.Title,
             Difficulty = pending.Difficulty,
-            Type = (QuestionType)pending.QuestionType
+            Type = (QuestionType)pending.QuestionType,
+            RubricJson = quizRubric
         };
 
         db.QuestionSets.Add(questionSet);
@@ -152,6 +154,36 @@ public class PendingQuizService(ApplicationDbContext db, IAgentRunService agentR
         }
 
         return [];
+    }
+
+    private static string? ParseQuizRubric(string json)
+    {
+        if (string.IsNullOrWhiteSpace(json)) return null;
+
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+            if (root.ValueKind != JsonValueKind.Object)
+            {
+                return null;
+            }
+
+            foreach (var prop in root.EnumerateObject())
+            {
+                if (string.Equals(prop.Name, "quizRubric", StringComparison.OrdinalIgnoreCase)
+                    && prop.Value.ValueKind != JsonValueKind.Null)
+                {
+                    return prop.Value.ToString();
+                }
+            }
+        }
+        catch
+        {
+            return null;
+        }
+
+        return null;
     }
 
     private static string? FlattenCorrectAnswer(object? obj)

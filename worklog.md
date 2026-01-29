@@ -5,6 +5,89 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-29 18:01  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Added unit test to ensure rubric persists when saving pending quiz from v2 envelope
+
+**CHANGED FILES**
+- Cognify.Tests/Services/PendingQuizServiceTests.cs
+- worklog.md
+
+**DECISIONS**
+- Keep rubric persistence validated at service level without AI dependency.
+
+**NEXT**
+- Run backend tests if needed.
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
+**Timestamp:** 2026-01-29 18:00  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Implemented v2 quiz generation with rubric output
+- Added rubric-aware prompt template and parsing logic
+- Updated status board to mark rubric generation as completed
+
+**CHANGED FILES**
+- Cognify.Server/Services/AiPrompts.cs
+- Cognify.Server/Services/AiService.cs
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Store `quizRubric` as string JSON or plain text; preserve raw JSON when provided.
+
+**NEXT**
+- Add tests for rubric parsing and round-trip persistence on pending quiz save.
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
+**Timestamp:** 2026-01-29 17:58  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Added rubric persistence to QuestionSet and exposed rubric via DTOs
+- Parsed rubric from pending quiz contract envelope when saving as quiz
+- Included rubric context in open-text grading
+- Added rubric fields to client quiz models
+- Generated EF migration for QuestionSet.RubricJson
+
+**CHANGED FILES**
+- Cognify.Server/Models/QuestionSet.cs
+- Cognify.Server/Dtos/QuestionDTOs.cs
+- Cognify.Server/Services/QuestionService.cs
+- Cognify.Server/Services/PendingQuizService.cs
+- Cognify.Server/Services/AttemptService.cs
+- Cognify.Server/Migrations/20260129165630_AddQuizRubricToQuestionSet.cs
+- Cognify.Server/Migrations/20260129165630_AddQuizRubricToQuestionSet.Designer.cs
+- Cognify.Server/Migrations/ApplicationDbContextModelSnapshot.cs
+- cognify.client/src/app/core/models/quiz.models.ts
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Persist rubric as JSON/text on QuestionSet to keep compatibility with existing quiz model.
+
+**NEXT**
+- Implement rubric generation in AI quiz output (populate `QuizRubric` in v2 response).
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
 **Timestamp:** 2026-01-29 17:46  
 **Author:** GitHub Copilot  
 

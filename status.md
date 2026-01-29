@@ -39,6 +39,7 @@
 - [ ] **[Agent]** Implement Question Generation Agent (Pipe B)
 - [ ] **[Agent]** Implement Grading Agent (Pipe C)
 - [x] **[Agent]** Implement Learning Analytics Agent (Statistical Engine)
+- [x] **[Agent]** Generate rubric content in quiz generation output (v2 contract)
 
 ### 💾 File Management Enhancements
 - [x] **[Backend]** Add `FileSizeBytes` to Document Entity/DTO
@@ -48,7 +49,7 @@
 
 ### 🤖 AI Agents & Pipelines (v2)
 - [x] **[Refactor]** Define strict v2 agent contracts (OCR / QuizGen / Grading) + versioning + input-hash idempotency
-- [ ] **[Refactor]** Align quiz output with v2 contracts (Rubric DTO + persistence strategy; keep `QuestionSet`/`Question` compatibility)
+- [x] **[Refactor]** Align quiz output with v2 contracts (Rubric DTO + persistence strategy; keep `QuestionSet`/`Question` compatibility)
 - [x] **[Test]** Make background worker test-safe (no OpenAI key required; deterministic test runs)
 
 

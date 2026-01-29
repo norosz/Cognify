@@ -26,6 +26,7 @@ public class QuestionService(ApplicationDbContext context, IUserContextService u
             Title = dto.Title,
             Difficulty = Enum.TryParse<QuizDifficulty>(dto.Difficulty ?? "", true, out var diff) ? diff : QuizDifficulty.Intermediate,
             Type = Enum.TryParse<QuestionType>(dto.Questions.FirstOrDefault()?.Type ?? "MultipleChoice", true, out var qt) ? qt : QuestionType.MultipleChoice,
+            RubricJson = string.IsNullOrWhiteSpace(dto.QuizRubric) ? null : dto.QuizRubric,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -108,6 +109,7 @@ public class QuestionService(ApplicationDbContext context, IUserContextService u
             Title = qs.Title,
             Type = qs.Type.ToString(),
             Difficulty = qs.Difficulty.ToString(),
+            QuizRubric = qs.RubricJson,
             CreatedAt = qs.CreatedAt,
             Questions = qs.Questions?.Select(q => new QuestionDto
             {

@@ -100,4 +100,65 @@ public static class AiPrompts
         {{content}}
         """;
     }
+
+        public static string BuildGenerationPromptWithRubric(
+                int count,
+                int difficultyLevel,
+                string difficultyPrompt,
+                string typePrompt,
+                string content,
+                string? knowledgeStateSnapshot,
+                string? mistakeFocus)
+        {
+                return $$"""
+                You are an expert tutor. Your task is to generate {{count}} high-quality study questions based on the provided content.
+
+                ### Context
+                The user is using an educational platform. The output MUST be a strict JSON object that will be parsed by a backend system. Any deviation from the schema will cause a system error.
+
+                ### Difficulty
+                {{difficultyPrompt}}
+
+                ### Question Types and Schemas
+                {{typePrompt}}
+
+                ### Learner State (if provided)
+                {{knowledgeStateSnapshot ?? "(none)"}}
+
+                ### Mistake Focus (if provided)
+                {{mistakeFocus ?? "(none)"}}
+
+                ### Mandatory Output Format
+                Your response must be a SINGLE JSON object with the following structure:
+                {
+                    "questions": [
+                        {
+                            "text": "The prompt or question content",
+                            "type": "MultipleChoice" | "TrueFalse" | "OpenText" | "Matching" | "Ordering" | "MultipleSelect",
+                            "options": ["Option A", "Option B", ...], (For MC/TF/Ordering/MultipleSelect)
+                            "pairs": ["Term:Definition", ...], (Only for Matching)
+                            "correctAnswer": "The correct response or key",
+                            "explanation": "Why this is correct",
+                            "difficultyLevel": {{difficultyLevel}} (Use simple int 1-5, relative to requested difficulty)
+                        }
+                    ],
+                    "quizRubric": "Concise rubric describing how to score open-text answers and what key concepts must appear."
+                }
+
+                ### Rules
+                1. NO conversational filler. DO NOT wrap the JSON output in markdown code blocks (e.g., ```json ... ```). Return raw JSON only.
+                2. Ensure valid JSON syntax.
+                3. MATHEMATICAL FORMULAS: Always use LaTeX for math, variables, and formulas to ensure beautiful rendering.
+                     - Use $...$ for inline math (e.g., $x^2 + y^2 = z^2$).
+                     - Use $$...$$ for display math on its own line. DO NOT use [ ] or ( ) for math.
+                     - For single variables or symbols, ALWAYS use LaTeX (e.g., use $t$ instead of 't').
+                     - Example CORRECT: "Solve for $x$ where $x^2 - 4 = 0$."
+                     - Example INCORRECT: "Solve for x where x^2 - 4 = 0."
+                4. TECHNICAL TERMS: Use Markdown backticks (e.g., `i.true`) for code snippets, identifiers, or keywords that are not mathematical.
+                5. If type is Mixed, ensure you use a variety of the types mentioned above.
+
+                Content:
+                {{content}}
+                """;
+        }
 }

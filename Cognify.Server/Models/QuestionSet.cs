@@ -16,6 +16,8 @@ public class QuestionSet
 
     public QuestionType Type { get; set; } = QuestionType.MultipleChoice;
 
+    public string? RubricJson { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     // Navigation properties

@@ -164,6 +164,47 @@ public class PendingQuizServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task SaveAsQuizAsync_ShouldPersistQuizRubric_WhenEnvelopeProvided()
+    {
+        var noteId = Guid.NewGuid();
+        var moduleId = Guid.NewGuid();
+        var pendingId = Guid.NewGuid();
+        var rubric = "Score full credit when answers include the key steps and definitions.";
+
+        var questions = new List<GeneratedQuestion>
+        {
+            new GeneratedQuestion { Text = "Q1", Type = QuestionType.MultipleChoice, Options = ["A", "B"], CorrectAnswer = "A" }
+        };
+
+        var options = new JsonSerializerOptions { Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() } };
+        var envelope = new { questions, quizRubric = rubric };
+        var questionsJson = JsonSerializer.Serialize(envelope, options);
+
+        var pendingQuiz = new PendingQuiz
+        {
+            Id = pendingId,
+            UserId = _userId,
+            NoteId = noteId,
+            ModuleId = moduleId,
+            Title = "Rubric Quiz",
+            Status = PendingQuizStatus.Ready,
+            QuestionsJson = questionsJson,
+            QuestionType = (int)QuestionType.MultipleChoice,
+            QuestionCount = 1,
+            Difficulty = QuizDifficulty.Beginner
+        };
+
+        _context.PendingQuizzes.Add(pendingQuiz);
+        await _context.SaveChangesAsync();
+
+        var result = await _service.SaveAsQuizAsync(pendingId, _userId);
+
+        var dbQs = await _context.QuestionSets.FirstOrDefaultAsync(q => q.Id == result.Id);
+        dbQs.Should().NotBeNull();
+        dbQs!.RubricJson.Should().Be(rubric);
+    }
+
+    [Fact]
     public async Task SaveAsQuizAsync_ShouldThrow_WhenNotReady()
     {
         // Arrange
