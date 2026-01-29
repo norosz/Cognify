@@ -17,6 +17,8 @@ public class AttemptServiceTests : IDisposable
     private readonly ApplicationDbContext _context;
     private readonly Mock<IUserContextService> _userContextMock;
     private readonly Mock<IKnowledgeStateService> _knowledgeStateMock;
+    private readonly Mock<IAiService> _aiServiceMock;
+    private readonly Mock<IAgentRunService> _agentRunServiceMock;
     private readonly AttemptService _attemptService;
     private readonly Guid _userId;
 
@@ -29,6 +31,8 @@ public class AttemptServiceTests : IDisposable
         _context = new ApplicationDbContext(options);
         _userContextMock = new Mock<IUserContextService>();
         _knowledgeStateMock = new Mock<IKnowledgeStateService>();
+        _aiServiceMock = new Mock<IAiService>();
+        _agentRunServiceMock = new Mock<IAgentRunService>();
         _userId = Guid.NewGuid();
 
         _userContextMock.Setup(uc => uc.GetCurrentUserId()).Returns(_userId);
@@ -36,7 +40,12 @@ public class AttemptServiceTests : IDisposable
             .Setup(ks => ks.ApplyAttemptResultAsync(It.IsAny<Attempt>(), It.IsAny<QuestionSet>(), It.IsAny<IReadOnlyCollection<KnowledgeInteractionInput>>()))
             .Returns(Task.CompletedTask);
 
-        _attemptService = new AttemptService(_context, _userContextMock.Object, _knowledgeStateMock.Object);
+        _attemptService = new AttemptService(
+            _context,
+            _userContextMock.Object,
+            _knowledgeStateMock.Object,
+            _aiServiceMock.Object,
+            _agentRunServiceMock.Object);
     }
 
     [Fact]
