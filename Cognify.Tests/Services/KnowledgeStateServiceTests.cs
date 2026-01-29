@@ -15,6 +15,7 @@ public class KnowledgeStateServiceTests : IDisposable
     private readonly ApplicationDbContext _context;
     private readonly Mock<IUserContextService> _userContextMock;
     private readonly Mock<IDecayPredictionService> _decayPredictionMock;
+    private readonly Mock<IMistakeAnalysisService> _mistakeAnalysisMock;
     private readonly KnowledgeStateService _service;
     private readonly Guid _userId;
 
@@ -27,6 +28,7 @@ public class KnowledgeStateServiceTests : IDisposable
         _context = new ApplicationDbContext(options);
         _userContextMock = new Mock<IUserContextService>();
         _decayPredictionMock = new Mock<IDecayPredictionService>();
+        _mistakeAnalysisMock = new Mock<IMistakeAnalysisService>();
         _userId = Guid.NewGuid();
 
         _userContextMock.Setup(uc => uc.GetCurrentUserId()).Returns(_userId);
@@ -34,7 +36,15 @@ public class KnowledgeStateServiceTests : IDisposable
             .Setup(x => x.Predict(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<DateTime>(), It.IsAny<DateTime?>(), It.IsAny<int>()))
             .Returns((double mastery, double confidence, DateTime now, DateTime? last, int incorrect) => (now.AddDays(3), 0.5));
 
-        _service = new KnowledgeStateService(_context, _userContextMock.Object, _decayPredictionMock.Object);
+        _mistakeAnalysisMock
+            .Setup(x => x.Analyze(It.IsAny<Question?>(), It.IsAny<KnowledgeInteractionInput>()))
+            .Returns([]);
+
+        _service = new KnowledgeStateService(
+            _context,
+            _userContextMock.Object,
+            _decayPredictionMock.Object,
+            _mistakeAnalysisMock.Object);
     }
 
     [Fact]
