@@ -112,16 +112,58 @@ public class AiService : IAiService
 
     public async Task<QuizGenerationContractResponse> GenerateQuizAsync(QuizGenerationContractRequest request)
     {
-        var questions = await GenerateQuestionsAsync(
-            request.NoteContent,
-            request.QuestionType,
-            request.Difficulty,
-            request.QuestionCount);
+        var model = _configuration["OpenAI:Model"] ?? "gpt-4o";
+        var chatClient = _client.GetChatClient(model);
 
-        return new QuizGenerationContractResponse(
-            request.ContractVersion,
-            questions,
-            QuizRubric: null);
+        var difficultyPrompt = AiPrompts.GetDifficultySystemPrompt(request.Difficulty);
+        var typePrompt = AiPrompts.GetTypeSystemPrompt(request.QuestionType);
+        var prompt = AiPrompts.BuildGenerationPromptWithRubric(
+            request.QuestionCount,
+            request.Difficulty,
+            difficultyPrompt,
+            typePrompt,
+            request.NoteContent,
+            request.KnowledgeStateSnapshot,
+            request.MistakeFocus);
+
+        try
+        {
+            var completion = await chatClient.CompleteChatAsync(
+                [
+                    new SystemChatMessage("You are a strict JSON generator. You always wrap your response in a 'questions' array inside a root object and include a 'quizRubric'."),
+                    new UserChatMessage(prompt)
+                ],
+                new ChatCompletionOptions
+                {
+                    ResponseFormat = ChatResponseFormat.CreateJsonObjectFormat()
+                }
+            );
+
+            var json = completion.Value.Content[0].Text;
+            _logger.LogInformation("AI Response received: {Json}", json);
+
+            var parsed = ParseQuizGenerationResponse(json);
+            if (parsed.Questions.Count == 0)
+            {
+                _logger.LogWarning("AI response did not contain a valid questions array.");
+            }
+
+            return new QuizGenerationContractResponse(
+                request.ContractVersion,
+                parsed.Questions,
+                parsed.QuizRubric);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to generate or parse quiz with rubric. Falling back to questions-only generation.");
+            var fallback = await GenerateQuestionsAsync(
+                request.NoteContent,
+                request.QuestionType,
+                request.Difficulty,
+                request.QuestionCount);
+
+            return new QuizGenerationContractResponse(request.ContractVersion, fallback, QuizRubric: null);
+        }
     }
 
     public async Task<string> ParseHandwritingAsync(Stream imageStream, string contentType)
@@ -228,5 +270,52 @@ public class AiService : IAiService
 
         var match = Regex.Match(analysis, @"Feedback\s*:\s*(.*)", RegexOptions.IgnoreCase | RegexOptions.Singleline);
         return match.Success ? match.Groups[1].Value.Trim() : null;
+    }
+
+    private static (List<GeneratedQuestion> Questions, string? QuizRubric) ParseQuizGenerationResponse(string json)
+    {
+        if (string.IsNullOrWhiteSpace(json)) return ([], null);
+
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                Converters = { new JsonStringEnumConverter() }
+            };
+
+            List<GeneratedQuestion> questions = [];
+            string? rubric = null;
+
+            if (root.ValueKind == JsonValueKind.Object)
+            {
+                foreach (var prop in root.EnumerateObject())
+                {
+                    if (string.Equals(prop.Name, "questions", StringComparison.OrdinalIgnoreCase)
+                        && prop.Value.ValueKind == JsonValueKind.Array)
+                    {
+                        questions = JsonSerializer.Deserialize<List<GeneratedQuestion>>(prop.Value.GetRawText(), options) ?? [];
+                    }
+                    else if (string.Equals(prop.Name, "quizRubric", StringComparison.OrdinalIgnoreCase))
+                    {
+                        rubric = prop.Value.ValueKind == JsonValueKind.String
+                            ? prop.Value.GetString()
+                            : prop.Value.GetRawText();
+                    }
+                }
+            }
+            else if (root.ValueKind == JsonValueKind.Array)
+            {
+                questions = JsonSerializer.Deserialize<List<GeneratedQuestion>>(root.GetRawText(), options) ?? [];
+            }
+
+            return (questions, rubric);
+        }
+        catch
+        {
+            return ([], null);
+        }
     }
 }
