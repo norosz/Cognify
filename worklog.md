@@ -5,6 +5,36 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-29 18:07  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Persisted extraction contract metadata (blocks/confidence) into MaterialExtraction and AgentRun output
+- Versioned extraction input hash to v2
+- Updated material extraction service tests for new signature
+- Marked extraction contract output as done in status board
+
+**CHANGED FILES**
+- Cognify.Server/Services/Interfaces/IMaterialExtractionService.cs
+- Cognify.Server/Services/MaterialExtractionService.cs
+- Cognify.Server/Services/ExtractedContentService.cs
+- Cognify.Server/Services/AiBackgroundWorker.cs
+- Cognify.Tests/Services/MaterialExtractionServiceTests.cs
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Use heuristic confidence values for non-OCR sources; OCR defaults to 0.6 when no confidence is provided.
+
+**NEXT**
+- Add grading output fields for detected mistakes and confidence estimate.
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
 **Timestamp:** 2026-01-29 18:01  
 **Author:** GitHub Copilot  
 

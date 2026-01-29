@@ -36,11 +36,13 @@ public class MaterialExtractionServiceTests : IDisposable
         await _context.SaveChangesAsync();
 
         var service = new MaterialExtractionService(_context);
-        await service.UpsertExtractionAsync(material, "text", "[]");
+        await service.UpsertExtractionAsync(material, "text", "[]", "[]", 0.9);
 
         var extraction = await _context.MaterialExtractions.FirstOrDefaultAsync(e => e.MaterialId == material.Id);
         extraction.Should().NotBeNull();
         extraction!.ExtractedText.Should().Be("text");
+        extraction.BlocksJson.Should().Be("[]");
+        extraction.OverallConfidence.Should().Be(0.9);
         material.Status.Should().Be(MaterialStatus.Processed);
         material.HasEmbeddedImages.Should().BeTrue();
     }
@@ -64,10 +66,12 @@ public class MaterialExtractionServiceTests : IDisposable
         await _context.SaveChangesAsync();
 
         var service = new MaterialExtractionService(_context);
-        await service.UpsertExtractionAsync(material, "new", null);
+        await service.UpsertExtractionAsync(material, "new", null, null, null);
 
         var updated = await _context.MaterialExtractions.FirstAsync(e => e.MaterialId == material.Id);
         updated.ExtractedText.Should().Be("new");
+        updated.BlocksJson.Should().BeNull();
+        updated.OverallConfidence.Should().BeNull();
         material.HasEmbeddedImages.Should().BeFalse();
     }
 

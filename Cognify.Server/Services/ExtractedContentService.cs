@@ -9,7 +9,7 @@ public class ExtractedContentService(ApplicationDbContext db, IAgentRunService a
 {
     public async Task<ExtractedContent> CreatePendingAsync(Guid userId, Guid documentId, Guid moduleId)
     {
-        var inputHash = AgentRunService.ComputeHash($"extraction:{userId}:{documentId}");
+        var inputHash = AgentRunService.ComputeHash($"extraction:{Cognify.Server.Dtos.Ai.Contracts.AgentContractVersions.V2}:{userId}:{documentId}");
 
         // Check for existing unsaved content to prevent duplicates (e.g. retries)
         var existing = await db.ExtractedContents
