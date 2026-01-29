@@ -7,7 +7,7 @@ namespace Cognify.Server.Services;
 
 public class MaterialExtractionService(ApplicationDbContext db) : IMaterialExtractionService
 {
-    public async Task UpsertExtractionAsync(Material material, string extractedText, string? imagesJson)
+    public async Task UpsertExtractionAsync(Material material, string extractedText, string? imagesJson, string? blocksJson, double? confidence)
     {
         var existing = await db.MaterialExtractions.FirstOrDefaultAsync(e => e.MaterialId == material.Id);
         if (existing == null)
@@ -21,6 +21,8 @@ public class MaterialExtractionService(ApplicationDbContext db) : IMaterialExtra
 
         existing.ExtractedText = extractedText;
         existing.ImagesJson = imagesJson;
+        existing.BlocksJson = blocksJson;
+        existing.OverallConfidence = confidence;
         existing.CreatedAt = DateTime.UtcNow;
 
         material.Status = MaterialStatus.Processed;

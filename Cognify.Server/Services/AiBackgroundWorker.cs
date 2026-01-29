@@ -93,6 +93,9 @@ public class AiBackgroundWorker(
 
                 string text;
                 List<PdfImageMetadata> images = [];
+                string? blocksJson = "[]";
+                double? confidence = null;
+                var usedOcr = false;
 
                 if (contentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase))
                 {
@@ -104,6 +107,7 @@ public class AiBackgroundWorker(
                     if (string.IsNullOrWhiteSpace(text))
                     {
                         text = await OcrPdfImagesAsync(aiService, extractedImages, stoppingToken);
+                        usedOcr = true;
                     }
 
                     if (string.IsNullOrWhiteSpace(text))
@@ -122,21 +126,33 @@ public class AiBackgroundWorker(
                     {
                         text = AppendImagesToMarkdown(text, images);
                     }
+
+                    confidence = usedOcr ? 0.6 : 0.95;
                 }
                 else if (contentType.StartsWith("text/") || contentType == "application/xhtml+xml")
                 {
                     buffer.Position = 0;
                     text = await ReadTextAsync(contentType, buffer, stoppingToken);
+                    confidence = 0.9;
                 }
                 else if (IsOfficeContent(contentType))
                 {
                     buffer.Position = 0;
                     text = ExtractOfficeText(contentType, buffer);
+                    confidence = 0.85;
                 }
                 else if (contentType.StartsWith("image/"))
                 {
                     buffer.Position = 0;
-                    text = await aiService.ParseHandwritingAsync(buffer, contentType);
+                    var ocrRequest = new OcrContractRequest(
+                        AgentContractVersions.V2,
+                        contentType,
+                        Language: null,
+                        Hints: null);
+                    var ocrResponse = await aiService.ParseHandwritingAsync(buffer, ocrRequest);
+                    text = ocrResponse.ExtractedText;
+                    blocksJson = ocrResponse.BlocksJson ?? blocksJson;
+                    confidence = ocrResponse.Confidence ?? 0.6;
                 }
                 else
                 {
@@ -158,10 +174,10 @@ public class AiBackgroundWorker(
                 var imagesJson = images.Count > 0
                     ? System.Text.Json.JsonSerializer.Serialize(images, serializerOptions)
                     : null;
-                await materialExtractionService.UpsertExtractionAsync(material, text, imagesJson);
+                await materialExtractionService.UpsertExtractionAsync(material, text, imagesJson, blocksJson, confidence);
                 if (item.AgentRunId.HasValue)
                 {
-                    var outputJson = System.Text.Json.JsonSerializer.Serialize(new ExtractionOutput(text, images), serializerOptions);
+                    var outputJson = System.Text.Json.JsonSerializer.Serialize(new ExtractionOutput(text, images, blocksJson, confidence), serializerOptions);
                     await agentRunService.MarkCompletedAsync(item.AgentRunId.Value, outputJson);
                 }
             }
@@ -539,7 +555,7 @@ public class AiBackgroundWorker(
         return builder.ToString();
     }
 
-    private record ExtractionOutput(string Text, List<PdfImageMetadata> Images);
+    private record ExtractionOutput(string Text, List<PdfImageMetadata> Images, string? BlocksJson, double? Confidence);
 
     private record PdfImageMetadata(
         string Id,
