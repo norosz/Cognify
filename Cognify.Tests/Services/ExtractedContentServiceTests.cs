@@ -49,6 +49,31 @@ public class ExtractedContentServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task CreatePendingAsync_ShouldReuseExistingPendingContent_ForSameDocument()
+    {
+        var userId = Guid.NewGuid();
+        var docId = Guid.NewGuid();
+        var modId = Guid.NewGuid();
+
+        var existing = new ExtractedContent
+        {
+            UserId = userId,
+            DocumentId = docId,
+            ModuleId = modId,
+            Status = ExtractedContentStatus.Processing,
+            IsSaved = false
+        };
+
+        _context.ExtractedContents.Add(existing);
+        await _context.SaveChangesAsync();
+
+        var result = await _service.CreatePendingAsync(userId, docId, modId);
+
+        result.Id.Should().Be(existing.Id);
+        (await _context.ExtractedContents.CountAsync()).Should().Be(1);
+    }
+
+    [Fact]
     public async Task UpdateAsync_ShouldUpdateTextAndStatus()
     {
         // Arrange

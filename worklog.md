@@ -27,6 +27,33 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-29 18:21  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Added idempotency tests for extraction and pending quiz creation
+- Made pending quiz creation return existing record for identical requests
+- Updated status board to reflect idempotency coverage
+
+**CHANGED FILES**
+- Cognify.Server/Services/PendingQuizService.cs
+- Cognify.Tests/Services/PendingQuizServiceTests.cs
+- Cognify.Tests/Services/ExtractedContentServiceTests.cs
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Treat identical pending quiz requests as idempotent and return existing record unless failed.
+
+**NEXT**
+- Consider idempotency for failed retries (create new run) if needed.
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
 **Timestamp:** 2026-01-29 18:17  
 **Author:** GitHub Copilot  
 

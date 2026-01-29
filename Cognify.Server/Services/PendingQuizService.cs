@@ -15,6 +15,21 @@ public class PendingQuizService(ApplicationDbContext db, IAgentRunService agentR
         Guid userId, Guid noteId, Guid moduleId, string title,
         QuizDifficulty difficulty, int questionType, int questionCount)
     {
+        var existing = await db.PendingQuizzes
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p =>
+                p.UserId == userId &&
+                p.NoteId == noteId &&
+                p.QuestionType == questionType &&
+                p.QuestionCount == questionCount &&
+                p.Difficulty == difficulty &&
+                p.Status != PendingQuizStatus.Failed);
+
+        if (existing != null)
+        {
+            return existing;
+        }
+
         var inputHash = AgentRunService.ComputeHash($"quiz:{AgentContractVersions.V2}:{userId}:{noteId}:{questionType}:{questionCount}:{difficulty}");
         var run = await agentRunService.CreateAsync(userId, AgentRunType.QuizGeneration, inputHash, promptVersion: "quizgen-v2");
 

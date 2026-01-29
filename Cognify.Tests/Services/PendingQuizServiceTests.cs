@@ -49,6 +49,40 @@ public class PendingQuizServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task CreateAsync_ShouldReturnExistingPendingQuiz_ForSameRequest()
+    {
+        var noteId = Guid.NewGuid();
+        var moduleId = Guid.NewGuid();
+
+        var existing = new PendingQuiz
+        {
+            UserId = _userId,
+            NoteId = noteId,
+            ModuleId = moduleId,
+            Title = "Existing",
+            Status = PendingQuizStatus.Generating,
+            QuestionType = (int)QuestionType.MultipleChoice,
+            QuestionCount = 5,
+            Difficulty = QuizDifficulty.Intermediate
+        };
+
+        _context.PendingQuizzes.Add(existing);
+        await _context.SaveChangesAsync();
+
+        var result = await _service.CreateAsync(
+            _userId,
+            noteId,
+            moduleId,
+            "New Title",
+            QuizDifficulty.Intermediate,
+            (int)QuestionType.MultipleChoice,
+            5);
+
+        result.Id.Should().Be(existing.Id);
+        (await _context.PendingQuizzes.CountAsync()).Should().Be(1);
+    }
+
+    [Fact]
     public async Task CreateAsync_ShouldResolveModuleId_FromNote_WhenEmpty()
     {
         var moduleId = Guid.NewGuid();

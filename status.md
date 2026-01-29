@@ -52,6 +52,7 @@
 - [x] **[Refactor]** Define strict v2 agent contracts (OCR / QuizGen / Grading) + versioning + input-hash idempotency
 - [x] **[Refactor]** Align quiz output with v2 contracts (Rubric DTO + persistence strategy; keep `QuestionSet`/`Question` compatibility)
 - [x] **[Test]** Make background worker test-safe (no OpenAI key required; deterministic test runs)
+- [x] **[Test]** Add idempotency tests for pending extraction and quiz creation
 
 
 
