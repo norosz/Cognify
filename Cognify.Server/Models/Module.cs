@@ -21,4 +21,5 @@ public class Module
     public User? OwnerUser { get; set; }
     public ICollection<Document> Documents { get; set; } = [];
     public ICollection<Note> Notes { get; set; } = [];
+    public ICollection<Material> Materials { get; set; } = [];
 }

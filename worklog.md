@@ -5,6 +5,201 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-29 17:55  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Pinned PdfPig packages to stable matching versions to clear NU1603 warnings
+
+**CHANGED FILES**
+- Cognify.Server/Cognify.Server.csproj
+
+**DECISIONS**
+- Aligned PdfPig and sub-packages to version 1.7.0-custom-5 to avoid missing dependency warnings.
+
+**NEXT**
+- Re-run backend tests to confirm warnings are resolved if needed.
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
+**Timestamp:** 2026-01-29 17:45  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Ran backend tests (`dotnet test`) successfully
+- Ran frontend tests; all specs reported success but npm exited with code 1 due to console error output
+- Attempted headless frontend test run; command did not complete cleanly (manual interrupt)
+
+**CHANGED FILES**
+- None
+
+**DECISIONS**
+- Frontend tests need a stable headless/single-run configuration to avoid non-zero exit codes in CI.
+
+**NEXT**
+- If desired, update client test configuration to enforce single-run headless and suppress console error exit.
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
+**Timestamp:** 2026-01-29 17:35  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Fixed test setup for NotesController and ExtractedContentService after v2 changes
+- Adjusted pending extraction DTO mapping to avoid null text
+- Updated dashboard test mock for adaptive quiz response
+- Ran backend and frontend test suites
+
+**CHANGED FILES**
+- Cognify.Tests/Services/ExtractedContentServiceTests.cs
+- Cognify.Tests/Controllers/NotesControllerTests.cs
+- Cognify.Server/Controllers/PendingController.cs
+- cognify.client/src/app/features/dashboard/dashboard.component.spec.ts
+
+**DECISIONS**
+- Mocked blob storage and provided fake OpenAI key in tests to prevent DI/runtime failures.
+
+**NEXT**
+- Optional: pin PdfPig sub-packages to silence NU1603 warnings.
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
+**Timestamp:** 2026-01-29 17:10  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Added v2 `Material`/`MaterialExtraction` entities and DB migration
+- Persisted PDF embedded image metadata in blob storage and linked it to notes on save
+- Exposed embedded images in note DTOs and note editor UI for retrieval
+
+**CHANGED FILES**
+- Cognify.Server/Models/Material.cs
+- Cognify.Server/Models/MaterialExtraction.cs
+- Cognify.Server/Models/Note.cs
+- Cognify.Server/Models/Module.cs
+- Cognify.Server/Data/ApplicationDbContext.cs
+- Cognify.Server/Services/Interfaces/IMaterialService.cs
+- Cognify.Server/Services/Interfaces/IMaterialExtractionService.cs
+- Cognify.Server/Services/MaterialService.cs
+- Cognify.Server/Services/MaterialExtractionService.cs
+- Cognify.Server/Services/ExtractedContentService.cs
+- Cognify.Server/Services/NoteService.cs
+- Cognify.Server/Controllers/AiController.cs
+- Cognify.Server/Services/AiBackgroundWorker.cs
+- Cognify.Server/Dtos/Notes/NoteDto.cs
+- Cognify.Server/Migrations/20260129122937_AddMaterialExtractionV2.cs
+- Cognify.Server/Migrations/20260129122937_AddMaterialExtractionV2.Designer.cs
+- Cognify.Server/Migrations/ApplicationDbContextModelSnapshot.cs
+- Cognify.Server/Cognify.Server.csproj
+- Cognify.Tests/Controllers/AiControllerTests.cs
+- Cognify.Tests/Services/ExtractedContentServiceTests.cs
+- Cognify.Tests/Services/NoteServiceTests.cs
+- cognify.client/src/app/core/models/note.model.ts
+- cognify.client/src/app/features/notes/components/note-editor-dialog/note-editor-dialog.component.html
+- cognify.client/src/app/features/notes/components/note-editor-dialog/note-editor-dialog.component.scss
+- status.md
+
+**DECISIONS**
+- Stored embedded image metadata on the note as JSON so notes can retrieve image blobs without schema changes for image entities.
+
+**NEXT**
+- Consider adding a dedicated materials API surface for v2 pipelines (list materials + extraction metadata).
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
+**Timestamp:** 2026-01-29 16:35  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Added embedded image extraction for PDFs with blob storage upload and metadata surfaced in pending UI
+- Extended pending extraction DTOs to include image metadata and updated preview dialog to display it
+- Added PDF acceptance test for extraction initiation
+
+**CHANGED FILES**
+- Cognify.Server/Services/Interfaces/IPdfImageExtractor.cs
+- Cognify.Server/Services/PdfImageExtractor.cs
+- Cognify.Server/Services/Interfaces/IBlobStorageService.cs
+- Cognify.Server/Services/BlobStorageService.cs
+- Cognify.Server/Program.cs
+- Cognify.Server/Dtos/ExtractedContentDtos.cs
+- Cognify.Server/Services/ExtractedContentService.cs
+- Cognify.Server/Controllers/PendingController.cs
+- Cognify.Server/Services/AiBackgroundWorker.cs
+- Cognify.Tests/Controllers/AiControllerTests.cs
+- cognify.client/src/app/core/services/pending.service.ts
+- cognify.client/src/app/features/pending/pending.component.ts
+- cognify.client/src/app/features/pending/pending.component.html
+- cognify.client/src/app/features/pending/pending.component.scss
+- cognify.client/src/app/features/modules/components/handwriting-preview-dialog/handwriting-preview-dialog.component.ts
+- cognify.client/src/app/features/modules/components/handwriting-preview-dialog/handwriting-preview-dialog.component.html
+- cognify.client/src/app/features/modules/components/handwriting-preview-dialog/handwriting-preview-dialog.component.scss
+- status.md
+
+**DECISIONS**
+- Stored embedded image metadata in AgentRun output JSON to avoid schema changes; UI reads metadata via Pending API.
+
+**NEXT**
+- Decide on v2 `Material/MaterialExtraction` schema adoption and plan migrations.
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
+**Timestamp:** 2026-01-29 16:10  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Added PDF text-layer extraction via PdfPig and wired it into the pending extraction pipeline
+- Allowed PDF files for extraction initiation and updated extraction response contract
+- Updated frontend extraction flow to align with pending-based extraction
+
+**CHANGED FILES**
+- Cognify.Server/Services/Interfaces/IPdfTextExtractor.cs
+- Cognify.Server/Services/PdfTextExtractor.cs
+- Cognify.Server/Cognify.Server.csproj
+- Cognify.Server/Program.cs
+- Cognify.Server/Dtos/Ai/ExtractTextResponse.cs
+- Cognify.Server/Controllers/AiController.cs
+- Cognify.Server/Services/ExtractedContentService.cs
+- Cognify.Server/Services/AiBackgroundWorker.cs
+- cognify.client/src/app/core/models/ai.models.ts
+- cognify.client/src/app/features/notes/components/note-editor-dialog/note-editor-dialog.component.ts
+- cognify.client/src/app/features/modules/components/document-list/document-list.component.ts
+- cognify.client/src/app/core/services/ai.service.spec.ts
+- status.md
+
+**DECISIONS**
+- Implemented PDF extraction using PdfPig text-layer parsing; embedded image extraction remains deferred.
+- Continued using the pending extraction workflow to keep UI and data model stable (no schema changes).
+
+**NEXT**
+- Add embedded PDF image extraction + metadata handling in the pending flow.
+- Decide on v2 `Material/MaterialExtraction` schema adoption and plan migrations.
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
 **Timestamp:** 2026-01-29 15:05  
 **Author:** GitHub Copilot  
 

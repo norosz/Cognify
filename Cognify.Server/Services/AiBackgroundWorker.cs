@@ -43,8 +43,12 @@ public class AiBackgroundWorker(
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var aiService = scope.ServiceProvider.GetRequiredService<IAiService>();
         var blobService = scope.ServiceProvider.GetRequiredService<IBlobStorageService>();
+        var pdfTextExtractor = scope.ServiceProvider.GetRequiredService<IPdfTextExtractor>();
+        var pdfImageExtractor = scope.ServiceProvider.GetRequiredService<IPdfImageExtractor>();
         var extractionService = scope.ServiceProvider.GetRequiredService<IExtractedContentService>();
         var agentRunService = scope.ServiceProvider.GetRequiredService<IAgentRunService>();
+        var materialService = scope.ServiceProvider.GetRequiredService<IMaterialService>();
+        var materialExtractionService = scope.ServiceProvider.GetRequiredService<IMaterialExtractionService>();
         var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
         var modelName = config["OpenAI:Model"] ?? "gpt-4o";
 
@@ -73,24 +77,68 @@ public class AiBackgroundWorker(
             }
 
             var contentType = GetContentType(item.Document.FileName);
-            if (!contentType.StartsWith("image/"))
-            {
-                await extractionService.MarkAsErrorAsync(item.Id, "Only image files are currently supported for handwriting extraction.");
-                if (item.AgentRunId.HasValue)
-                {
-                    await agentRunService.MarkFailedAsync(item.AgentRunId.Value, "Only image files are currently supported for handwriting extraction.");
-                }
-                continue;
-            }
-
             try
             {
                 await using var stream = await blobService.DownloadStreamAsync(item.Document.BlobPath);
-                var text = await aiService.ParseHandwritingAsync(stream, contentType);
+                using var buffer = new MemoryStream();
+                await stream.CopyToAsync(buffer, stoppingToken);
+                buffer.Position = 0;
+
+                string text;
+                List<PdfImageMetadata> images = [];
+
+                if (contentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase))
+                {
+                    text = await pdfTextExtractor.ExtractTextAsync(buffer, stoppingToken);
+                    if (string.IsNullOrWhiteSpace(text))
+                    {
+                        await extractionService.MarkAsErrorAsync(item.Id, "No selectable text found in PDF. Try an image-based document.");
+                        if (item.AgentRunId.HasValue)
+                        {
+                            await agentRunService.MarkFailedAsync(item.AgentRunId.Value, "No selectable text found in PDF.");
+                        }
+                        continue;
+                    }
+
+                    buffer.Position = 0;
+                    var extractedImages = await pdfImageExtractor.ExtractImagesAsync(buffer, stoppingToken);
+                    images = await UploadPdfImagesAsync(blobService, item.Document.Id, extractedImages, stoppingToken);
+
+                    if (images.Count > 0)
+                    {
+                        text = AppendImagesToMarkdown(text, images);
+                    }
+                }
+                else if (contentType.StartsWith("image/"))
+                {
+                    buffer.Position = 0;
+                    text = await aiService.ParseHandwritingAsync(buffer, contentType);
+                }
+                else
+                {
+                    await extractionService.MarkAsErrorAsync(item.Id, "Only image and PDF files are supported for extraction.");
+                    if (item.AgentRunId.HasValue)
+                    {
+                        await agentRunService.MarkFailedAsync(item.AgentRunId.Value, "Only image and PDF files are supported for extraction.");
+                    }
+                    continue;
+                }
+
                 await extractionService.UpdateAsync(item.Id, text);
+
+                var material = await materialService.EnsureForDocumentAsync(item.DocumentId, item.UserId);
+                var serializerOptions = new System.Text.Json.JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+                };
+                var imagesJson = images.Count > 0
+                    ? System.Text.Json.JsonSerializer.Serialize(images, serializerOptions)
+                    : null;
+                await materialExtractionService.UpsertExtractionAsync(material, text, imagesJson);
                 if (item.AgentRunId.HasValue)
                 {
-                    await agentRunService.MarkCompletedAsync(item.AgentRunId.Value, text);
+                    var outputJson = System.Text.Json.JsonSerializer.Serialize(new ExtractionOutput(text, images), serializerOptions);
+                    await agentRunService.MarkCompletedAsync(item.AgentRunId.Value, outputJson);
                 }
             }
             catch (Exception ex)
@@ -195,4 +243,66 @@ public class AiBackgroundWorker(
             _ => "application/octet-stream"
         };
     }
+
+    private static string AppendImagesToMarkdown(string text, List<PdfImageMetadata> images)
+    {
+        if (images.Count == 0) return text;
+
+        var builder = new System.Text.StringBuilder(text.TrimEnd());
+        builder.AppendLine().AppendLine();
+        builder.AppendLine("## Embedded Images");
+
+        foreach (var image in images)
+        {
+            builder.AppendLine($"- {image.FileName} (page {image.PageNumber})");
+        }
+
+        return builder.ToString();
+    }
+
+    private static async Task<List<PdfImageMetadata>> UploadPdfImagesAsync(
+        IBlobStorageService blobService,
+        Guid documentId,
+        List<PdfEmbeddedImage> images,
+        CancellationToken cancellationToken)
+    {
+        var results = new List<PdfImageMetadata>();
+        var index = 0;
+
+        foreach (var image in images)
+        {
+            index++;
+            if (image.Bytes == null || image.Bytes.Length == 0) continue;
+
+            var imageId = Guid.NewGuid().ToString("N");
+            var extension = image.ContentType == "image/png" ? "png" : "bin";
+            var fileName = $"image-{index}.{extension}";
+            var blobPath = $"extracted/{documentId}/images/{imageId}.{extension}";
+
+            await using var imageStream = new MemoryStream(image.Bytes);
+            await blobService.UploadAsync(blobPath, imageStream, image.ContentType, cancellationToken);
+
+            results.Add(new PdfImageMetadata(
+                imageId,
+                blobPath,
+                fileName,
+                image.PageNumber,
+                image.Width,
+                image.Height
+            ));
+        }
+
+        return results;
+    }
+
+    private record ExtractionOutput(string Text, List<PdfImageMetadata> Images);
+
+    private record PdfImageMetadata(
+        string Id,
+        string BlobPath,
+        string FileName,
+        int PageNumber,
+        int? Width,
+        int? Height
+    );
 }

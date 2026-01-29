@@ -14,6 +14,7 @@ public class NoteServiceTests : IDisposable
 {
     private readonly ApplicationDbContext _context;
     private readonly Mock<IUserContextService> _userContextMock;
+    private readonly Mock<IBlobStorageService> _blobStorageMock;
     private readonly NoteService _service;
     private readonly Guid _userId;
 
@@ -25,11 +26,12 @@ public class NoteServiceTests : IDisposable
 
         _context = new ApplicationDbContext(options);
         _userContextMock = new Mock<IUserContextService>();
+        _blobStorageMock = new Mock<IBlobStorageService>();
         _userId = Guid.NewGuid();
 
         _userContextMock.Setup(x => x.GetCurrentUserId()).Returns(_userId);
 
-        _service = new NoteService(_context, _userContextMock.Object);
+        _service = new NoteService(_context, _userContextMock.Object, _blobStorageMock.Object);
     }
 
     private async Task<(Guid ModuleId, Guid NoteId)> SeedDataAsync(bool sameUser = true)

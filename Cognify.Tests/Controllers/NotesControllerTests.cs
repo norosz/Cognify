@@ -1,15 +1,19 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Linq;
 using Cognify.Server;
 using Cognify.Server.Data;
 using Cognify.Server.Dtos.Auth;
 using Cognify.Server.Dtos.Modules;
 using Cognify.Server.Dtos.Notes;
+using Cognify.Server.Services.Interfaces;
 using Cognify.Tests.Extensions;
 using FluentAssertions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using Xunit;
 
 namespace Cognify.Tests.Controllers;
@@ -27,10 +31,20 @@ public class NotesControllerTests : IClassFixture<WebApplicationFactory<Program>
             builder.UseSetting("Jwt:Key", "SuperSecretKeyForIntegrationTesting123!");
             builder.UseSetting("Jwt:Issuer", "TestIssuer");
             builder.UseSetting("Jwt:Audience", "TestAudience");
+            builder.UseSetting("OpenAI:ApiKey", "fake-key-for-testing");
 
             builder.ConfigureServices(services =>
             {
                 services.AddSqliteTestDatabase<ApplicationDbContext>();
+
+                var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(IBlobStorageService));
+                if (descriptor != null)
+                {
+                    services.Remove(descriptor);
+                }
+
+                var blobMock = new Mock<IBlobStorageService>();
+                services.AddScoped(_ => blobMock.Object);
             });
         });
     }

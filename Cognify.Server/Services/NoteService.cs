@@ -2,11 +2,12 @@ using Cognify.Server.Data;
 using Cognify.Server.Dtos.Notes;
 using Cognify.Server.Models;
 using Cognify.Server.Services.Interfaces;
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 
 namespace Cognify.Server.Services;
 
-public class NoteService(ApplicationDbContext context, IUserContextService userContext) : INoteService
+public class NoteService(ApplicationDbContext context, IUserContextService userContext, IBlobStorageService blobStorageService) : INoteService
 {
     public async Task<List<NoteDto>> GetByModuleIdAsync(Guid moduleId)
     {
@@ -108,15 +109,58 @@ public class NoteService(ApplicationDbContext context, IUserContextService userC
         return true;
     }
 
-    private static NoteDto MapToDto(Note note)
+    private NoteDto MapToDto(Note note)
     {
+        var embeddedImages = ParseEmbeddedImages(note.EmbeddedImagesJson, note.Title);
+
         return new NoteDto
         {
             Id = note.Id,
             ModuleId = note.ModuleId,
+            SourceMaterialId = note.SourceMaterialId,
             Title = note.Title,
             Content = note.Content,
-            CreatedAt = note.CreatedAt
+            CreatedAt = note.CreatedAt,
+            EmbeddedImages = embeddedImages
         };
     }
+
+    private IReadOnlyList<NoteEmbeddedImageDto>? ParseEmbeddedImages(string? imagesJson, string title)
+    {
+        if (string.IsNullOrWhiteSpace(imagesJson)) return null;
+
+        try
+        {
+            var images = JsonSerializer.Deserialize<List<EmbeddedImageRecord>>(imagesJson, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            if (images == null || images.Count == 0) return null;
+
+            return images.Select(i => new NoteEmbeddedImageDto(
+                i.Id ?? Guid.NewGuid().ToString(),
+                i.BlobPath ?? string.Empty,
+                i.FileName ?? "embedded-image",
+                i.PageNumber,
+                string.IsNullOrWhiteSpace(i.BlobPath)
+                    ? null
+                    : blobStorageService.GenerateDownloadSasToken(
+                        i.BlobPath,
+                        DateTimeOffset.UtcNow.AddHours(1),
+                        i.FileName ?? title)
+            )).ToList();
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private sealed record EmbeddedImageRecord(
+        string? Id,
+        string? BlobPath,
+        string? FileName,
+        int PageNumber
+    );
 }

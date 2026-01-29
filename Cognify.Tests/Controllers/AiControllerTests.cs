@@ -28,12 +28,14 @@ public class AiControllerTests : IClassFixture<WebApplicationFactory<Program>>, 
     private readonly Mock<IAiService> _aiServiceMock;
     private readonly Mock<IDocumentService> _documentServiceMock;
     private readonly Mock<IBlobStorageService> _blobStorageMock;
+    private readonly Mock<IMaterialService> _materialServiceMock;
 
     public AiControllerTests(WebApplicationFactory<Program> factory)
     {
         _aiServiceMock = new Mock<IAiService>();
         _documentServiceMock = new Mock<IDocumentService>();
         _blobStorageMock = new Mock<IBlobStorageService>();
+        _materialServiceMock = new Mock<IMaterialService>();
 
         _factory = factory.WithWebHostBuilder(builder =>
         {
@@ -50,6 +52,7 @@ public class AiControllerTests : IClassFixture<WebApplicationFactory<Program>>, 
                 services.AddScoped(_ => _aiServiceMock.Object);
                 services.AddScoped(_ => _documentServiceMock.Object);
                 services.AddScoped(_ => _blobStorageMock.Object);
+                services.AddScoped(_ => _materialServiceMock.Object);
             });
         });
     }
@@ -171,6 +174,15 @@ public class AiControllerTests : IClassFixture<WebApplicationFactory<Program>>, 
         // Mock Document Service
         var docDto = new Cognify.Server.Dtos.Documents.DocumentDto(documentId, moduleId, "test.png", "path", Cognify.Server.Dtos.Documents.DocumentStatus.Uploaded, DateTime.UtcNow, 1024);
         _documentServiceMock.Setup(dx => dx.GetByIdAsync(documentId)).ReturnsAsync(docDto);
+        _materialServiceMock.Setup(x => x.EnsureForDocumentAsync(documentId, It.IsAny<Guid>()))
+            .ReturnsAsync(new Material
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                ModuleId = moduleId,
+                FileName = "test.png",
+                BlobPath = "path"
+            });
 
         // Act
         var response = await client.PostAsync($"/api/ai/extract-text/{documentId}", null);
@@ -188,5 +200,44 @@ public class AiControllerTests : IClassFixture<WebApplicationFactory<Program>>, 
             pending!.Status.Should().Be(ExtractedContentStatus.Processing);
             pending.DocumentId.Should().Be(documentId);
         }
+    }
+
+    [Fact]
+    public async Task ExtractText_ShouldAcceptPdfFiles()
+    {
+        // Arrange
+        var (client, _, userId) = await CreateAuthenticatedClientAsync();
+
+        Guid documentId;
+        Guid moduleId;
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var module = new Module { Id = Guid.NewGuid(), OwnerUserId = userId, Title = "M", Description = "D" };
+            var doc = new Document { Id = Guid.NewGuid(), ModuleId = module.Id, FileName = "test.pdf", BlobPath = "path", Status = Cognify.Server.Models.DocumentStatus.Uploaded, CreatedAt = DateTime.UtcNow };
+            db.Modules.Add(module);
+            db.Documents.Add(doc);
+            await db.SaveChangesAsync();
+            documentId = doc.Id;
+            moduleId = module.Id;
+        }
+
+        _documentServiceMock.Setup(dx => dx.GetByIdAsync(documentId))
+            .ReturnsAsync(new Cognify.Server.Dtos.Documents.DocumentDto(documentId, moduleId, "test.pdf", "path", Cognify.Server.Dtos.Documents.DocumentStatus.Uploaded, DateTime.UtcNow, 1024));
+
+        _materialServiceMock.Setup(x => x.EnsureForDocumentAsync(documentId, It.IsAny<Guid>()))
+            .ReturnsAsync(new Material
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                ModuleId = moduleId,
+                FileName = "test.pdf",
+                BlobPath = "path"
+            });
+
+        var response = await client.PostAsync($"/api/ai/extract-text/{documentId}", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Accepted);
     }
 }
