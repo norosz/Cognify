@@ -9,4 +9,5 @@ public record KnowledgeInteractionInput
     public double MaxScore { get; init; } = 1;
     public string? Feedback { get; init; }
     public IReadOnlyList<string>? DetectedMistakes { get; init; }
+    public double? ConfidenceEstimate { get; init; }
 }

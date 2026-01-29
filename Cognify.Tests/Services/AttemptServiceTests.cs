@@ -266,8 +266,8 @@ public class AttemptServiceTests : IDisposable
                 Score: 80,
                 MaxScore: 100,
                 Feedback: "Solid answer",
-                DetectedMistakes: null,
-                ConfidenceEstimate: null,
+                DetectedMistakes: new[] { "ConceptGap" },
+                ConfidenceEstimate: 0.72,
                 RawAnalysis: "Score: 80\nFeedback: Solid answer"));
 
         var dto = new SubmitAttemptDto
@@ -283,6 +283,14 @@ public class AttemptServiceTests : IDisposable
 
         result.Score.Should().Be(80);
         _agentRunServiceMock.Verify(s => s.MarkCompletedAsync(It.IsAny<Guid>(), It.IsAny<string>(), null, null, null), Times.Once);
+        _knowledgeStateMock.Verify(ks => ks.ApplyAttemptResultAsync(
+            It.IsAny<Attempt>(),
+            It.IsAny<QuestionSet>(),
+            It.Is<IReadOnlyCollection<KnowledgeInteractionInput>>(inputs =>
+                inputs.Any(i => i.DetectedMistakes != null
+                                && i.DetectedMistakes.Contains("ConceptGap")
+                                && i.ConfidenceEstimate == 0.72))),
+            Times.Once);
     }
 
     [Fact]

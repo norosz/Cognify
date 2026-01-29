@@ -70,8 +70,8 @@ public class KnowledgeStateServiceTests : IDisposable
 
         var interactions = new List<KnowledgeInteractionInput>
         {
-            new() { QuestionId = Guid.NewGuid(), UserAnswer = "A", IsCorrect = true },
-            new() { QuestionId = Guid.NewGuid(), UserAnswer = "B", IsCorrect = false }
+            new() { QuestionId = Guid.NewGuid(), UserAnswer = "A", IsCorrect = true, ConfidenceEstimate = 0.9 },
+            new() { QuestionId = Guid.NewGuid(), UserAnswer = "B", IsCorrect = false, ConfidenceEstimate = 0.4 }
         };
 
         await _service.ApplyAttemptResultAsync(attempt, questionSet, interactions);
@@ -86,6 +86,7 @@ public class KnowledgeStateServiceTests : IDisposable
 
         var evaluations = await _context.AnswerEvaluations.ToListAsync();
         evaluations.Should().HaveCount(2);
+        evaluations.Should().Contain(e => e.ConfidenceEstimate == 0.9);
     }
 
     [Fact]

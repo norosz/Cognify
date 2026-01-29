@@ -74,7 +74,8 @@ public class AttemptService(
                 Score = evaluation.Score,
                 MaxScore = 1,
                 Feedback = evaluation.Feedback,
-                DetectedMistakes = evaluation.DetectedMistakes
+                DetectedMistakes = evaluation.DetectedMistakes,
+                ConfidenceEstimate = evaluation.ConfidenceEstimate
             });
         }
 
@@ -152,7 +153,7 @@ public class AttemptService(
     {
         if (string.IsNullOrWhiteSpace(userAnswer))
         {
-            return new QuestionEvaluation(0, false, null, null);
+            return new QuestionEvaluation(0, false, null, null, null);
         }
 
         var correctAnswer = TryDeserializeString(question.CorrectAnswerJson);
@@ -202,7 +203,7 @@ public class AttemptService(
             if (response == null)
             {
                 await agentRunService.MarkFailedAsync(run.Id, "AI grading returned null response.");
-                return new QuestionEvaluation(0, false, null, BuildOpenTextMistakes(0));
+                return new QuestionEvaluation(0, false, null, BuildOpenTextMistakes(0), null);
             }
 
             var normalizedScore = response.MaxScore > 0
@@ -226,12 +227,13 @@ public class AttemptService(
                 normalizedScore,
                 normalizedScore >= OpenTextCorrectThreshold,
                 response.Feedback,
-                response.DetectedMistakes ?? BuildOpenTextMistakes(normalizedScore));
+                response.DetectedMistakes ?? BuildOpenTextMistakes(normalizedScore),
+                response.ConfidenceEstimate);
         }
         catch (Exception ex)
         {
             await agentRunService.MarkFailedAsync(run.Id, ex.Message);
-            return new QuestionEvaluation(0, false, null, null);
+            return new QuestionEvaluation(0, false, null, null, null);
         }
     }
 
@@ -268,7 +270,7 @@ public class AttemptService(
 
     private static QuestionEvaluation ScoreFromBoolean(bool isCorrect)
     {
-        return new QuestionEvaluation(isCorrect ? 1 : 0, isCorrect, null, isCorrect ? null : new[] { "IncorrectAnswer" });
+        return new QuestionEvaluation(isCorrect ? 1 : 0, isCorrect, null, isCorrect ? null : new[] { "IncorrectAnswer" }, null);
     }
 
     private static bool SequenceEquals(IReadOnlyList<string> left, IReadOnlyList<string> right)
@@ -372,5 +374,6 @@ public class AttemptService(
         double Score,
         bool IsCorrect,
         string? Feedback,
-        IReadOnlyList<string>? DetectedMistakes);
+        IReadOnlyList<string>? DetectedMistakes,
+        double? ConfidenceEstimate);
 }

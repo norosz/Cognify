@@ -5,6 +5,33 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-29 18:17  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Propagated grading confidence estimates through KnowledgeInteractionInput and AnswerEvaluation
+- Added tests to verify confidence persistence and detected mistake propagation
+
+**CHANGED FILES**
+- Cognify.Server/Dtos/Knowledge/KnowledgeInteractionInput.cs
+- Cognify.Server/Services/AttemptService.cs
+- Cognify.Server/Services/KnowledgeStateService.cs
+- Cognify.Tests/Services/AttemptServiceTests.cs
+- Cognify.Tests/Services/KnowledgeStateServiceTests.cs
+- worklog.md
+
+**DECISIONS**
+- Store confidence estimates at AnswerEvaluation for downstream analytics while keeping interactions optional.
+
+**NEXT**
+- Run backend tests to confirm new test coverage passes.
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
 **Timestamp:** 2026-01-29 18:13  
 **Author:** GitHub Copilot  
 

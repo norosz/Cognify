@@ -78,6 +78,7 @@ public class KnowledgeStateService(
                 Score = interaction.Score > 0 ? interaction.Score : (interaction.IsCorrect ? 1 : 0),
                 MaxScore = interaction.MaxScore > 0 ? interaction.MaxScore : 1,
                 Feedback = interaction.Feedback,
+                ConfidenceEstimate = interaction.ConfidenceEstimate,
                 DetectedMistakesJson = mistakes.Count == 0 ? null : JsonSerializer.Serialize(mistakes),
                 CreatedAt = now
             };
