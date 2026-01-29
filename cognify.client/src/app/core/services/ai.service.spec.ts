@@ -30,10 +30,10 @@ describe('AiService', () => {
 
     it('should call extract-text endpoint', () => {
         const docId = '123';
-        const mockResponse = { text: 'Extracted text', confidence: 0.9 };
+        const mockResponse = { extractedContentId: 'pending-1', status: 'Processing' };
 
         service.extractText(docId).subscribe(res => {
-            expect(res.text).toBe('Extracted text');
+            expect(res.extractedContentId).toBe('pending-1');
         });
 
         const req = httpMock.expectOne(`/api/ai/extract-text/${docId}`);

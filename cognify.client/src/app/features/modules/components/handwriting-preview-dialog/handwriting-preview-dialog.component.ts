@@ -10,6 +10,7 @@ import { NoteService } from '../../../../core/services/note.service';
 import { CreateNoteRequest } from '../../../../core/models/note.model';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { ExtractedImageMetadataDto } from '../../../../core/services/pending.service';
 
 @Component({
   selector: 'app-handwriting-preview-dialog',
@@ -30,17 +31,19 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 export class HandwritingPreviewDialogComponent {
   title = signal<string>('');
   text = signal<string>('');
+  images = signal<ExtractedImageMetadataDto[]>([]);
   moduleId: string;
   isSaving = signal<boolean>(false);
 
   constructor(
     private dialogRef: MatDialogRef<HandwritingPreviewDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { text: string, moduleId: string, mode?: 'save' | 'view' },
+    @Inject(MAT_DIALOG_DATA) public data: { text: string, moduleId: string, mode?: 'save' | 'view', images?: ExtractedImageMetadataDto[] },
     private noteService: NoteService,
     private notification: NotificationService
   ) {
     this.text.set(data.text);
     this.moduleId = data.moduleId;
+    this.images.set(data.images ?? []);
   }
 
   async copyToClipboard() {

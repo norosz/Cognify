@@ -14,9 +14,14 @@ public class Note
 
     public string? Content { get; set; }
 
+    public Guid? SourceMaterialId { get; set; }
+
+    public string? EmbeddedImagesJson { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     // Navigation properties
     public Module? Module { get; set; }
     public ICollection<QuestionSet> QuestionSets { get; set; } = [];
+    public Material? SourceMaterial { get; set; }
 }

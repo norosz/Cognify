@@ -134,7 +134,8 @@ export class PendingComponent implements OnInit {
       data: {
         text: content.text,
         moduleId: content.moduleId,
-        mode: 'view'
+        mode: 'view',
+        images: content.images ?? []
       }
     });
 

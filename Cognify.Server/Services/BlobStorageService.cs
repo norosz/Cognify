@@ -57,6 +57,20 @@ public class BlobStorageService(BlobServiceClient blobServiceClient) : IBlobStor
         return await blob.OpenReadAsync();
     }
 
+    public async Task UploadAsync(string blobName, Stream content, string contentType, CancellationToken cancellationToken = default)
+    {
+        var container = blobServiceClient.GetBlobContainerClient(ContainerName);
+        await container.CreateIfNotExistsAsync(cancellationToken: cancellationToken);
+        var blob = container.GetBlobClient(blobName);
+        await blob.UploadAsync(content, new BlobUploadOptions
+        {
+            HttpHeaders = new BlobHttpHeaders
+            {
+                ContentType = contentType
+            }
+        }, cancellationToken);
+    }
+
     public async Task DeleteAsync(string blobName)
     {
         var container = blobServiceClient.GetBlobContainerClient(ContainerName);

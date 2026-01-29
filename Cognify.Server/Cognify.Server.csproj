@@ -22,6 +22,11 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.23.0" />
+    <PackageReference Include="UglyToad.PdfPig" Version="1.7.0-custom-5" />
+    <PackageReference Include="UglyToad.PdfPig.Core" Version="1.7.0-custom-5" />
+    <PackageReference Include="UglyToad.PdfPig.Fonts" Version="1.7.0-custom-5" />
+    <PackageReference Include="UglyToad.PdfPig.Tokenization" Version="1.7.0-custom-5" />
+    <PackageReference Include="UglyToad.PdfPig.Tokens" Version="1.7.0-custom-5" />
   </ItemGroup>
 
   <ItemGroup>

@@ -11,7 +11,18 @@ public record ExtractedContentDto(
     string Text,
     DateTime ExtractedAt,
     ExtractedContentStatus Status,
-    string? ErrorMessage
+    string? ErrorMessage,
+    IReadOnlyList<ExtractedImageMetadataDto>? Images
 );
 
 public record SaveAsNoteRequest(string Title);
+
+public record ExtractedImageMetadataDto(
+    string Id,
+    string BlobPath,
+    string FileName,
+    int PageNumber,
+    int? Width,
+    int? Height,
+    string? DownloadUrl
+);

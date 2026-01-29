@@ -115,7 +115,7 @@ export class DocumentListComponent implements OnInit {
       },
       error: (err) => {
         console.error(err);
-        this.notification.error('Failed to extract text. Ensure it is a valid image.');
+        this.notification.error('Failed to extract text. Ensure it is a valid image or PDF.');
 
         const updated = new Set(this.extractingDocIds());
         updated.delete(doc.id);

@@ -4,6 +4,8 @@ using Cognify.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using System.Text.Json;
+using System.IO;
 
 namespace Cognify.Server.Controllers;
 
@@ -13,7 +15,8 @@ namespace Cognify.Server.Controllers;
 public class PendingController(
     IExtractedContentService extractedContentService,
     IPendingQuizService pendingQuizService,
-    IUserContextService userContext) : ControllerBase
+    IUserContextService userContext,
+    IBlobStorageService blobStorageService) : ControllerBase
 {
     private Guid GetUserId() => userContext.GetCurrentUserId();
 
@@ -34,10 +37,11 @@ public class PendingController(
             c.ModuleId,
             c.Document?.FileName ?? "Unknown",
             c.Module?.Title ?? "Unknown",
-            c.Text,
+            c.Text ?? string.Empty,
             c.ExtractedAt,
             c.Status,
-            c.ErrorMessage
+            c.ErrorMessage,
+            BuildImageMetadata(c.AgentRun, c.Document?.FileName)
         )).ToList();
     }
 
@@ -57,10 +61,11 @@ public class PendingController(
             content.ModuleId,
             content.Document?.FileName ?? "Unknown",
             content.Module?.Title ?? "Unknown",
-            content.Text,
+            content.Text ?? string.Empty,
             content.ExtractedAt,
             content.Status,
-            content.ErrorMessage
+            content.ErrorMessage,
+            BuildImageMetadata(content.AgentRun, content.Document?.FileName)
         );
     }
 
@@ -257,6 +262,50 @@ public class PendingController(
         var extractedCount = await extractedContentService.GetCountByUserAsync(userId);
         var quizCount = await pendingQuizService.GetCountByUserAsync(userId);
         return extractedCount + quizCount;
+    }
+
+    private IReadOnlyList<ExtractedImageMetadataDto>? BuildImageMetadata(AgentRun? agentRun, string? sourceFileName)
+    {
+        if (agentRun == null || string.IsNullOrWhiteSpace(agentRun.OutputJson)) return null;
+
+        try
+        {
+            using var doc = JsonDocument.Parse(agentRun.OutputJson);
+            if (!doc.RootElement.TryGetProperty("images", out var imagesElement)) return null;
+            if (imagesElement.ValueKind != JsonValueKind.Array) return null;
+
+            var results = new List<ExtractedImageMetadataDto>();
+            foreach (var image in imagesElement.EnumerateArray())
+            {
+                var id = image.TryGetProperty("id", out var idProp) ? idProp.GetString() : null;
+                var blobPath = image.TryGetProperty("blobPath", out var blobProp) ? blobProp.GetString() : null;
+                var fileName = image.TryGetProperty("fileName", out var nameProp) ? nameProp.GetString() : null;
+                var pageNumber = image.TryGetProperty("pageNumber", out var pageProp) ? pageProp.GetInt32() : 0;
+                var width = image.TryGetProperty("width", out var widthProp) ? widthProp.GetInt32() : (int?)null;
+                var height = image.TryGetProperty("height", out var heightProp) ? heightProp.GetInt32() : (int?)null;
+
+                id ??= Guid.NewGuid().ToString();
+                blobPath ??= string.Empty;
+                fileName ??= "embedded-image";
+
+                string? downloadUrl = null;
+                if (!string.IsNullOrWhiteSpace(blobPath))
+                {
+                    var downloadName = !string.IsNullOrWhiteSpace(sourceFileName)
+                        ? $"{Path.GetFileNameWithoutExtension(sourceFileName)}-{fileName}"
+                        : fileName;
+                    downloadUrl = blobStorageService.GenerateDownloadSasToken(blobPath, DateTimeOffset.UtcNow.AddHours(1), downloadName);
+                }
+
+                results.Add(new ExtractedImageMetadataDto(id, blobPath, fileName, pageNumber, width, height, downloadUrl));
+            }
+
+            return results.Count == 0 ? null : results;
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     #endregion

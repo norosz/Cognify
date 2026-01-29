@@ -46,6 +46,10 @@ public class Program
         builder.Services.AddScoped<IExtractedContentService, ExtractedContentService>();
         builder.Services.AddScoped<IPendingQuizService, PendingQuizService>();
         builder.Services.AddScoped<IAgentRunService, AgentRunService>();
+        builder.Services.AddScoped<IMaterialService, MaterialService>();
+        builder.Services.AddScoped<IMaterialExtractionService, MaterialExtractionService>();
+        builder.Services.AddSingleton<IPdfTextExtractor, PdfTextExtractor>();
+        builder.Services.AddSingleton<IPdfImageExtractor, PdfImageExtractor>();
         builder.Services.AddHostedService<AiBackgroundWorker>();
 
         // Register Authentication

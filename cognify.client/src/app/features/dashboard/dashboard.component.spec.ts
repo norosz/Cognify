@@ -31,7 +31,24 @@ describe('DashboardComponent', () => {
         moduleServiceSpy.getModules.and.returnValue(of([]));
         knowledgeServiceSpy.getStates.and.returnValue(of([]));
         knowledgeServiceSpy.getReviewQueue.and.returnValue(of([]));
-        adaptiveQuizServiceSpy.createAdaptiveQuiz.and.returnValue(of({ pendingQuiz: { id: '1' } }));
+        adaptiveQuizServiceSpy.createAdaptiveQuiz.and.returnValue(of({
+            pendingQuiz: {
+                id: '1',
+                noteId: 'note-1',
+                moduleId: 'module-1',
+                title: 'Review Quiz',
+                noteName: 'Note',
+                moduleName: 'Module',
+                difficulty: 'Intermediate',
+                questionType: 'Mixed',
+                questionCount: 5,
+                status: 'Generating',
+                createdAt: new Date().toISOString()
+            },
+            selectedTopic: 'Topic',
+            masteryScore: 0.5,
+            forgettingRisk: 0.6
+        }));
         notificationServiceSpy.loading.and.returnValue('loading-id');
 
         await TestBed.configureTestingModule({

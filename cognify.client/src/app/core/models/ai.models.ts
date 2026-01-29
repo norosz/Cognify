@@ -36,5 +36,6 @@ export interface GradingResult {
 }
 
 export interface TextExtractionResult {
-  text: string;
+  extractedContentId: string;
+  status: string;
 }

@@ -132,17 +132,18 @@ export class NoteEditorDialogComponent implements OnInit {
                 const notifId = this.notification.loading(`Extracting text from ${doc.fileName}...`);
 
                 this.aiService.extractText(doc.id).subscribe({
-                    next: (res) => {
-                        this.notification.update(notifId, { type: 'success', message: 'Content imported!', autoClose: true });
-                        this.isImporting = false;
-                        const currentContent = this.form.get('content')?.value || '';
-                        const separator = currentContent ? '\n\n---\n\n' : '';
-                        this.form.patchValue({
-                            content: currentContent + separator + res.text
+                    next: () => {
+                        this.notification.update(notifId, {
+                            type: 'success',
+                            message: 'Extraction started. Review it in Pending.',
+                            autoClose: true,
+                            link: ['/pending', { tab: 'extractions' }],
+                            linkText: 'View Pending Note'
                         });
+                        this.isImporting = false;
                     },
                     error: (err) => {
-                        this.notification.update(notifId, { type: 'error', message: 'Failed to import content.', autoClose: true });
+                        this.notification.update(notifId, { type: 'error', message: 'Failed to start extraction.', autoClose: true });
                         console.error(err);
                         this.isImporting = false;
                     }

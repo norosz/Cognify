@@ -1,8 +1,10 @@
 using Cognify.Server.Data;
 using Cognify.Server.Models;
 using Cognify.Server.Services;
+using Cognify.Server.Services.Interfaces;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Moq;
 using Xunit;
 
 namespace Cognify.Tests.Services;
@@ -11,6 +13,7 @@ public class ExtractedContentServiceTests
 {
     private readonly ApplicationDbContext _context;
     private readonly ExtractedContentService _service;
+    private readonly Mock<IMaterialService> _materialServiceMock;
 
     public ExtractedContentServiceTests()
     {
@@ -19,7 +22,8 @@ public class ExtractedContentServiceTests
             .Options;
         _context = new ApplicationDbContext(options);
         var agentRunService = new AgentRunService(_context);
-        _service = new ExtractedContentService(_context, agentRunService);
+        _materialServiceMock = new Mock<IMaterialService>();
+        _service = new ExtractedContentService(_context, agentRunService, _materialServiceMock.Object);
     }
 
     [Fact]

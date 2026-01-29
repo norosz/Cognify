@@ -18,6 +18,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<ExtractedContent> ExtractedContents => Set<ExtractedContent>();
     public DbSet<PendingQuiz> PendingQuizzes => Set<PendingQuiz>();
     public DbSet<AgentRun> AgentRuns => Set<AgentRun>();
+    public DbSet<Material> Materials => Set<Material>();
+    public DbSet<MaterialExtraction> MaterialExtractions => Set<MaterialExtraction>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -44,12 +46,25 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasForeignKey(n => n.ModuleId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        // Module - Material (One-to-Many)
+        modelBuilder.Entity<Module>()
+            .HasMany(m => m.Materials)
+            .WithOne(m => m.Module)
+            .HasForeignKey(m => m.ModuleId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         // Note - QuestionSet (One-to-Many)
         modelBuilder.Entity<Note>()
             .HasMany(n => n.QuestionSets)
             .WithOne(qs => qs.Note)
             .HasForeignKey(qs => qs.NoteId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Note>()
+            .HasOne(n => n.SourceMaterial)
+            .WithMany()
+            .HasForeignKey(n => n.SourceMaterialId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         // QuestionSet - Question (One-to-Many)
         modelBuilder.Entity<QuestionSet>()
@@ -172,5 +187,28 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         modelBuilder.Entity<AgentRun>()
             .Property(a => a.Status)
             .HasConversion<string>();
+
+        // Material relationships
+        modelBuilder.Entity<Material>()
+            .HasOne(m => m.User)
+            .WithMany()
+            .HasForeignKey(m => m.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Material>()
+            .HasOne(m => m.SourceDocument)
+            .WithMany()
+            .HasForeignKey(m => m.SourceDocumentId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<Material>()
+            .Property(m => m.Status)
+            .HasConversion<string>();
+
+        modelBuilder.Entity<MaterialExtraction>()
+            .HasOne(e => e.Material)
+            .WithMany(m => m.Extractions)
+            .HasForeignKey(e => e.MaterialId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

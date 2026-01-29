@@ -31,11 +31,11 @@
 - [ ] **[Frontend]** Build Concept Weakness List
 
 ### 🤖 AI Agents & Pipelines (v2)
-- [ ] **[Backend]** Implement `Material`, `MaterialExtraction`, `Note` (Updated) Entities
+- [x] **[Backend]** Implement `Material`, `MaterialExtraction`, `Note` (Updated) Entities
 - [ ] **[Backend]** Implement `Quiz`, `QuizQuestion`, `QuizRubric` Entities
 - [ ] **[Backend]** Implement `LearningInteraction`, `AnswerEvaluation`, `UserKnowledgeState` Entities
-- [ ] **[Backend]** Migrate DB to v2 Schema
-- [ ] **[Agent]** Implement OCR Agent (Pipe A2 - PDF/Images/Text + Asset Extraction)
+- [x] **[Backend]** Migrate DB to v2 Schema
+- [x] **[Agent]** Extract embedded images + metadata for PDF materials
 - [ ] **[Agent]** Implement Question Generation Agent (Pipe B)
 - [ ] **[Agent]** Implement Grading Agent (Pipe C)
 - [ ] **[Agent]** Implement Learning Analytics Agent (Statistical Engine)
@@ -49,6 +49,7 @@
 
 
 ## ✅ Done
+- [x] **[Agent]** Phase 3: PDF text-layer extraction via pending pipeline
 - [x] **[Backend]** Create `AdaptiveQuizService` (knowledge-state target selection)
 - [x] **[Backend]** Add endpoint to initiate adaptive quiz (reuse PendingQuiz flow)
 - [x] **[Frontend]** Add Review Queue UI (due topics) + “Generate Review Quiz” action

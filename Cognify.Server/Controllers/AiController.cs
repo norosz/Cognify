@@ -15,6 +15,7 @@ public class AiController : ControllerBase
     private readonly INoteService _noteService;
     private readonly IDocumentService _documentService;
     private readonly IExtractedContentService _extractedContentService;
+    private readonly IMaterialService _materialService;
     private readonly IUserContextService _userContext;
     private readonly ILogger<AiController> _logger;
 
@@ -23,6 +24,7 @@ public class AiController : ControllerBase
         INoteService noteService, 
         IDocumentService documentService,
         IExtractedContentService extractedContentService,
+        IMaterialService materialService,
         IUserContextService userContext,
         ILogger<AiController> logger)
     {
@@ -30,6 +32,7 @@ public class AiController : ControllerBase
         _noteService = noteService;
         _documentService = documentService;
         _extractedContentService = extractedContentService;
+        _materialService = materialService;
         _userContext = userContext;
         _logger = logger;
     }
@@ -60,16 +63,19 @@ public class AiController : ControllerBase
             _ => "application/octet-stream"
         };
         
-        if (!contentType.StartsWith("image/"))
+        var isImage = contentType.StartsWith("image/");
+        var isPdf = contentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase);
+        if (!isImage && !isPdf)
         {
-            return BadRequest("Only image files are currently supported for handwriting extraction.");
+            return BadRequest("Only image and PDF files are supported for extraction.");
         }
 
         try
         {
             var userId = GetUserId();
+            await _materialService.EnsureForDocumentAsync(documentId, userId);
             var extractedContent = await _extractedContentService.CreatePendingAsync(userId, documentId, document.ModuleId);
-            return Accepted(new { extractedContentId = extractedContent.Id, status = ExtractedContentStatus.Processing });
+            return Accepted(new ExtractTextResponse(extractedContent.Id, ExtractedContentStatus.Processing));
         }
         catch (Exception ex)
         {
