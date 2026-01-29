@@ -14,6 +14,7 @@ export interface QuestionSetDto {
     title: string;
     questions: QuestionDto[];
     type: string;
+    difficulty?: string;
     createdAt: string;
 }
 
@@ -21,11 +22,14 @@ export interface CreateQuestionSetDto {
     noteId: string;
     title: string;
     questions: QuestionDto[];
+    difficulty?: string;
 }
 
 export interface SubmitAttemptDto {
     questionSetId: string;
     answers: { [key: string]: string }; // questionId (index/guid) -> answer
+    timeSpentSeconds?: number;
+    difficulty?: string;
 }
 
 export interface AttemptDto {
@@ -34,5 +38,7 @@ export interface AttemptDto {
     userId: string;
     score: number;
     answers: { [key: string]: string };
+    timeSpentSeconds?: number;
+    difficulty?: string;
     createdAt: string;
 }

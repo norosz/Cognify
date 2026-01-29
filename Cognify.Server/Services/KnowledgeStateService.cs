@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Cognify.Server.Services;
 
-public class KnowledgeStateService(ApplicationDbContext context, IUserContextService userContext) : IKnowledgeStateService
+public class KnowledgeStateService(ApplicationDbContext context, IUserContextService userContext, IDecayPredictionService decayService, IMistakeAnalysisService mistakeService) : IKnowledgeStateService
 {
     private const double MinScore = 0.0;
     private const double MaxScore = 1.0;
@@ -41,18 +41,13 @@ public class KnowledgeStateService(ApplicationDbContext context, IUserContextSer
         var attemptScore = Clamp(attempt.Score / 100.0);
         state.MasteryScore = Clamp((state.MasteryScore * 0.7) + (attemptScore * 0.3));
         state.ConfidenceScore = Clamp((state.ConfidenceScore * 0.7) + (attemptScore * 0.3));
-        state.ForgettingRisk = Clamp(1 - state.MasteryScore);
+        state.ForgettingRisk = decayService.CalculateForgettingRisk(state.MasteryScore, state.LastReviewedAt, now);
         state.LastReviewedAt = now;
-        state.NextReviewAt = CalculateNextReviewAt(state.MasteryScore, now);
+        state.NextReviewAt = decayService.CalculateNextReviewAt(state.MasteryScore, now);
         state.UpdatedAt = now;
 
-        var mistakeData = ParseMistakePatterns(state.MistakePatternsJson);
-        var incorrectCount = interactions.Count(i => !i.IsCorrect);
-        if (incorrectCount > 0)
-        {
-            mistakeData["incorrectCount"] = mistakeData.GetValueOrDefault("incorrectCount") + incorrectCount;
-        }
-        state.MistakePatternsJson = JsonSerializer.Serialize(mistakeData);
+        var mistakeData = mistakeService.UpdateMistakePatterns(state.MistakePatternsJson, interactions);
+        state.MistakePatternsJson = mistakeService.SerializeMistakePatterns(mistakeData);
 
         foreach (var interaction in interactions)
         {
@@ -75,7 +70,7 @@ public class KnowledgeStateService(ApplicationDbContext context, IUserContextSer
                 LearningInteraction = interactionEntity,
                 Score = interaction.IsCorrect ? 1 : 0,
                 MaxScore = 1,
-                DetectedMistakesJson = interaction.IsCorrect ? null : "[\"IncorrectAnswer\"]",
+                DetectedMistakesJson = BuildDetectedMistakesJson(interaction),
                 CreatedAt = now
             };
 
@@ -153,41 +148,10 @@ public class KnowledgeStateService(ApplicationDbContext context, IUserContextSer
         return "General";
     }
 
-    private static DateTime CalculateNextReviewAt(double masteryScore, DateTime now)
+    private string? BuildDetectedMistakesJson(KnowledgeInteractionInput interaction)
     {
-        if (masteryScore >= 0.8)
-        {
-            return now.AddDays(14);
-        }
-
-        if (masteryScore >= 0.6)
-        {
-            return now.AddDays(7);
-        }
-
-        if (masteryScore >= 0.4)
-        {
-            return now.AddDays(3);
-        }
-
-        return now.AddDays(1);
-    }
-
-    private static Dictionary<string, int> ParseMistakePatterns(string? json)
-    {
-        if (string.IsNullOrWhiteSpace(json))
-        {
-            return new Dictionary<string, int>();
-        }
-
-        try
-        {
-            return JsonSerializer.Deserialize<Dictionary<string, int>>(json) ?? new Dictionary<string, int>();
-        }
-        catch
-        {
-            return new Dictionary<string, int>();
-        }
+        var mistakes = mistakeService.DetectMistakes(interaction);
+        return mistakes.Count == 0 ? null : JsonSerializer.Serialize(mistakes);
     }
 
     private static double Clamp(double value)

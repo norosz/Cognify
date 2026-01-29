@@ -73,6 +73,10 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasForeignKey(q => q.QuestionSetId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        modelBuilder.Entity<QuestionSet>()
+            .Property(qs => qs.Difficulty)
+            .HasConversion<string>();
+
         // Attempt Relationships
         modelBuilder.Entity<Attempt>()
             .HasOne(a => a.QuestionSet)

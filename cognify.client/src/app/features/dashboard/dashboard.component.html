@@ -78,6 +78,131 @@
     </mat-card>
 </div>
 
+<div class="analytics-header">
+    <h2>Learning Analytics</h2>
+    <p>Track mastery, decay, and readiness at a glance.</p>
+</div>
+
+<div class="analytics-grid">
+    <mat-card class="analytics-card cognify-glass-card">
+        <mat-card-header>
+            <mat-card-title>Exam Readiness</mat-card-title>
+            <mat-card-subtitle>Overall preparedness score</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+            @if (isAnalyticsLoading()) {
+            <div class="loading-inline">
+                <mat-spinner diameter="28"></mat-spinner>
+            </div>
+            } @else {
+            <div class="chart" echarts [options]="readinessOptions()"></div>
+            <div class="analytics-meta">
+                <span>Accuracy {{ (analyticsSummary()?.accuracyRate || 0) * 100 | number: '1.0-0' }}%</span>
+                <span>Topics {{ analyticsSummary()?.totalTopics || 0 }}</span>
+            </div>
+            }
+        </mat-card-content>
+    </mat-card>
+
+    <mat-card class="analytics-card cognify-glass-card">
+        <mat-card-header>
+            <mat-card-title>Learning Velocity</mat-card-title>
+            <mat-card-subtitle>Recent momentum (last 30 days)</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+            @if (isAnalyticsLoading()) {
+            <div class="loading-inline">
+                <mat-spinner diameter="28"></mat-spinner>
+            </div>
+            } @else {
+            <div class="chart chart-small" echarts [options]="velocityOptions()"></div>
+            <div class="analytics-meta">
+                <span>Velocity {{ (analyticsSummary()?.learningVelocity || 0) * 100 | number: '1.0-0' }}%</span>
+                <span>Attempts {{ analyticsSummary()?.totalAttempts || 0 }}</span>
+            </div>
+            }
+        </mat-card-content>
+    </mat-card>
+
+    <mat-card class="analytics-card cognify-glass-card">
+        <mat-card-header>
+            <mat-card-title>Topic Distribution</mat-card-title>
+            <mat-card-subtitle>Mastery split by topic</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+            @if (isAnalyticsLoading()) {
+            <div class="loading-inline">
+                <mat-spinner diameter="28"></mat-spinner>
+            </div>
+            } @else {
+            <div class="chart" echarts [options]="distributionOptions()"></div>
+            }
+        </mat-card-content>
+    </mat-card>
+
+    <mat-card class="analytics-card cognify-glass-card wide">
+        <mat-card-header>
+            <mat-card-title>Knowledge Map</mat-card-title>
+            <mat-card-subtitle>Heatmap of mastery</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+            @if (isAnalyticsLoading()) {
+            <div class="loading-inline">
+                <mat-spinner diameter="28"></mat-spinner>
+            </div>
+            } @else {
+            <div class="chart chart-tall" echarts [options]="heatmapOptions()"></div>
+            }
+        </mat-card-content>
+    </mat-card>
+
+    <mat-card class="analytics-card cognify-glass-card wide">
+        <mat-card-header>
+            <mat-card-title>Memory Decay Forecast</mat-card-title>
+            <mat-card-subtitle>Predicted forgetting risk</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+            @if (isAnalyticsLoading()) {
+            <div class="loading-inline">
+                <mat-spinner diameter="28"></mat-spinner>
+            </div>
+            } @else {
+            <div class="chart chart-tall" echarts [options]="decayOptions()"></div>
+            }
+        </mat-card-content>
+    </mat-card>
+
+    <mat-card class="analytics-card cognify-glass-card">
+        <mat-card-header>
+            <mat-card-title>Concept Weaknesses</mat-card-title>
+            <mat-card-subtitle>Top topics to revisit</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+            @if (isAnalyticsLoading()) {
+            <div class="loading-inline">
+                <mat-spinner diameter="28"></mat-spinner>
+            </div>
+            } @else {
+            @if ((topicDistribution()?.weakestTopics?.length || 0) === 0) {
+            <div class="empty-inline">
+                <mat-icon>auto_awesome</mat-icon>
+                <p>No weakness data yet.</p>
+            </div>
+            } @else {
+            <ul class="topic-list">
+                @for (item of topicDistribution()?.weakestTopics || []; track item.topic) {
+                <li>
+                    <span class="topic-name">{{ item.topic }}</span>
+                    <span class="topic-meta">Risk {{ (item.forgettingRisk * 100) | number: '1.0-0' }}%</span>
+                </li>
+                }
+            </ul>
+            }
+            }
+        </mat-card-content>
+    </mat-card>
+</div>
+
 <div class="modules-grid">
     @for (module of modules(); track module.id) {
     <mat-card class="module-card cognify-glass-card cursor-pointer" [routerLink]="['/modules', module.id]">

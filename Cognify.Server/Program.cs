@@ -30,7 +30,11 @@ public class Program
         builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
         builder.Services.AddScoped<IDocumentService, DocumentService>();
         builder.Services.AddScoped<INoteService, NoteService>();
+        builder.Services.AddScoped<IDecayPredictionService, DecayPredictionService>();
+        builder.Services.AddScoped<IMistakeAnalysisService, MistakeAnalysisService>();
         builder.Services.AddScoped<IKnowledgeStateService, KnowledgeStateService>();
+        builder.Services.AddScoped<ILearningAnalyticsComputationService, LearningAnalyticsComputationService>();
+        builder.Services.AddScoped<ILearningAnalyticsService, LearningAnalyticsService>();
         builder.Services.AddScoped<IAdaptiveQuizService, AdaptiveQuizService>();
         
         // Register AI
@@ -51,6 +55,7 @@ public class Program
         builder.Services.AddSingleton<IPdfTextExtractor, PdfTextExtractor>();
         builder.Services.AddSingleton<IPdfImageExtractor, PdfImageExtractor>();
         builder.Services.AddHostedService<AiBackgroundWorker>();
+        builder.Services.AddHostedService<LearningAnalyticsBackgroundWorker>();
 
         // Register Authentication
         var jwtSettings = builder.Configuration.GetSection("Jwt");

@@ -37,6 +37,7 @@ import { MarkdownLatexPipe } from '../../../../shared/pipes/markdown-latex.pipe'
 export class QuizTakingComponent {
   questionSet = signal<QuestionSetDto | null>(null);
   answers: { [key: string]: string } = {}; // questionId -> answer
+  private startedAt = Date.now();
 
   submitting = signal<boolean>(false);
   result = signal<AttemptDto | null>(null);
@@ -81,6 +82,7 @@ export class QuizTakingComponent {
 
   initQuiz(qs: QuestionSetDto) {
     this.questionSet.set(qs);
+    this.startedAt = Date.now();
     // Initialize interactive states
     qs.questions.forEach(q => {
       if (q.type === 'Ordering' && q.options) {
@@ -177,9 +179,12 @@ export class QuizTakingComponent {
     if (!qs) return;
 
     this.submitting.set(true);
+    const elapsedSeconds = Math.max(0, Math.round((Date.now() - this.startedAt) / 1000));
     const dto: SubmitAttemptDto = {
       questionSetId: qs.id,
-      answers: this.answers
+      answers: this.answers,
+      timeSpentSeconds: elapsedSeconds,
+      difficulty: qs.difficulty ?? 'Intermediate'
     };
 
     this.quizService.submitAttempt(dto).subscribe({
