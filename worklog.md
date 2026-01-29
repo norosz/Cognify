@@ -5,6 +5,28 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-29 20:05  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Fixed syntax error in `AttemptServiceTests` mock setup
+
+**CHANGED FILES**
+- Cognify.Tests/Services/AttemptServiceTests.cs
+- worklog.md
+
+**DECISIONS**
+- Expand mock setup formatting to avoid parenthesis mistakes
+
+**NEXT**
+- Re-run `dotnet test`
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
 **Timestamp:** 2026-01-29 19:55  
 **Author:** GitHub Copilot  
 

@@ -38,7 +38,11 @@ public class AttemptServiceTests : IDisposable
 
         _userContextMock.Setup(uc => uc.GetCurrentUserId()).Returns(_userId);
         _knowledgeStateMock
-            .Setup(ks => ks.ApplyAttemptResultAsync(It.IsAny<Attempt>(), It.IsAny<Quiz>(), It.IsAny<IReadOnlyCollection<KnowledgeInteractionInput>>())))
+            .Setup(ks => ks.ApplyAttemptResultAsync(
+                It.IsAny<Attempt>(),
+                It.IsAny<Quiz>(),
+                It.IsAny<IReadOnlyCollection<KnowledgeInteractionInput>>()
+            ))
             .Returns(Task.CompletedTask);
 
         _attemptService = new AttemptService(

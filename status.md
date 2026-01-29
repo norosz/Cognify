@@ -3,34 +3,40 @@
 ## 📋 To Do
 
 ###  Notes
-- [x] **[Backend]** Implement `NoteService` (CRUD)
-- [x] **[Backend]** Create `NotesController`
-- [x] **[Frontend]** Build Note List Component
-- [x] **[Frontend]** Build Note Editor (Markdown/Text)
 
 ### 🤖 AI Generation, Agents & Quizzes
 
-
-- [x] **[Agent]** Implement Handwriting Parsing Agent (OCR)
-- [x] **[Agent]** Implement Question Generation Agent (Advanced) & Grading
-- [x] **[Agent]** Implement Grading Agent
 ### 🧠 User Knowledge & AI Feedback
-- [x] **[Backend]** Implement `LearningAnalyticsService` (Aggregator)
 
 ### 🎯 Adaptive Quiz Engine
-- [x] **[Backend]** Implement prompting that includes Mastery/ForgettingRisk/MistakePatterns
 
 ### 📉 Decay & Mistake Intelligence
+
+### 📊 AI Learning Dashboard (Frontend)
+
+### 🤖 AI Agents & Pipelines (v2)
+
+### 💾 File Management Enhancements
+
+## 🏗️ In Progress
+
+### 🤖 AI Agents & Pipelines (v2)
+
+## ✅ Done
+- [x] **[Backend]** Implement `LearningAnalyticsService` (Aggregator)
+- [x] **[Backend]** Implement prompting that includes Mastery/ForgettingRisk/MistakePatterns
 - [x] **[Backend]** Implement `DecayPredictionService` (Spaced Repetition)
 - [x] **[Backend]** Implement `MistakeAnalysisService` (Error Pattern Detection)
 - [x] **[Backend]** Update `UserKnowledgeState` with `MistakePatterns` & `ForgettingRisk`
-
-### 📊 AI Learning Dashboard (Frontend)
 - [x] **[Frontend]** Build Knowledge Map Visualization
 - [x] **[Frontend]** Build Memory Decay Chart
 - [x] **[Frontend]** Build Concept Weakness List
-
-### 🤖 AI Agents & Pipelines (v2)
+- [x] **[Backend]** Add `FileSizeBytes` to Document Entity/DTO
+- [x] **[Frontend]** Display File Size in Document Card in MB
+- [x] **[Refactor]** Define strict v2 agent contracts (OCR / QuizGen / Grading) + versioning + input-hash idempotency
+- [x] **[Refactor]** Align quiz output with v2 contracts (Rubric DTO + persistence strategy; keep `QuestionSet`/`Question` compatibility)
+- [x] **[Test]** Make background worker test-safe (no OpenAI key required; deterministic test runs)
+- [x] **[Test]** Add idempotency tests for pending extraction and quiz creation
 - [x] **[Backend]** Implement `Material`, `MaterialExtraction`, `Note` (Updated) Entities
 - [x] **[Backend]** Implement `LearningInteraction`, `AnswerEvaluation`, `UserKnowledgeState` Entities
 - [x] **[Backend]** Migrate DB to v2 Schema
@@ -40,22 +46,6 @@
 - [x] **[Agent]** Implement Grading Agent (Pipe C)
 - [x] **[Agent]** Implement Learning Analytics Agent (Statistical Engine)
 - [x] **[Agent]** Generate rubric content in quiz generation output (v2 contract)
-
-### 💾 File Management Enhancements
-- [x] **[Backend]** Add `FileSizeBytes` to Document Entity/DTO
-- [x] **[Frontend]** Display File Size in Document Card in MB
-
-## 🏗️ In Progress
-
-### 🤖 AI Agents & Pipelines (v2)
-- [x] **[Refactor]** Define strict v2 agent contracts (OCR / QuizGen / Grading) + versioning + input-hash idempotency
-- [x] **[Refactor]** Align quiz output with v2 contracts (Rubric DTO + persistence strategy; keep `QuestionSet`/`Question` compatibility)
-- [x] **[Test]** Make background worker test-safe (no OpenAI key required; deterministic test runs)
-- [x] **[Test]** Add idempotency tests for pending extraction and quiz creation
-
-
-
-## ✅ Done
 - [x] **[Agent]** Phase 3: PDF text-layer extraction via pending pipeline
 - [x] **[Backend]** Create `AdaptiveQuizService` (knowledge-state target selection)
 - [x] **[Backend]** Add endpoint to initiate adaptive quiz (reuse PendingQuiz flow)
@@ -138,4 +128,10 @@
 - [x] **[Backend]** Implement `KnowledgeStateService` (Update logic)
 - [x] **[Backend]** Add `LearningInteraction` + `AnswerEvaluation` entities
 - [x] **[Backend]** Implement `Quiz`, `QuizQuestion`, `QuizRubric` Entities (renamed + migrated)
-
+- [x] **[Backend]** Implement `NoteService` (CRUD)
+- [x] **[Backend]** Create `NotesController`
+- [x] **[Frontend]** Build Note List Component
+- [x] **[Frontend]** Build Note Editor (Markdown/Text)
+- [x] **[Agent]** Implement Handwriting Parsing Agent (OCR)
+- [x] **[Agent]** Implement Question Generation Agent (Advanced) & Grading
+- [x] **[Agent]** Implement Grading Agent
