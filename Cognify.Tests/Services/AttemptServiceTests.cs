@@ -1,5 +1,6 @@
 using Cognify.Server.Data;
 using Cognify.Server.DTOs;
+using Cognify.Server.Dtos.Knowledge;
 using Cognify.Server.Models;
 using Cognify.Server.Services;
 using Cognify.Server.Services.Interfaces;
@@ -15,6 +16,7 @@ public class AttemptServiceTests : IDisposable
 {
     private readonly ApplicationDbContext _context;
     private readonly Mock<IUserContextService> _userContextMock;
+    private readonly Mock<IKnowledgeStateService> _knowledgeStateMock;
     private readonly AttemptService _attemptService;
     private readonly Guid _userId;
 
@@ -26,18 +28,24 @@ public class AttemptServiceTests : IDisposable
 
         _context = new ApplicationDbContext(options);
         _userContextMock = new Mock<IUserContextService>();
+        _knowledgeStateMock = new Mock<IKnowledgeStateService>();
         _userId = Guid.NewGuid();
 
         _userContextMock.Setup(uc => uc.GetCurrentUserId()).Returns(_userId);
+        _knowledgeStateMock
+            .Setup(ks => ks.ApplyAttemptResultAsync(It.IsAny<Attempt>(), It.IsAny<QuestionSet>(), It.IsAny<IReadOnlyCollection<KnowledgeInteractionInput>>()))
+            .Returns(Task.CompletedTask);
 
-        _attemptService = new AttemptService(_context, _userContextMock.Object);
+        _attemptService = new AttemptService(_context, _userContextMock.Object, _knowledgeStateMock.Object);
     }
 
     [Fact]
     public async Task SubmitAttemptAsync_ShouldCalculateScoreCorrectly()
     {
         // Arrange
+        var module = new Module { Id = Guid.NewGuid(), Title = "Module", OwnerUserId = _userId };
         var noteId = Guid.NewGuid();
+        var note = new Note { Id = noteId, ModuleId = module.Id, Title = "Note", Module = module };
         var qsId = Guid.NewGuid();
         var question1 = new Question 
         { 
@@ -65,9 +73,12 @@ public class AttemptServiceTests : IDisposable
             Id = qsId, 
             NoteId = noteId,
             Title = "Test Quiz",
+            Note = note,
             Questions = [question1, question2]
         };
 
+        _context.Modules.Add(module);
+        _context.Notes.Add(note);
         _context.QuestionSets.Add(questionSet);
         await _context.SaveChangesAsync();
 
@@ -92,6 +103,11 @@ public class AttemptServiceTests : IDisposable
         saved.Should().NotBeNull();
         saved!.Score.Should().Be(50);
         saved.UserId.Should().Be(_userId);
+
+        _knowledgeStateMock.Verify(ks => ks.ApplyAttemptResultAsync(
+            It.IsAny<Attempt>(),
+            It.IsAny<QuestionSet>(),
+            It.IsAny<IReadOnlyCollection<KnowledgeInteractionInput>>()), Times.Once);
     }
 
     [Fact]
@@ -119,6 +135,9 @@ public class AttemptServiceTests : IDisposable
     public async Task SubmitAttemptAsync_ShouldHandleCaseInsensitiveKeys()
     {
          // Arrange
+        var module = new Module { Id = Guid.NewGuid(), Title = "Module", OwnerUserId = _userId };
+        var noteId = Guid.NewGuid();
+        var note = new Note { Id = noteId, ModuleId = module.Id, Title = "Note", Module = module };
         var qsId = Guid.NewGuid();
         var question = new Question 
         { 
@@ -131,7 +150,9 @@ public class AttemptServiceTests : IDisposable
             Explanation = ""
         };
 
-        var questionSet = new QuestionSet { Id = qsId, NoteId = Guid.NewGuid(), Title = "Test Quiz", Questions = [question] };
+        var questionSet = new QuestionSet { Id = qsId, NoteId = noteId, Title = "Test Quiz", Note = note, Questions = [question] };
+        _context.Modules.Add(module);
+        _context.Notes.Add(note);
         _context.QuestionSets.Add(questionSet);
         await _context.SaveChangesAsync();
 

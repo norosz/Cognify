@@ -5,6 +5,70 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-29 13:10  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Generated EF Core migration for Phase 1 knowledge model schema
+- Fixed AttemptService tests to include module/note setup for knowledge topics
+- Ran backend tests (all passing)
+
+**CHANGED FILES**
+- Cognify.Server/Migrations/20260129113135_AddKnowledgeModel.cs
+- Cognify.Server/Migrations/20260129113135_AddKnowledgeModel.Designer.cs
+- Cognify.Server/Migrations/ApplicationDbContextModelSnapshot.cs
+- Cognify.Tests/Services/AttemptServiceTests.cs
+- status.md
+
+**DECISIONS**
+- Accepted OpenAI API key warnings during tests; functional tests still pass.
+
+**NEXT**
+- Wire Phase 1 knowledge state data into frontend review queue UI.
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
+**Timestamp:** 2026-01-29 12:45  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Added Phase 1 knowledge model entities and service scaffolding
+- Recorded learning interactions and evaluations when attempts are submitted
+- Added knowledge state API endpoints and unit tests
+
+**CHANGED FILES**
+- Cognify.Server/Models/UserKnowledgeState.cs
+- Cognify.Server/Models/LearningInteraction.cs
+- Cognify.Server/Models/AnswerEvaluation.cs
+- Cognify.Server/Dtos/Knowledge/KnowledgeStateDtos.cs
+- Cognify.Server/Dtos/Knowledge/KnowledgeInteractionInput.cs
+- Cognify.Server/Services/Interfaces/IKnowledgeStateService.cs
+- Cognify.Server/Services/KnowledgeStateService.cs
+- Cognify.Server/Controllers/KnowledgeStatesController.cs
+- Cognify.Server/Data/ApplicationDbContext.cs
+- Cognify.Server/Services/AttemptService.cs
+- Cognify.Server/Program.cs
+- Cognify.Tests/Services/AttemptServiceTests.cs
+- Cognify.Tests/Services/KnowledgeStateServiceTests.cs
+- status.md
+
+**DECISIONS**
+- Used a simple score-based update and review scheduling heuristic for the Phase 1 knowledge model.
+
+**NEXT**
+- Create EF Core migration for new knowledge model tables (pending approval per project rules).
+- Wire Phase 1 knowledge state into frontend (review queue + weak topics) once backend schema is ready.
+
+**BLOCKERS**
+- Migration creation not requested; database schema changes are pending approval.
+
+---
+
+## ENTRY
 **Timestamp:** 2026-01-29 11:15  
 **Author:** GitHub Copilot  
 

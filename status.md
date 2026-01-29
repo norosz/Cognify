@@ -15,8 +15,6 @@
 - [x] **[Agent]** Implement Question Generation Agent (Advanced) & Grading
 - [x] **[Agent]** Implement Grading Agent
 ### 🧠 User Knowledge & AI Feedback
-- [ ] **[Backend]** Create `UserKnowledgeState` Entity (Topic, Mastery, Confidence)
-- [ ] **[Backend]** Implement `KnowledgeStateService` (Update logic)
 - [ ] **[Backend]** Implement `LearningAnalyticsService` (Aggregator)
 
 ### 🎯 Adaptive Quiz Engine
@@ -124,4 +122,7 @@
 - [x] **[Refactor]** Phase 0: Fix AI prompt difficulty level bug
 - [x] **[Refactor]** Phase 0: Remove legacy quiz generation endpoint usage
 - [x] **[Refactor]** Phase 0: Add durable AgentRun tracking (schema + worker integration)
+- [x] **[Backend]** Create `UserKnowledgeState` Entity (Topic, Mastery, Confidence)
+- [x] **[Backend]** Implement `KnowledgeStateService` (Update logic)
+- [x] **[Backend]** Add `LearningInteraction` + `AnswerEvaluation` entities
 

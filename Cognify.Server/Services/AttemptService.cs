@@ -1,5 +1,6 @@
 using Cognify.Server.Data;
 using Cognify.Server.DTOs;
+using Cognify.Server.Dtos.Knowledge;
 using Cognify.Server.Models;
 using Cognify.Server.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -7,7 +8,7 @@ using System.Text.Json;
 
 namespace Cognify.Server.Services;
 
-public class AttemptService(ApplicationDbContext context, IUserContextService userContext) : IAttemptService
+public class AttemptService(ApplicationDbContext context, IUserContextService userContext, IKnowledgeStateService knowledgeStateService) : IAttemptService
 {
     public async Task<AttemptDto> SubmitAttemptAsync(SubmitAttemptDto dto)
     {
@@ -15,6 +16,8 @@ public class AttemptService(ApplicationDbContext context, IUserContextService us
         
         var questionSet = await context.QuestionSets
             .Include(qs => qs.Questions)
+            .Include(qs => qs.Note)
+            .ThenInclude(n => n.Module)
             .FirstOrDefaultAsync(qs => qs.Id == dto.QuestionSetId);
 
         if (questionSet == null)
@@ -22,6 +25,8 @@ public class AttemptService(ApplicationDbContext context, IUserContextService us
 
         double correctCount = 0;
         int totalQuestions = questionSet.Questions.Count;
+
+        var interactions = new List<KnowledgeInteractionInput>();
 
         foreach (var question in questionSet.Questions)
         {
@@ -46,14 +51,24 @@ public class AttemptService(ApplicationDbContext context, IUserContextService us
                 }
             }
 
+            var isCorrect = false;
+
             if (userAnswer != null)
             {
                 var correctAnswer = JsonSerializer.Deserialize<string>(question.CorrectAnswerJson);
                 if (string.Equals(userAnswer, correctAnswer, StringComparison.OrdinalIgnoreCase))
                 {
                     correctCount++;
+                    isCorrect = true;
                 }
             }
+
+            interactions.Add(new KnowledgeInteractionInput
+            {
+                QuestionId = question.Id,
+                UserAnswer = userAnswer,
+                IsCorrect = isCorrect
+            });
         }
 
         double score = totalQuestions > 0 ? (correctCount / totalQuestions) * 100 : 0;
@@ -69,6 +84,8 @@ public class AttemptService(ApplicationDbContext context, IUserContextService us
 
         context.Attempts.Add(attempt);
         await context.SaveChangesAsync();
+
+        await knowledgeStateService.ApplyAttemptResultAsync(attempt, questionSet, interactions);
 
         return MapToDto(attempt);
     }
