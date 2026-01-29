@@ -21,9 +21,9 @@
 ## 🏗️ In Progress
 
 ### 🤖 AI Agents & Pipelines (v2)
-- [ ] **[Audit]** Close end-to-end gaps from Jan 29 inspection (images usability, file-type consistency, contract/docs drift)
 
 ## ✅ Done
+- [x] **[Audit]** Close end-to-end gaps from Jan 29 inspection (images usability, file-type consistency, contract/docs drift)
 - [x] **[Backend]** Persist structured mistake categories (UserMistakePatterns)
 - [x] **[UX]** Add clearer empty/error states for analytics panels with guidance
 - [x] **[Frontend]** Surface which topic/note the adaptive quiz targeted in notifications
