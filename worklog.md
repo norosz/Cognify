@@ -5,6 +5,70 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-29 15:05  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Implemented Adaptive Quiz backend service + controller for knowledge-state-driven quiz initiation
+- Added Phase 2 Angular dashboard widgets (Review Queue, Weak Topics) and adaptive quiz calls
+- Added backend and frontend tests for adaptive quiz flow and knowledge APIs
+
+**CHANGED FILES**
+- Cognify.Server/Dtos/Adaptive/AdaptiveQuizDtos.cs
+- Cognify.Server/Services/Interfaces/IAdaptiveQuizService.cs
+- Cognify.Server/Services/AdaptiveQuizService.cs
+- Cognify.Server/Controllers/AdaptiveQuizzesController.cs
+- Cognify.Server/Program.cs
+- Cognify.Tests/Services/AdaptiveQuizServiceTests.cs
+- cognify.client/src/app/core/models/knowledge.models.ts
+- cognify.client/src/app/core/services/knowledge.service.ts
+- cognify.client/src/app/core/services/knowledge.service.spec.ts
+- cognify.client/src/app/core/services/adaptive-quiz.service.ts
+- cognify.client/src/app/core/services/adaptive-quiz.service.spec.ts
+- cognify.client/src/app/features/dashboard/dashboard.component.ts
+- cognify.client/src/app/features/dashboard/dashboard.component.html
+- cognify.client/src/app/features/dashboard/dashboard.component.scss
+- cognify.client/src/app/features/dashboard/dashboard.component.spec.ts
+- status.md
+
+**DECISIONS**
+- Adaptive quiz initiation reuses PendingQuiz workflow and maps difficulty from mastery (no schema changes).
+
+**NEXT**
+- Extend adaptive prompt context to include mistake patterns (pending)
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
+**Timestamp:** 2026-01-29 13:25  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Reviewed project rules/spec/status/worklog and Phase 1 knowledge model implementation
+- Produced a concrete Phase 2 plan for a knowledge-state-driven adaptive quiz engine
+- Updated status board backlog to reflect Phase 2 deliverables
+
+**CHANGED FILES**
+- Agent_Implementation_plan.md
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Phase 2 will reuse the existing PendingQuiz + background worker pipeline; no schema changes are required unless explicitly requested.
+
+**NEXT**
+- Implement Phase 2 backend: `AdaptiveQuizService` + initiation endpoint
+- Wire frontend “Review Queue” + “Weak Topics” UI to knowledge-state APIs
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
 **Timestamp:** 2026-01-29 13:10  
 **Author:** GitHub Copilot  
 

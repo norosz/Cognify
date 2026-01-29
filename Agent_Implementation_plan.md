@@ -60,6 +60,55 @@ Success criteria:
 
 ---
 
+## Phase 2 – Detailed Execution Plan (concrete backlog)
+
+Goal: make quiz generation *meaningfully adaptive* using the Phase 1 `UserKnowledgeState` + review queue.
+
+### 2.1 Backend scope (minimum lovable)
+- Build `AdaptiveQuizService` that selects focus targets from knowledge state:
+  - **Review mode**: due items from `NextReviewAt <= now` (uses `GetReviewQueueAsync`).
+  - **Weakness mode**: highest `ForgettingRisk` / lowest `MasteryScore` from `GetMyStatesAsync`.
+- Convert selected targets to quiz inputs:
+  - Use `SourceNoteId` when available (Phase 1 already stores it).
+  - Fallback when `SourceNoteId` is null: generate from a chosen note/module context (defer if unclear).
+- Compute *adaptive parameters*:
+  - Difficulty mapping from mastery (e.g., <0.4 easy, 0.4–0.7 mixed, >0.7 hard).
+  - Question mix: more retrieval for low mastery; more application/edge-cases for high mastery.
+  - Mistake focus: summarize top keys from `MistakePatternsJson` into prompt guidance.
+
+### 2.2 Backend API (proposed)
+- `POST /api/adaptive-quizzes` to initiate an adaptive quiz request.
+  - Request DTO includes: `mode` (Review|Weakness|Note), `maxTopics`, `questionCount`, optional `noteId`.
+  - Response returns a `PendingQuizDto` (reuse pending approval workflow).
+- Reuse `PendingQuizService` + background worker to actually generate questions.
+  - Add a new generation path that builds prompts with knowledge-state context.
+  - Ensure AgentRun correlation is written (already implemented in Phase 0).
+
+### 2.3 Frontend scope
+- Add a lightweight `KnowledgeStatesApiService`:
+  - `GET /api/knowledge-states`
+  - `GET /api/knowledge-states/review-queue`
+- Dashboard UX:
+  - “Review Queue” card (due topics) with **Generate Review Quiz** action.
+  - “Weak Topics” mini list (top forgetting risk) with **Generate Weakness Quiz** action.
+- Generation action should create a pending quiz and route user to `/pending?tab=quizzes` (consistent with existing UX).
+
+### 2.4 Tests (must-have)
+- Backend:
+  - Unit tests for target selection (due items vs weakness items).
+  - Unit tests verifying difficulty mapping and prompt includes knowledge summary.
+- Frontend:
+  - Service tests with `HttpTestingController`.
+  - Component tests for the dashboard review queue states (loading/empty/populated).
+
+### 2.5 Phase 2 acceptance criteria
+- A user can see a review queue from real data (`/api/knowledge-states/review-queue`).
+- Clicking “Generate Review Quiz” creates a pending quiz and eventually a saved quiz.
+- Two users with different `MasteryScore/ForgettingRisk` see different difficulty/mix.
+- No new schema changes required for Phase 2 (unless explicitly requested).
+
+---
+
 ### Phase 3 — OCR/Extraction v2 pipeline (documents, not just images)
 Deliverables:
 

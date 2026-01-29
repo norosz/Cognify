@@ -18,8 +18,7 @@
 - [ ] **[Backend]** Implement `LearningAnalyticsService` (Aggregator)
 
 ### 🎯 Adaptive Quiz Engine
-- [ ] **[Backend]** Create `AdaptiveQuizService` (Contextual prompting)
-- [ ] **[Backend]** Implement Prompt Engineering for Mastery/Confidence levels
+- [ ] **[Backend]** Implement prompting that includes Mastery/ForgettingRisk/MistakePatterns
 
 ### 📉 Decay & Mistake Intelligence
 - [ ] **[Backend]** Implement `DecayPredictionService` (Spaced Repetition)
@@ -50,6 +49,11 @@
 
 
 ## ✅ Done
+- [x] **[Backend]** Create `AdaptiveQuizService` (knowledge-state target selection)
+- [x] **[Backend]** Add endpoint to initiate adaptive quiz (reuse PendingQuiz flow)
+- [x] **[Frontend]** Add Review Queue UI (due topics) + “Generate Review Quiz” action
+- [x] **[Frontend]** Add Weak Topics UI (high forgetting risk) + “Generate Weakness Quiz” action
+- [x] **[Test]** Add backend + frontend tests for adaptive generation flow
 - [x] **Context**: Read Project Specifications and Rules
 - [x] **Database**: Create EF Core Entity Models
 - [x] **Database**: Implement `ApplicationDbContext` (Relationships, Delete Behavior)
