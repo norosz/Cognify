@@ -257,14 +257,23 @@ public class AttemptServiceTests : IDisposable
         _context.Modules.Add(module);
         _context.Notes.Add(note);
         _context.Quizzes.Add(quiz);
+        _context.UserKnowledgeStates.Add(new UserKnowledgeState
+        {
+            UserId = _userId,
+            Topic = "Module / Note",
+            SourceNoteId = noteId,
+            MistakePatternsJson = "{\"ConceptGap\":2}"
+        });
         await _context.SaveChangesAsync();
 
         _agentRunServiceMock
             .Setup(s => s.CreateAsync(_userId, AgentRunType.Grading, It.IsAny<string>(), question.Id.ToString(), "grading-v2"))
             .ReturnsAsync(new AgentRun { Id = Guid.NewGuid(), UserId = _userId, Type = AgentRunType.Grading, Status = AgentRunStatus.Pending });
 
+        GradingContractRequest? capturedRequest = null;
         _aiServiceMock
             .Setup(s => s.GradeAnswerAsync(It.IsAny<GradingContractRequest>()))
+            .Callback<GradingContractRequest>(request => capturedRequest = request)
             .ReturnsAsync(new GradingContractResponse(
                 AgentContractVersions.V2,
                 Score: 80,
@@ -286,6 +295,8 @@ public class AttemptServiceTests : IDisposable
         var result = await _attemptService.SubmitAttemptAsync(dto);
 
         result.Score.Should().Be(80);
+        capturedRequest.Should().NotBeNull();
+        capturedRequest!.KnownMistakePatterns.Should().Be("{\"ConceptGap\":2}");
         _agentRunServiceMock.Verify(s => s.MarkCompletedAsync(It.IsAny<Guid>(), It.IsAny<string>(), null, null, null), Times.Once);
         _knowledgeStateMock.Verify(ks => ks.ApplyAttemptResultAsync(
             It.IsAny<Attempt>(),

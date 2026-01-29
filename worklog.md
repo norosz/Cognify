@@ -5,6 +5,118 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-29 21:05  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Added an info banner clarifying that Pending extractions become Notes on save
+- Added a unit test to confirm the banner renders
+- Updated status board to mark the UX clarification as complete
+
+**CHANGED FILES**
+- cognify.client/src/app/features/pending/pending.component.html
+- cognify.client/src/app/features/pending/pending.component.scss
+- cognify.client/src/app/features/pending/pending.component.spec.ts
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Use a lightweight banner instead of changing the extraction pipeline behavior
+
+**NEXT**
+- Consolidate quiz generation UX (legacy vs pending)
+- Expand mistake taxonomy for deeper misconception profiling
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
+**Timestamp:** 2026-01-29 20:55  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Confirmed embedded image download access is already implemented via NoteService SAS URLs
+- Marked backend embedded-image access task as done in status board
+
+**CHANGED FILES**
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Treat existing `NoteService` SAS link generation as the backend completion for embedded image access
+
+**NEXT**
+- Continue with UX clarification for extraction → note flow
+- Tackle quiz generation UX consolidation
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
+**Timestamp:** 2026-01-29 20:50  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Passed known mistake patterns into OpenText grading requests
+- Added regression assertion to verify grading receives `KnownMistakePatterns`
+- Updated status board to mark feedback loop completion
+
+**CHANGED FILES**
+- Cognify.Server/Services/AttemptService.cs
+- Cognify.Tests/Services/AttemptServiceTests.cs
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Read known mistake patterns from `UserKnowledgeState` by `SourceNoteId` to align grading context with the quiz note
+
+**NEXT**
+- Run backend tests (`dotnet test`) to confirm grading changes
+- Continue with embedded image access/UX refinements
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
+**Timestamp:** 2026-01-29 20:40  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Rendered embedded images in note preview markdown and added thumbnail strip on note cards
+- Added unit tests for embedded image markdown composition and thumbnail filtering
+- Updated status board to mark embedded image rendering as complete
+
+**CHANGED FILES**
+- cognify.client/src/app/features/notes/components/notes-list/notes-list.component.ts
+- cognify.client/src/app/features/notes/components/notes-list/notes-list.component.html
+- cognify.client/src/app/features/notes/components/notes-list/notes-list.component.scss
+- cognify.client/src/app/features/notes/components/note-editor-dialog/note-editor-dialog.component.ts
+- cognify.client/src/app/features/notes/components/note-editor-dialog/note-editor-dialog.component.html
+- cognify.client/src/app/features/notes/components/notes-list/notes-list.component.spec.ts
+- cognify.client/src/app/features/notes/components/note-editor-dialog/note-editor-dialog.component.spec.ts
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Append embedded image markdown to previews so users see extracted images without mutating stored note content
+- Show up to three thumbnails on note cards to preserve layout
+
+**NEXT**
+- Run frontend tests to validate new coverage
+- Implement backend image download access if a dedicated endpoint is required
+
+**BLOCKERS**
+- None
+
+---
+
+## ENTRY
 **Timestamp:** 2026-01-29 20:25  
 **Author:** GitHub Copilot  
 

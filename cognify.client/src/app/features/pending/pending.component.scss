@@ -69,6 +69,28 @@
     padding: 24px 0;
 }
 
+.info-banner {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    border-radius: 12px;
+    background: rgba(144, 202, 249, 0.08);
+    border: 1px solid rgba(144, 202, 249, 0.25);
+    color: var(--text-secondary);
+
+    mat-icon {
+        color: #90caf9;
+    }
+
+    strong {
+        color: var(--text-primary);
+        display: block;
+        font-weight: 600;
+    }
+}
+
 .empty-state {
     display: flex;
     flex-direction: column;

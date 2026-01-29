@@ -19,6 +19,14 @@
             </ng-template>
 
             <div class="tab-content">
+                <div class="info-banner">
+                    <mat-icon>info</mat-icon>
+                    <div>
+                        <strong>Review & Save creates a Note.</strong>
+                        <span>Use Pending to approve extracted text and keep embedded images linked.</span>
+                    </div>
+                </div>
+
                 <div class="empty-state" *ngIf="extractedContents().length === 0 && !isLoading()">
                     <mat-icon>inbox</mat-icon>
                     <p>No pending extractions found.</p>

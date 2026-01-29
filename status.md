@@ -3,16 +3,12 @@
 ## 📋 To Do
 
 ###  Notes
-- [ ] **[Frontend]** Render extracted embedded images inside Notes (Markdown preview + saved notes)
-- [ ] **[Backend]** Provide an authenticated way to fetch extracted image blobs (e.g., SAS URL or proxy download) for `EmbeddedImagesJson`
-- [ ] **[UX]** Clarify extraction → note flow: auto-create draft note vs Pending → manual “Save as Note”
 
 ### 🤖 AI Generation, Agents & Quizzes
 - [ ] **[UX]** Consolidate quiz generation UX (legacy “generate then save” vs Pending approval flow)
 - [ ] **[Backend]** Improve adaptive topic selection (rank best eligible instead of “first eligible”) and document selection rules
 
 ### 🧠 User Knowledge & AI Feedback
-- [ ] **[Backend]** Feed `KnownMistakePatterns` into grading contract requests (currently null) to close the feedback loop
 
 ### 🎯 Adaptive Quiz Engine
 - [ ] **[Frontend]** Surface which topic/note the adaptive quiz targeted (and why) more prominently in the UI
@@ -38,6 +34,10 @@
 - [ ] **[Audit]** Close end-to-end gaps from Jan 29 inspection (images usability, file-type consistency, contract/docs drift)
 
 ## ✅ Done
+- [x] **[UX]** Clarify extraction → note flow in Pending (Review & Save creates a Note)
+- [x] **[Backend]** Provide an authenticated way to fetch extracted image blobs (SAS URLs via NoteService)
+- [x] **[Backend]** Feed `KnownMistakePatterns` into grading contract requests (close the feedback loop)
+- [x] **[Frontend]** Render extracted embedded images inside Notes (Markdown preview + saved notes)
 - [x] **[Backend]** Allow extraction for `.json`/`.yaml` uploads by treating them as text
 - [x] **[Backend]** Guard extraction when `Document.Status != Uploaded`
 - [x] **[Backend]** Implement `LearningAnalyticsService` (Aggregator)

@@ -56,4 +56,42 @@ describe('NotesListComponent', () => {
         expect(noteServiceSpy.deleteNote).toHaveBeenCalledWith('note-1');
         expect(notificationSpy.success).toHaveBeenCalledWith('Note deleted');
     });
+
+    it('should append embedded image markdown in note preview content', () => {
+        const note: any = {
+            id: 'note-1',
+            title: 'Test',
+            content: 'Base content',
+            moduleId: '123',
+            createdAt: '',
+            embeddedImages: [
+                { id: 'img1', blobPath: 'path', fileName: 'image-1.png', pageNumber: 1, downloadUrl: 'https://example.com/image-1.png' }
+            ]
+        };
+
+        const result = component.getNoteContent(note);
+
+        expect(result).toContain('## Embedded Images');
+        expect(result).toContain('image-1.png');
+        expect(result).toContain('https://example.com/image-1.png');
+    });
+
+    it('should filter embedded image thumbnails to those with downloadUrl', () => {
+        const note: any = {
+            id: 'note-1',
+            title: 'Test',
+            content: 'Base content',
+            moduleId: '123',
+            createdAt: '',
+            embeddedImages: [
+                { id: 'img1', blobPath: 'path', fileName: 'image-1.png', pageNumber: 1, downloadUrl: 'https://example.com/image-1.png' },
+                { id: 'img2', blobPath: 'path', fileName: 'image-2.png', pageNumber: 2 }
+            ]
+        };
+
+        const thumbnails = component.getEmbeddedImageThumbnails(note);
+
+        expect(thumbnails.length).toBe(1);
+        expect(thumbnails[0].fileName).toBe('image-1.png');
+    });
 });

@@ -8,7 +8,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { NoteService } from '../../../../core/services/note.service';
-import { Note } from '../../../../core/models/note.model';
+import { Note, NoteEmbeddedImage } from '../../../../core/models/note.model';
 import { PendingService } from '../../../../core/services/pending.service';
 import { Router } from '@angular/router';
 import { NoteEditorDialogComponent } from '../note-editor-dialog/note-editor-dialog.component';
@@ -123,5 +123,38 @@ export class NotesListComponent implements OnInit {
                 }
             });
         }
+    }
+
+    getNoteContent(note: Note): string {
+        const baseContent = note.content ?? '';
+        const embeddedMarkdown = this.buildEmbeddedImagesMarkdown(note.embeddedImages);
+        if (!embeddedMarkdown) {
+            return baseContent;
+        }
+
+        if (!baseContent.trim()) {
+            return embeddedMarkdown;
+        }
+
+        return `${baseContent}\n\n---\n\n${embeddedMarkdown}`;
+    }
+
+    getEmbeddedImageThumbnails(note: Note): NoteEmbeddedImage[] {
+        return (note.embeddedImages ?? [])
+            .filter(image => !!image.downloadUrl)
+            .slice(0, 3);
+    }
+
+    private buildEmbeddedImagesMarkdown(images?: NoteEmbeddedImage[] | null): string {
+        if (!images || images.length === 0) return '';
+
+        const withUrls = images.filter(image => !!image.downloadUrl);
+        if (withUrls.length === 0) return '';
+
+        const markdownImages = withUrls
+            .map(image => `![${image.fileName} (page ${image.pageNumber})](${image.downloadUrl})`)
+            .join('\n\n');
+
+        return `## Embedded Images\n${markdownImages}`;
     }
 }

@@ -40,6 +40,12 @@ public class AttemptService(
 
         var interactions = new List<KnowledgeInteractionInput>();
 
+        var knownMistakePatterns = await context.UserKnowledgeStates
+            .AsNoTracking()
+            .Where(s => s.UserId == userId && s.SourceNoteId == quiz.NoteId)
+            .Select(s => s.MistakePatternsJson)
+            .FirstOrDefaultAsync();
+
         foreach (var question in quiz.Questions)
         {
             var qIdStr = question.Id.ToString();
@@ -63,7 +69,7 @@ public class AttemptService(
                 }
             }
 
-            var evaluation = await EvaluateQuestionAsync(userId, question, userAnswer, quiz.RubricJson);
+            var evaluation = await EvaluateQuestionAsync(userId, question, userAnswer, quiz.RubricJson, knownMistakePatterns);
             totalScore += evaluation.Score;
 
             interactions.Add(new KnowledgeInteractionInput
@@ -149,7 +155,12 @@ public class AttemptService(
         }
     }
 
-    private async Task<QuestionEvaluation> EvaluateQuestionAsync(Guid userId, QuizQuestion question, string? userAnswer, string? quizRubric)
+    private async Task<QuestionEvaluation> EvaluateQuestionAsync(
+        Guid userId,
+        QuizQuestion question,
+        string? userAnswer,
+        string? quizRubric,
+        string? knownMistakePatterns)
     {
         if (string.IsNullOrWhiteSpace(userAnswer))
         {
@@ -176,14 +187,20 @@ public class AttemptService(
                 return ScoreFromBoolean(PairsEqual(ParsePairs(userAnswer), ParsePairs(correctAnswer)));
 
             case QuestionType.OpenText:
-                return await ScoreOpenTextAsync(userId, question, userAnswer, correctAnswer, quizRubric);
+                return await ScoreOpenTextAsync(userId, question, userAnswer, correctAnswer, quizRubric, knownMistakePatterns);
 
             default:
                 return ScoreFromBoolean(string.Equals(normalizedUser, normalizedCorrect, StringComparison.OrdinalIgnoreCase));
         }
     }
 
-    private async Task<QuestionEvaluation> ScoreOpenTextAsync(Guid userId, QuizQuestion question, string userAnswer, string correctAnswer, string? quizRubric)
+    private async Task<QuestionEvaluation> ScoreOpenTextAsync(
+        Guid userId,
+        QuizQuestion question,
+        string userAnswer,
+        string correctAnswer,
+        string? quizRubric,
+        string? knownMistakePatterns)
     {
         var context = BuildOpenTextContext(question, correctAnswer, quizRubric);
         var inputHash = AgentRunService.ComputeHash($"grading:{AgentContractVersions.V2}:{question.Id}:{userAnswer}:{correctAnswer}");
@@ -197,7 +214,7 @@ public class AttemptService(
                 userAnswer,
                 correctAnswer,
                 context,
-                KnownMistakePatterns: null);
+                KnownMistakePatterns: knownMistakePatterns);
 
             var response = await aiService.GradeAnswerAsync(request);
             if (response == null)

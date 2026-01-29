@@ -52,4 +52,29 @@ describe('NoteEditorDialogComponent', () => {
         expect(noteServiceSpy.createNote).toHaveBeenCalled();
         expect(dialogRefSpy.close).toHaveBeenCalled();
     });
+
+    it('should append embedded image markdown to preview content', () => {
+        component.data.note = {
+            id: 'n1',
+            moduleId: '123',
+            title: 'Note',
+            content: 'Base',
+            createdAt: '2026-01-29',
+            embeddedImages: [
+                {
+                    id: 'img1',
+                    blobPath: 'path',
+                    fileName: 'image-1.png',
+                    pageNumber: 2,
+                    downloadUrl: 'https://example.com/image-1.png'
+                }
+            ]
+        } as any;
+
+        component.form.patchValue({ content: 'Base' });
+
+        expect(component.previewContent).toContain('## Embedded Images');
+        expect(component.previewContent).toContain('image-1.png');
+        expect(component.previewContent).toContain('https://example.com/image-1.png');
+    });
 });

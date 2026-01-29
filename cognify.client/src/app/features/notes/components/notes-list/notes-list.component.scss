@@ -94,6 +94,22 @@
             -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
             mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
         }
+
+        .embedded-image-strip {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            align-items: center;
+
+            img {
+                height: 48px;
+                width: auto;
+                border-radius: 6px;
+                border: 1px solid rgba(255, 255, 255, 0.12);
+                object-fit: cover;
+                background: rgba(255, 255, 255, 0.04);
+            }
+        }
     }
 }
 

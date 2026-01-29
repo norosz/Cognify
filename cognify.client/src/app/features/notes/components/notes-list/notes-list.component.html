@@ -24,7 +24,14 @@
                 <mat-card-subtitle>Created {{ note.createdAt | date:'MMM d, y, h:mm a' }}</mat-card-subtitle>
             </mat-card-header>
             <mat-card-content>
-                <p class="note-preview" [innerHTML]="note.content | markdownLatex"></p>
+                <p class="note-preview" [innerHTML]="getNoteContent(note) | markdownLatex"></p>
+                <div class="embedded-image-strip" *ngIf="getEmbeddedImageThumbnails(note).length">
+                    <img
+                        *ngFor="let image of getEmbeddedImageThumbnails(note)"
+                        [src]="image.downloadUrl"
+                        [alt]="image.fileName"
+                        loading="lazy" />
+                </div>
             </mat-card-content>
             <mat-card-actions align="end" (click)="$event.stopPropagation()">
                 <button mat-icon-button (click)="generateQuiz(note); $event.stopPropagation()"

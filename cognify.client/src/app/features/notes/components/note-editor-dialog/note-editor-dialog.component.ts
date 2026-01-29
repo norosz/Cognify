@@ -12,7 +12,7 @@ import { NotificationService } from '../../../../core/services/notification.serv
 import { NoteService } from '../../../../core/services/note.service';
 import { AiService } from '../../../../core/services/ai.service';
 import { DocumentSelectionDialogComponent } from '../../../modules/components/document-selection-dialog/document-selection-dialog.component';
-import { Note } from '../../../../core/models/note.model';
+import { Note, NoteEmbeddedImage } from '../../../../core/models/note.model';
 import { MarkdownLatexPipe } from '../../../../shared/pipes/markdown-latex.pipe';
 
 const PREVIEW_VISIBLE_KEY = 'cognify_note_preview_visible';
@@ -80,6 +80,20 @@ export class NoteEditorDialogComponent implements OnInit {
 
     get contentValue(): string {
         return this.form.get('content')?.value || '';
+    }
+
+    get previewContent(): string {
+        const baseContent = this.contentValue;
+        const embeddedMarkdown = this.buildEmbeddedImagesMarkdown(this.data.note?.embeddedImages);
+        if (!embeddedMarkdown) {
+            return baseContent;
+        }
+
+        if (!baseContent.trim()) {
+            return embeddedMarkdown;
+        }
+
+        return `${baseContent}\n\n---\n\n${embeddedMarkdown}`;
     }
 
     /**
@@ -185,5 +199,18 @@ export class NoteEditorDialogComponent implements OnInit {
                 }
             });
         }
+    }
+
+    private buildEmbeddedImagesMarkdown(images?: NoteEmbeddedImage[] | null): string {
+        if (!images || images.length === 0) return '';
+
+        const withUrls = images.filter(image => !!image.downloadUrl);
+        if (withUrls.length === 0) return '';
+
+        const markdownImages = withUrls
+            .map(image => `![${image.fileName} (page ${image.pageNumber})](${image.downloadUrl})`)
+            .join('\n\n');
+
+        return `## Embedded Images\n${markdownImages}`;
     }
 }

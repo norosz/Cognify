@@ -75,6 +75,14 @@ describe('PendingComponent', () => {
         expect(component.pendingQuizzes().length).toBe(1);
     }));
 
+    it('should render the extraction workflow banner', fakeAsync(() => {
+        fixture.detectChanges();
+        tick();
+
+        const element: HTMLElement = fixture.nativeElement;
+        expect(element.textContent).toContain('Review & Save creates a Note.');
+    }));
+
     it('should switch to quizzes tab when route param is tab=quizzes', fakeAsync(() => {
         fixture.detectChanges();
         routeParams$.next({ tab: 'quizzes' });
