@@ -747,7 +747,7 @@ namespace Cognify.Server.Migrations
                     b.HasOne("Cognify.Server.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("AgentRun");
@@ -769,7 +769,7 @@ namespace Cognify.Server.Migrations
                     b.HasOne("Cognify.Server.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Attempt");
@@ -788,7 +788,7 @@ namespace Cognify.Server.Migrations
                     b.HasOne("Cognify.Server.Models.Document", "SourceDocument")
                         .WithMany()
                         .HasForeignKey("SourceDocumentId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("Cognify.Server.Models.User", "User")
                         .WithMany()
@@ -830,7 +830,7 @@ namespace Cognify.Server.Migrations
                     b.HasOne("Cognify.Server.Models.Module", "Module")
                         .WithMany("Notes")
                         .HasForeignKey("ModuleId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("Cognify.Server.Models.Material", "SourceMaterial")
@@ -865,7 +865,7 @@ namespace Cognify.Server.Migrations
                     b.HasOne("Cognify.Server.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("AgentRun");

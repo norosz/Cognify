@@ -204,6 +204,19 @@ public class DocumentService : IDocumentService
          if (document.Module!.OwnerUserId != userId)
              throw new UnauthorizedAccessException("You don't own this document.");
 
+         // Detach materials that reference this document to avoid FK conflicts
+         var materials = await _context.Materials
+             .Where(m => m.SourceDocumentId == documentId && m.UserId == userId)
+             .ToListAsync();
+
+         if (materials.Count > 0)
+         {
+             foreach (var material in materials)
+             {
+                 material.SourceDocumentId = null;
+             }
+         }
+
          // Delete from Blob Storage
          await _blobStorageService.DeleteAsync(document.BlobPath);
 

@@ -12,7 +12,7 @@ export interface ExtractedContentDto {
     moduleName: string;
     text: string | null;
     extractedAt: string;
-    status: 'Processing' | 'Ready' | 'Error';
+    status: 'Processing' | 'Ready' | 'Error' | 'Completed' | 'Failed';
     errorMessage?: string;
     images?: ExtractedImageMetadataDto[] | null;
 }
@@ -50,6 +50,8 @@ export class PendingService {
     private http = inject(HttpClient);
     private notificationService = inject(NotificationService);
     private apiUrl = '/api/pending';
+    private readonly extractedStateStorageKey = 'cognify.pending.extractions.lastState.v1';
+    private readonly quizStateStorageKey = 'cognify.pending.quizzes.lastState.v1';
 
     pendingCount = signal<number>(0);
     extractedContents = signal<ExtractedContentDto[]>([]);
@@ -58,6 +60,7 @@ export class PendingService {
     private pollingSubscription: Subscription | null = null;
     private lastExtractedState = new Map<string, string>();
     private lastQuizState = new Map<string, string>();
+    private hasHydratedState = false;
 
     getExtractedContents(): Observable<ExtractedContentDto[]> {
         return this.http.get<ExtractedContentDto[]>(`${this.apiUrl}/extracted-contents`);
@@ -110,6 +113,12 @@ export class PendingService {
     startPolling(): void {
         if (this.pollingSubscription) return;
 
+        if (!this.hasHydratedState) {
+            this.loadStateFromStorage(this.extractedStateStorageKey, this.lastExtractedState);
+            this.loadStateFromStorage(this.quizStateStorageKey, this.lastQuizState);
+            this.hasHydratedState = true;
+        }
+
         // Poll every 10 seconds
         this.pollingSubscription = timer(0, 10000).pipe(
             switchMap(() => forkJoin({
@@ -140,16 +149,32 @@ export class PendingService {
         // Detect changes
         for (const item of items) {
             const prevState = this.lastExtractedState.get(item.id);
+            const currentStatus = this.normalizeExtractionStatus(item.status);
 
-            // If we knew about it and it was Processing
+            // Notify on transition from Processing to terminal
             if (prevState === 'Processing') {
-                if (item.status === 'Ready') {
+                if (currentStatus === 'Completed') {
                     this.notificationService.success(
                         `Document "${item.documentName}" is ready!`,
                         ['/pending', { tab: 'extractions' }],
                         'View Details'
                     );
-                } else if (item.status === 'Error') {
+                } else if (currentStatus === 'Failed') {
+                    this.notificationService.error(
+                        `Failed to process "${item.documentName}": ${item.errorMessage}`
+                    );
+                }
+            }
+
+            // If we first see it already terminal, notify once
+            if (!prevState && this.isExtractionTerminal(currentStatus)) {
+                if (currentStatus === 'Completed') {
+                    this.notificationService.success(
+                        `Document "${item.documentName}" is ready!`,
+                        ['/pending', { tab: 'extractions' }],
+                        'View Details'
+                    );
+                } else if (currentStatus === 'Failed') {
                     this.notificationService.error(
                         `Failed to process "${item.documentName}": ${item.errorMessage}`
                     );
@@ -157,8 +182,8 @@ export class PendingService {
             }
 
             // Initialize state if new (detected as Processing first time)
-            if (!this.lastExtractedState.has(item.id) || this.lastExtractedState.get(item.id) !== item.status) {
-                this.lastExtractedState.set(item.id, item.status);
+            if (!this.lastExtractedState.has(item.id) || this.lastExtractedState.get(item.id) !== currentStatus) {
+                this.lastExtractedState.set(item.id, currentStatus);
             }
         }
 
@@ -168,6 +193,8 @@ export class PendingService {
                 this.lastExtractedState.delete(id);
             }
         }
+
+        this.persistState(this.extractedStateStorageKey, this.lastExtractedState);
     }
 
     private checkQuizStatus(items: PendingQuizDto[]): void {
@@ -175,29 +202,39 @@ export class PendingService {
 
         for (const item of items) {
             const prevState = this.lastQuizState.get(item.id);
+            const currentStatus = this.normalizeQuizStatus(item.status);
+            const wasInProgress = prevState === 'Pending' || prevState === 'Processing' || prevState === 'Generating';
 
-            if (prevState === 'Generating' || prevState === 'Processing') { // API uses 'Generating', DTO says status is string
-                // The backend uses 'Generating' for created quizzes.
-                // We should check what the string value actually is. 
-                // In PendingQuizService.cs: Status = PendingQuizStatus.Generating (which is likely 0 or 1).
-                // In PendingController, q.Status.ToString() is used.
-                // Let's assume 'Generating' based on PendingQuizService.cs enum.
-
-                if (item.status === 'Ready') {
+            if (wasInProgress) {
+                if (currentStatus === 'Completed') {
                     this.notificationService.success(
                         `Quiz "${item.title}" is ready!`,
                         ['/pending', { tab: 'quizzes' }],
                         'View Quiz'
                     );
-                } else if (item.status === 'Failed') {
+                } else if (currentStatus === 'Failed') {
                     this.notificationService.error(
                         `Failed to generate quiz "${item.title}": ${item.errorMessage}`
                     );
                 }
             }
 
-            if (!this.lastQuizState.has(item.id) || this.lastQuizState.get(item.id) !== item.status) {
-                this.lastQuizState.set(item.id, item.status);
+            if (!prevState && this.isQuizTerminal(currentStatus)) {
+                if (currentStatus === 'Completed') {
+                    this.notificationService.success(
+                        `Quiz "${item.title}" is ready!`,
+                        ['/pending', { tab: 'quizzes' }],
+                        'View Quiz'
+                    );
+                } else if (currentStatus === 'Failed') {
+                    this.notificationService.error(
+                        `Failed to generate quiz "${item.title}": ${item.errorMessage}`
+                    );
+                }
+            }
+
+            if (!this.lastQuizState.has(item.id) || this.lastQuizState.get(item.id) !== currentStatus) {
+                this.lastQuizState.set(item.id, currentStatus);
             }
         }
 
@@ -205,6 +242,56 @@ export class PendingService {
             if (!currentIds.has(id)) {
                 this.lastQuizState.delete(id);
             }
+        }
+
+        this.persistState(this.quizStateStorageKey, this.lastQuizState);
+    }
+
+    private normalizeExtractionStatus(status: string): string {
+        if (status === 'Ready') return 'Completed';
+        if (status === 'Error') return 'Failed';
+        return status;
+    }
+
+    private normalizeQuizStatus(status: string): string {
+        if (status === 'Ready') return 'Completed';
+        if (status === 'Error') return 'Failed';
+        return status;
+    }
+
+    private isExtractionTerminal(status: string): boolean {
+        return status === 'Completed' || status === 'Failed';
+    }
+
+    private isQuizTerminal(status: string): boolean {
+        return status === 'Completed' || status === 'Failed';
+    }
+
+    private loadStateFromStorage(storageKey: string, target: Map<string, string>): void {
+        try {
+            const raw = localStorage.getItem(storageKey);
+            if (!raw) return;
+            const parsed = JSON.parse(raw) as Record<string, string> | null;
+            if (!parsed || typeof parsed !== 'object') return;
+            for (const [id, status] of Object.entries(parsed)) {
+                if (typeof status === 'string') {
+                    target.set(id, status);
+                }
+            }
+        } catch {
+            // Ignore storage parse errors
+        }
+    }
+
+    private persistState(storageKey: string, source: Map<string, string>): void {
+        const payload: Record<string, string> = {};
+        for (const [id, status] of source.entries()) {
+            payload[id] = status;
+        }
+        try {
+            localStorage.setItem(storageKey, JSON.stringify(payload));
+        } catch {
+            // Ignore storage write errors
         }
     }
 }

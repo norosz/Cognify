@@ -424,7 +424,17 @@ public class AiBackgroundWorker(
             if (image.Bytes == null || image.Bytes.Length == 0) continue;
 
             var imageId = Guid.NewGuid().ToString("N");
-            var extension = image.ContentType == "image/png" ? "png" : "bin";
+            var extension = image.ContentType switch
+            {
+                "image/png" => "png",
+                "image/jpeg" => "jpg",
+                "image/jpg" => "jpg",
+                "image/jp2" => "jp2",
+                "image/webp" => "webp",
+                "image/gif" => "gif",
+                "image/bmp" => "bmp",
+                _ => "bin"
+            };
             var fileName = $"image-{index}.{extension}";
             var blobPath = $"extracted/{documentId}/images/{imageId}.{extension}";
 

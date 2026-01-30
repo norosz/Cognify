@@ -201,6 +201,8 @@ public class AiControllerTests : IClassFixture<WebApplicationFactory<Program>>, 
             pending.DocumentId.Should().Be(documentId);
         }
 
+    }
+
         [Fact]
         public async Task ExtractText_ShouldReject_WhenDocumentNotUploaded()
         {
@@ -225,7 +227,6 @@ public class AiControllerTests : IClassFixture<WebApplicationFactory<Program>>, 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
-    }
 
     [Fact]
     public async Task ExtractText_ShouldAcceptPdfFiles()

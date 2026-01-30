@@ -3,7 +3,6 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using Cognify.Server.Data;
 using Cognify.Server.DTOs;
 using Cognify.Server.Dtos.Ai.Contracts;
 using Cognify.Server.Dtos.Knowledge;
@@ -29,7 +28,7 @@ public class AttemptService(
         var quiz = await context.Quizzes
             .Include(q => q.Questions)
             .Include(q => q.Note)
-            .ThenInclude(n => n.Module)
+            .ThenInclude(n => n!.Module)
             .FirstOrDefaultAsync(q => q.Id == dto.QuizId);
 
            if (quiz == null)

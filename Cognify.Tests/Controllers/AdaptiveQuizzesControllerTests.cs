@@ -2,6 +2,7 @@ using Cognify.Server.Controllers;
 using Cognify.Server.Dtos.Adaptive;
 using Cognify.Server.Services.Interfaces;
 using FluentAssertions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Xunit;
@@ -25,7 +26,9 @@ public class AdaptiveQuizzesControllerTests
 
         var result = await controller.CreateAdaptiveQuiz(request);
 
-        result.Result.Should().BeOfType<BadRequestObjectResult>();
+        var problem = result.Result.Should().BeOfType<ObjectResult>().Subject;
+        problem.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+        problem.Value.Should().BeOfType<ProblemDetails>();
     }
 
     [Fact]
@@ -43,7 +46,9 @@ public class AdaptiveQuizzesControllerTests
 
         var result = await controller.CreateAdaptiveQuiz(request);
 
-        result.Result.Should().BeOfType<BadRequestObjectResult>();
+        var problem = result.Result.Should().BeOfType<ObjectResult>().Subject;
+        problem.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+        problem.Value.Should().BeOfType<ProblemDetails>();
     }
 
     [Fact]
@@ -62,7 +67,9 @@ public class AdaptiveQuizzesControllerTests
 
         var result = await controller.CreateAdaptiveQuiz(request);
 
-        result.Result.Should().BeOfType<BadRequestObjectResult>();
+        var problem = result.Result.Should().BeOfType<ObjectResult>().Subject;
+        problem.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+        problem.Value.Should().BeOfType<ProblemDetails>();
     }
 
     [Fact]
@@ -96,7 +103,9 @@ public class AdaptiveQuizzesControllerTests
 
         var result = await controller.CreateAdaptiveQuiz(request);
 
-        result.Result.Should().BeOfType<NotFoundObjectResult>();
+        var problem = result.Result.Should().BeOfType<ObjectResult>().Subject;
+        problem.StatusCode.Should().Be(StatusCodes.Status404NotFound);
+        problem.Value.Should().BeOfType<ProblemDetails>();
     }
 
     [Fact]
@@ -110,7 +119,9 @@ public class AdaptiveQuizzesControllerTests
 
         var result = await controller.CreateAdaptiveQuiz(request);
 
-        result.Result.Should().BeOfType<ForbidResult>();
+        var problem = result.Result.Should().BeOfType<ObjectResult>().Subject;
+        problem.StatusCode.Should().Be(StatusCodes.Status403Forbidden);
+        problem.Value.Should().BeOfType<ProblemDetails>();
     }
 
     [Fact]
@@ -124,6 +135,8 @@ public class AdaptiveQuizzesControllerTests
 
         var result = await controller.CreateAdaptiveQuiz(request);
 
-        result.Result.Should().BeOfType<BadRequestObjectResult>();
+        var problem = result.Result.Should().BeOfType<ObjectResult>().Subject;
+        problem.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+        problem.Value.Should().BeOfType<ProblemDetails>();
     }
 }

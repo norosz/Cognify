@@ -2,6 +2,7 @@ using Cognify.Server.Controllers;
 using Cognify.Server.DTOs;
 using Cognify.Server.Services.Interfaces;
 using FluentAssertions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Xunit;
@@ -21,7 +22,9 @@ public class AttemptsControllerTests
             QuizId = Guid.NewGuid()
         });
 
-        result.Should().BeOfType<BadRequestObjectResult>();
+        var problem = result.Should().BeOfType<ObjectResult>().Subject;
+        problem.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+        problem.Value.Should().BeOfType<ProblemDetails>();
     }
 
     [Fact]
@@ -53,7 +56,9 @@ public class AttemptsControllerTests
 
         var result = await controller.SubmitAttempt(quizId, dto);
 
-        result.Should().BeOfType<NotFoundObjectResult>();
+        var problem = result.Should().BeOfType<ObjectResult>().Subject;
+        problem.StatusCode.Should().Be(StatusCodes.Status404NotFound);
+        problem.Value.Should().BeOfType<ProblemDetails>();
     }
 
     [Fact]

@@ -44,16 +44,23 @@ public class LearningAnalyticsComputationService(ApplicationDbContext context, I
         var activityDates = new[]
         {
             attempts.Count > 0 ? attempts.Max(a => a.CreatedAt) : (DateTime?)null,
-            interactions.Count > 0 ? interactions.Max(i => i.CreatedAt) : (DateTime?)null
+            interactions.Count > 0 ? interactions.Max(i => i.CreatedAt) : (DateTime?)null,
+            states.Any(s => s.LastReviewedAt.HasValue)
+                ? states.Where(s => s.LastReviewedAt.HasValue).Max(s => s.LastReviewedAt)
+                : (DateTime?)null
         };
 
         DateTime? lastActivity = activityDates.Any(d => d.HasValue)
             ? activityDates.Where(d => d.HasValue).Select(d => d!.Value).Max()
             : null;
 
+        // Avoid showing a misleading default readiness score (e.g., 10%) for brand new users
+        // with no learning activity yet.
+        var hasAnyLearningActivity = lastActivity != null || totalAttempts > 0 || interactions.Count > 0;
+
         var readinessBase = (averageMastery * 0.55) + ((1 - averageRisk) * 0.25) + (accuracyRate * 0.2);
         var recencyPenalty = lastActivity == null ? 0.15 : Math.Clamp((now - lastActivity.Value).TotalDays / 30.0, 0, 0.15);
-        var examReadiness = Clamp(readinessBase - recencyPenalty);
+        var examReadiness = hasAnyLearningActivity ? Clamp(readinessBase - recencyPenalty) : 0;
 
         var learningVelocity = await CalculateLearningVelocityAsync(userId, now);
 

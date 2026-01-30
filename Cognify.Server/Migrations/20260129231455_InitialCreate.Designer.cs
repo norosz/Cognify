@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Cognify.Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260129185833_AddUserMistakePatterns")]
-    partial class AddUserMistakePatterns
+    [Migration("20260129231455_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -750,7 +750,7 @@ namespace Cognify.Server.Migrations
                     b.HasOne("Cognify.Server.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("AgentRun");
@@ -772,7 +772,7 @@ namespace Cognify.Server.Migrations
                     b.HasOne("Cognify.Server.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Attempt");
@@ -791,7 +791,7 @@ namespace Cognify.Server.Migrations
                     b.HasOne("Cognify.Server.Models.Document", "SourceDocument")
                         .WithMany()
                         .HasForeignKey("SourceDocumentId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("Cognify.Server.Models.User", "User")
                         .WithMany()
@@ -833,7 +833,7 @@ namespace Cognify.Server.Migrations
                     b.HasOne("Cognify.Server.Models.Module", "Module")
                         .WithMany("Notes")
                         .HasForeignKey("ModuleId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("Cognify.Server.Models.Material", "SourceMaterial")
@@ -868,7 +868,7 @@ namespace Cognify.Server.Migrations
                     b.HasOne("Cognify.Server.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("AgentRun");

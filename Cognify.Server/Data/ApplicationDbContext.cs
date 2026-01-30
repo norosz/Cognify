@@ -45,7 +45,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasMany(m => m.Notes)
             .WithOne(n => n.Module)
             .HasForeignKey(n => n.ModuleId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.NoAction); // Avoid multiple cascade paths (Modules -> Notes and Modules -> Materials -> Notes)
 
         // Module - Material (One-to-Many)
         modelBuilder.Entity<Module>()
@@ -106,7 +106,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasOne(i => i.User)
             .WithMany()
             .HasForeignKey(i => i.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.NoAction); // Prevent multiple cascade paths (e.g., Users -> Attempts -> LearningInteractions)
 
         modelBuilder.Entity<LearningInteraction>()
             .HasOne(i => i.Attempt)
@@ -139,7 +139,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasOne(e => e.User)
             .WithMany()
             .HasForeignKey(e => e.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.NoAction); // Prevent multiple cascade paths (e.g., Users -> AgentRuns -> ExtractedContents)
 
         modelBuilder.Entity<ExtractedContent>()
             .HasOne(e => e.Document)
@@ -162,7 +162,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasOne(p => p.User)
             .WithMany()
             .HasForeignKey(p => p.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.NoAction); // Prevent multiple cascade paths (e.g., Users -> AgentRuns -> PendingQuizzes)
 
         // AgentRun Relationships
         modelBuilder.Entity<AgentRun>()
@@ -214,7 +214,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasOne(m => m.SourceDocument)
             .WithMany()
             .HasForeignKey(m => m.SourceDocumentId)
-            .OnDelete(DeleteBehavior.SetNull);
+            .OnDelete(DeleteBehavior.NoAction); // Avoid multiple cascade paths (Modules -> Documents -> Materials)
 
         modelBuilder.Entity<Material>()
             .Property(m => m.Status)

@@ -2,6 +2,7 @@ using Cognify.Server.Controllers;
 using Cognify.Server.Dtos.Analytics;
 using Cognify.Server.Services.Interfaces;
 using FluentAssertions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Xunit;
@@ -18,7 +19,9 @@ public class LearningAnalyticsControllerTests
 
         var result = await controller.GetTrends(from: null, to: null, bucketDays: 0);
 
-        result.Result.Should().BeOfType<BadRequestObjectResult>();
+        var problem = result.Result.Should().BeOfType<ObjectResult>().Subject;
+        problem.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+        problem.Value.Should().BeOfType<ProblemDetails>();
     }
 
     [Fact]
