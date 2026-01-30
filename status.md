@@ -47,12 +47,11 @@ Authoritative implementation details live in [implementation.md](implementation.
 1) **[Backend]** Add schema: `ExamAttempt`, `Module.CurrentFinalExamQuizId` + migration
 2) **[Backend]** Implement exam endpoints + final exam regenerate/save pointer flow
 3) **[Backend]** Add `includeExams` filtering to analytics + review queue endpoints
-4) **[Frontend]** Add `/statistics` page; shrink dashboard to actions + summary
-5) **[Frontend]** Add quiz pages: detail/stats, results, review (green/red + AI explain)
-6) **[Frontend]** Refactor module page to card layout + module stats + exam section
-7) **[Frontend]** Notes detail page: sources list + downloads + inline images + split inputs
-8) **[Backend/Frontend]** Categories: AI suggest + user override for modules/quizzes
-9) **[Backend]** Concept clustering pipeline (per module) + concept IDs stored
+4) **[Frontend]** Add quiz pages: detail/stats, results, review (green/red + AI explain)
+5) **[Frontend]** Refactor module page to card layout + module stats + exam section
+6) **[Frontend]** Notes detail page: sources list + downloads + inline images + split inputs
+7) **[Backend/Frontend]** Categories: AI suggest + user override for modules/quizzes
+8) **[Backend]** Concept clustering pipeline (per module) + concept IDs stored
 
 ---
 
@@ -85,6 +84,7 @@ Authoritative implementation details live in [implementation.md](implementation.
 - **[Frontend]** Add module statistics section on module page
 - **[Frontend]** Add quiz detail page with stats and attempt history
 - **[Frontend]** Add attempt result and review pages with AI explanations
+- **[Frontend]** Add statistics page and move analytics off dashboard
 
 ---
 

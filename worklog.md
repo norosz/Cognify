@@ -5,6 +5,37 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-30 17:00  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Added statistics page for analytics and charts
+- Moved analytics out of dashboard and trimmed dashboard view
+- Added sidebar navigation entry for statistics
+- Updated status board for statistics completion
+
+**CHANGED FILES**
+- cognify.client/src/app/app.routes.ts
+- cognify.client/src/app/core/layout/main-layout/main-layout.component.html
+- cognify.client/src/app/features/dashboard/dashboard.component.ts
+- cognify.client/src/app/features/dashboard/dashboard.component.html
+- cognify.client/src/app/features/dashboard/dashboard.component.scss
+- cognify.client/src/app/features/statistics/statistics.component.ts
+- cognify.client/src/app/features/statistics/statistics.component.html
+- cognify.client/src/app/features/statistics/statistics.component.scss
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Analytics charts now live exclusively on /statistics to keep dashboard concise
+
+**NEXT**
+- Implement module final exam UI pages and exam attempt flows
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-30 16:10  
 **Author:** GitHub Copilot  
 

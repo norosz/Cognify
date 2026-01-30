@@ -70,31 +70,6 @@
     }
 }
 
-.mistake-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-}
-
-.mistake-topics {
-    margin-top: 6px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    font-size: 0.85rem;
-}
-
-.mistake-topics-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px 10px;
-}
-
-.mistake-topic {
-    color: var(--text-secondary);
-}
-
 .topic-name {
     font-weight: 600;
     color: var(--text-primary);
@@ -103,33 +78,6 @@
 .topic-meta {
     color: var(--text-secondary);
     font-size: 0.9rem;
-}
-
-.summary-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 12px;
-}
-
-.summary-item {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 10px 12px;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.summary-label {
-    color: var(--text-secondary);
-    font-size: 0.85rem;
-}
-
-.summary-value {
-    color: var(--text-primary);
-    font-weight: 600;
-    font-size: 1.05rem;
 }
 
 .modules-grid {
@@ -345,64 +293,4 @@
 // Delete menu item styling (red text)
 ::ng-deep .delete-item {
     color: #f44336 !important;
-}
-
-.analytics-header {
-    margin: 8px 0 16px;
-
-    h2 {
-        margin: 0 0 4px;
-        font-size: 24px;
-        font-weight: 700;
-        color: var(--text-primary);
-    }
-
-    p {
-        margin: 0;
-        color: var(--text-secondary);
-    }
-}
-
-.analytics-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 24px;
-    margin-bottom: 40px;
-}
-
-.analytics-card {
-    min-height: 220px;
-    display: flex;
-    flex-direction: column;
-
-    &.wide {
-        grid-column: span 2;
-    }
-
-    mat-card-content {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-    }
-}
-
-.chart {
-    width: 100%;
-    height: 220px;
-}
-
-.chart-small {
-    height: 140px;
-}
-
-.chart-tall {
-    height: 260px;
-}
-
-.analytics-meta {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.9rem;
-    color: var(--text-secondary);
 }
