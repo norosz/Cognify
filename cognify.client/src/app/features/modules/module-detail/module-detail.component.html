@@ -78,7 +78,19 @@
                 <mat-icon>category</mat-icon>
                 <p>No category data yet.</p>
             </div>
-            <div *ngIf="moduleCategoryBreakdown().length > 0" class="chart chart-tall" echarts [options]="moduleCategoryOptions()"></div>
+            <div *ngIf="moduleCategoryBreakdown().length > 0">
+                <div class="category-toggle">
+                    <button mat-stroked-button color="primary" (click)="setModuleCategoryMetric('attempts')"
+                            [disabled]="moduleCategoryMetric() === 'attempts'">
+                        By attempts
+                    </button>
+                    <button mat-stroked-button color="primary" (click)="setModuleCategoryMetric('average')"
+                            [disabled]="moduleCategoryMetric() === 'average'">
+                        By average score
+                    </button>
+                </div>
+                <div class="chart chart-tall" echarts [options]="moduleCategoryOptions()"></div>
+            </div>
         </mat-card-content>
     </mat-card>
 

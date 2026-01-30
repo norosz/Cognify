@@ -89,6 +89,7 @@ export class ModuleDetailComponent implements OnInit {
   suggestingCategory = signal<boolean>(false);
   moduleCategoryBreakdown = signal<CategoryBreakdownItemDto[]>([]);
   moduleCategoryOptions = signal<any>({});
+  moduleCategoryMetric = signal<'attempts' | 'average'>('attempts');
 
   @ViewChild(DocumentListComponent) documentList!: DocumentListComponent;
   @ViewChild(NotesListComponent) notesList!: NotesListComponent;
@@ -167,13 +168,18 @@ export class ModuleDetailComponent implements OnInit {
     }).subscribe({
       next: (data) => {
         this.moduleCategoryBreakdown.set(data.items || []);
-        this.moduleCategoryOptions.set(this.buildModuleCategoryOptions(data.items || []));
+        this.moduleCategoryOptions.set(this.buildModuleCategoryOptions(data.items || [], this.moduleCategoryMetric()));
       },
       error: () => {
         this.moduleCategoryBreakdown.set([]);
         this.moduleCategoryOptions.set({});
       }
     });
+  }
+
+  setModuleCategoryMetric(metric: 'attempts' | 'average') {
+    this.moduleCategoryMetric.set(metric);
+    this.moduleCategoryOptions.set(this.buildModuleCategoryOptions(this.moduleCategoryBreakdown(), metric));
   }
 
   loadExamAttempts(moduleId: string) {
@@ -328,16 +334,20 @@ export class ModuleDetailComponent implements OnInit {
     return note.title === 'Final Exam' && (note.content ?? '').includes('<!-- cognify:final-exam -->');
   }
 
-  private buildModuleCategoryOptions(items: CategoryBreakdownItemDto[]) {
+  private buildModuleCategoryOptions(items: CategoryBreakdownItemDto[], metric: 'attempts' | 'average') {
     const labels = items.map(i => i.categoryLabel);
-    const values = items.map(i => i.practiceAttemptCount);
+    const values = items.map(i => metric === 'attempts'
+      ? i.practiceAttemptCount
+      : Math.round(i.practiceAverageScore));
 
     return {
       grid: { left: 140, right: 20, top: 10, bottom: 20 },
-      xAxis: { type: 'value', min: 0 },
+      xAxis: { type: 'value', min: 0, max: metric === 'attempts' ? undefined : 100 },
       yAxis: { type: 'category', data: labels },
       tooltip: {
-        formatter: ({ name, value }: any) => `${name}: ${value} attempts`
+        formatter: ({ name, value }: any) => metric === 'attempts'
+          ? `${name}: ${value} attempts`
+          : `${name}: ${value}% avg`
       },
       series: [
         {

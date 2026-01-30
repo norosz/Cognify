@@ -43,6 +43,7 @@ export class StatisticsComponent implements OnInit {
   retentionHeatmap = signal<RetentionHeatmapPointDto[]>([]);
   decayForecast = signal<DecayForecastDto | null>(null);
   mistakePatterns = signal<MistakePatternSummaryDto[]>([]);
+  categoryBreakdown = signal<CategoryBreakdownItemDto[]>([]);
 
   examSummary = signal<ExamAnalyticsSummaryDto | null>(null);
   examCategoryBreakdown = signal<CategoryBreakdownItemDto[]>([]);
@@ -52,6 +53,8 @@ export class StatisticsComponent implements OnInit {
   distributionOptions = signal<any>({});
   heatmapOptions = signal<any>({});
   decayOptions = signal<any>({});
+  categoryOptions = signal<any>({});
+  categoryMetric = signal<'attempts' | 'average'>('attempts');
   examCategoryOptions = signal<any>({});
   examCategoryMetric = signal<'attempts' | 'average'>('attempts');
 
@@ -65,6 +68,11 @@ export class StatisticsComponent implements OnInit {
     this.examCategoryOptions.set(this.buildExamCategoryBreakdownOptions(this.examCategoryBreakdown(), metric));
   }
 
+  setCategoryMetric(metric: 'attempts' | 'average') {
+    this.categoryMetric.set(metric);
+    this.categoryOptions.set(this.buildCategoryBreakdownOptions(this.categoryBreakdown(), metric));
+  }
+
 
   loadPracticeAnalytics() {
     this.isAnalyticsLoading.set(true);
@@ -74,7 +82,11 @@ export class StatisticsComponent implements OnInit {
       topics: this.analyticsService.getTopics({ maxTopics: 20, maxWeakTopics: 5 }, false),
       heatmap: this.analyticsService.getRetentionHeatmap({ maxTopics: 12 }, false),
       decay: this.analyticsService.getDecayForecast({ maxTopics: 5, days: 14, stepDays: 2 }, false),
-      mistakes: this.analyticsService.getMistakePatterns({ maxItems: 6, maxTopics: 3 }, false)
+      mistakes: this.analyticsService.getMistakePatterns({ maxItems: 6, maxTopics: 3 }, false),
+      categories: this.analyticsService.getCategoryBreakdown({
+        includeExams: false,
+        groupBy: 'moduleCategory'
+      })
     }).subscribe({
       next: (data) => {
         this.analyticsSummary.set(data.summary);
@@ -83,12 +95,14 @@ export class StatisticsComponent implements OnInit {
         this.retentionHeatmap.set(data.heatmap);
         this.decayForecast.set(data.decay);
         this.mistakePatterns.set(data.mistakes);
+        this.categoryBreakdown.set(data.categories.items || []);
 
         this.readinessOptions.set(this.buildReadinessGaugeOptions(data.summary));
         this.velocityOptions.set(this.buildVelocitySparklineOptions(data.trends));
         this.distributionOptions.set(this.buildTopicDistributionOptions(data.topics));
         this.heatmapOptions.set(this.buildHeatmapOptions(data.heatmap));
         this.decayOptions.set(this.buildDecayForecastOptions(data.decay));
+        this.categoryOptions.set(this.buildCategoryBreakdownOptions(data.categories.items || [], this.categoryMetric()));
 
         this.isAnalyticsLoading.set(false);
       },
@@ -100,6 +114,8 @@ export class StatisticsComponent implements OnInit {
         this.heatmapOptions.set({});
         this.decayOptions.set({});
         this.mistakePatterns.set([]);
+        this.categoryBreakdown.set([]);
+        this.categoryOptions.set({});
         this.isAnalyticsLoading.set(false);
       }
     });
@@ -144,6 +160,32 @@ export class StatisticsComponent implements OnInit {
           type: 'bar',
           data: values,
           itemStyle: { color: '#4fb6ff' },
+          barWidth: 14
+        }
+      ]
+    };
+  }
+
+  private buildCategoryBreakdownOptions(items: CategoryBreakdownItemDto[], metric: 'attempts' | 'average') {
+    const labels = items.map(i => i.categoryLabel);
+    const values = items.map(i => metric === 'attempts'
+      ? i.practiceAttemptCount
+      : Math.round(i.practiceAverageScore));
+
+    return {
+      grid: { left: 140, right: 20, top: 10, bottom: 20 },
+      xAxis: { type: 'value', min: 0, max: metric === 'attempts' ? undefined : 100 },
+      yAxis: { type: 'category', data: labels },
+      tooltip: {
+        formatter: ({ name, value }: any) => metric === 'attempts'
+          ? `${name}: ${value} attempts`
+          : `${name}: ${value}% avg`
+      },
+      series: [
+        {
+          type: 'bar',
+          data: values,
+          itemStyle: { color: '#8f73ff' },
           barWidth: 14
         }
       ]

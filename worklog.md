@@ -5,6 +5,31 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-30 21:20  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Restored Statistics category breakdown with module attempts/avg score toggle
+- Added attempts/avg score toggle to module detail category breakdown
+
+**CHANGED FILES**
+- cognify.client/src/app/features/statistics/statistics.component.ts
+- cognify.client/src/app/features/statistics/statistics.component.html
+- cognify.client/src/app/features/modules/module-detail/module-detail.component.ts
+- cognify.client/src/app/features/modules/module-detail/module-detail.component.html
+- cognify.client/src/app/features/modules/module-detail/module-detail.component.scss
+- worklog.md
+
+**DECISIONS**
+- Statistics category breakdown uses module categories only (no quiz filters)
+
+**NEXT**
+- None
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-30 21:10  
 **Author:** GitHub Copilot  
 

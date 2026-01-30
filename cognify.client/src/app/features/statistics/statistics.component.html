@@ -52,6 +52,39 @@
         </div>
 
         <div class="analytics-grid">
+            <mat-card class="analytics-card cognify-glass-card wide">
+                <mat-card-header>
+                    <mat-card-title>Category Breakdown</mat-card-title>
+                    <mat-card-subtitle>Modules grouped by category (practice only)</mat-card-subtitle>
+                </mat-card-header>
+                <mat-card-content>
+                    @if (isAnalyticsLoading()) {
+                    <div class="loading-inline">
+                        <mat-spinner diameter="28"></mat-spinner>
+                    </div>
+                    } @else {
+                    @if ((categoryBreakdown().length || 0) === 0) {
+                    <div class="empty-inline">
+                        <mat-icon>category</mat-icon>
+                        <p>No category data yet.</p>
+                    </div>
+                    } @else {
+                    <div class="category-toggle">
+                        <button mat-stroked-button color="primary" (click)="setCategoryMetric('attempts')"
+                                [disabled]="categoryMetric() === 'attempts'">
+                            By attempts
+                        </button>
+                        <button mat-stroked-button color="primary" (click)="setCategoryMetric('average')"
+                                [disabled]="categoryMetric() === 'average'">
+                            By average score
+                        </button>
+                    </div>
+                    <div class="chart chart-tall" echarts [options]="categoryOptions()"></div>
+                    }
+                    }
+                </mat-card-content>
+            </mat-card>
+
             <mat-card class="analytics-card cognify-glass-card">
                 <mat-card-header>
                     <mat-card-title>Exam Readiness</mat-card-title>
