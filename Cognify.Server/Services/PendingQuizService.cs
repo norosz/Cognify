@@ -152,8 +152,27 @@ public class PendingQuizService(ApplicationDbContext db, IAgentRunService agentR
         await ApplyAiCategorySuggestionAsync(quiz, pending.ModuleId, userId, generatedQuestions ?? []);
 
         // Delete pending quiz
-        db.PendingQuizzes.Remove(pending);
-        await db.SaveChangesAsync();
+        try
+        {
+            if (db.Entry(pending).State == EntityState.Detached)
+            {
+                var existing = await db.PendingQuizzes.FindAsync(pendingQuizId);
+                if (existing != null)
+                {
+                    db.PendingQuizzes.Remove(existing);
+                    await db.SaveChangesAsync();
+                }
+            }
+            else
+            {
+                db.PendingQuizzes.Remove(pending);
+                await db.SaveChangesAsync();
+            }
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            // Pending quiz was already deleted by another process; safe to ignore.
+        }
 
         return quiz;
     }

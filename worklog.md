@@ -5,6 +5,26 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-30 21:35  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Handled pending quiz delete concurrency during save to avoid DbUpdateConcurrencyException
+
+**CHANGED FILES**
+- Cognify.Server/Services/PendingQuizService.cs
+- worklog.md
+
+**DECISIONS**
+- Ignore concurrency when pending quiz was already deleted
+
+**NEXT**
+- None
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-30 21:20  
 **Author:** GitHub Copilot  
 
