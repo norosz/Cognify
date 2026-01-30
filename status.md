@@ -44,7 +44,7 @@ Authoritative implementation details live in [implementation.md](implementation.
 
 ## ⏭️ Next (ordered)
 
-1) **[Backend]** Concept clustering pipeline (per module) + concept IDs stored
+- (none)
 
 ---
 
@@ -74,6 +74,7 @@ Authoritative implementation details live in [implementation.md](implementation.
 - **[Frontend]** Add final exam UI and exam attempt flows
 - **[Frontend]** Notes detail page with sources, downloads, inline images, and split inputs
 - **[Frontend]** Refactor module page to card layout
+- **[Backend]** Concept clustering pipeline (per module) + concept IDs stored
 
 ---
 

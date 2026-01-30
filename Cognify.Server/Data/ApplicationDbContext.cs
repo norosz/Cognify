@@ -14,6 +14,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Attempt> Attempts => Set<Attempt>();
     public DbSet<ExamAttempt> ExamAttempts => Set<ExamAttempt>();
     public DbSet<UserKnowledgeState> UserKnowledgeStates => Set<UserKnowledgeState>();
+    public DbSet<ConceptCluster> ConceptClusters => Set<ConceptCluster>();
+    public DbSet<ConceptTopic> ConceptTopics => Set<ConceptTopic>();
     public DbSet<LearningInteraction> LearningInteractions => Set<LearningInteraction>();
     public DbSet<AnswerEvaluation> AnswerEvaluations => Set<AnswerEvaluation>();
     public DbSet<UserMistakePattern> UserMistakePatterns => Set<UserMistakePattern>();
@@ -124,8 +126,29 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<UserKnowledgeState>()
+            .HasOne(s => s.ConceptCluster)
+            .WithMany()
+            .HasForeignKey(s => s.ConceptClusterId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<UserKnowledgeState>()
             .HasIndex(s => new { s.UserId, s.Topic })
             .IsUnique();
+
+        modelBuilder.Entity<UserKnowledgeState>()
+            .HasIndex(s => s.ConceptClusterId);
+
+        modelBuilder.Entity<ConceptCluster>()
+            .HasOne(c => c.Module)
+            .WithMany()
+            .HasForeignKey(c => c.ModuleId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ConceptTopic>()
+            .HasOne(t => t.ConceptCluster)
+            .WithMany(c => c.Topics)
+            .HasForeignKey(t => t.ConceptClusterId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<LearningInteraction>()
             .HasOne(i => i.User)

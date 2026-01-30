@@ -1,5 +1,6 @@
 using Cognify.Server.Dtos.Categories;
 using Cognify.Server.Dtos.Modules;
+using Cognify.Server.Dtos.Concepts;
 using Cognify.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,7 +10,7 @@ namespace Cognify.Server.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class ModulesController(IModuleService moduleService, IStatsService statsService, ICategoryService categoryService) : ControllerBase
+public class ModulesController(IModuleService moduleService, IStatsService statsService, ICategoryService categoryService, IConceptClusteringService conceptService) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<List<ModuleDto>>> GetModules()
@@ -32,6 +33,20 @@ public class ModulesController(IModuleService moduleService, IStatsService stats
         var stats = await statsService.GetModuleStatsAsync(id);
         if (stats == null) return NotFound();
         return Ok(stats);
+    }
+
+    [HttpGet("{id}/concepts")]
+    public async Task<ActionResult> GetModuleConcepts(Guid id)
+    {
+        var concepts = await conceptService.GetConceptClustersAsync(id);
+        return Ok(concepts);
+    }
+
+    [HttpPost("{id}/concepts/refresh")]
+    public async Task<ActionResult> RefreshModuleConcepts(Guid id, [FromBody] RefreshConceptsRequest? request)
+    {
+        var concepts = await conceptService.RefreshConceptClustersAsync(id, request?.ForceRegenerate ?? true);
+        return Ok(concepts);
     }
 
     [HttpPost("{id}/categories/suggest")]

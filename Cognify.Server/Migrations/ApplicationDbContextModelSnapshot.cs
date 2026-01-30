@@ -666,6 +666,9 @@ namespace Cognify.Server.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("ConceptClusterId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<double>("ConfidenceScore")
                         .HasColumnType("float");
 
@@ -703,7 +706,60 @@ namespace Cognify.Server.Migrations
                     b.HasIndex("UserId", "Topic")
                         .IsUnique();
 
+                    b.HasIndex("ConceptClusterId");
+
                     b.ToTable("UserKnowledgeStates");
+                });
+
+            modelBuilder.Entity("Cognify.Server.Models.ConceptCluster", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<Guid>("ModuleId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ModuleId");
+
+                    b.ToTable("ConceptClusters");
+                });
+
+            modelBuilder.Entity("Cognify.Server.Models.ConceptTopic", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ConceptClusterId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Topic")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConceptClusterId");
+
+                    b.ToTable("ConceptTopics");
                 });
 
             modelBuilder.Entity("Cognify.Server.Models.UserMistakePattern", b =>
@@ -1017,13 +1073,42 @@ namespace Cognify.Server.Migrations
 
             modelBuilder.Entity("Cognify.Server.Models.UserKnowledgeState", b =>
                 {
+                    b.HasOne("Cognify.Server.Models.ConceptCluster", "ConceptCluster")
+                        .WithMany()
+                        .HasForeignKey("ConceptClusterId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("Cognify.Server.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("ConceptCluster");
+
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Cognify.Server.Models.ConceptCluster", b =>
+                {
+                    b.HasOne("Cognify.Server.Models.Module", "Module")
+                        .WithMany()
+                        .HasForeignKey("ModuleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Module");
+                });
+
+            modelBuilder.Entity("Cognify.Server.Models.ConceptTopic", b =>
+                {
+                    b.HasOne("Cognify.Server.Models.ConceptCluster", "ConceptCluster")
+                        .WithMany("Topics")
+                        .HasForeignKey("ConceptClusterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ConceptCluster");
                 });
 
             modelBuilder.Entity("Cognify.Server.Models.UserMistakePattern", b =>
@@ -1049,6 +1134,11 @@ namespace Cognify.Server.Migrations
                     b.Navigation("Materials");
 
                     b.Navigation("Notes");
+                });
+
+            modelBuilder.Entity("Cognify.Server.Models.ConceptCluster", b =>
+                {
+                    b.Navigation("Topics");
                 });
 
             modelBuilder.Entity("Cognify.Server.Models.Note", b =>

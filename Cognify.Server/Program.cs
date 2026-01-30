@@ -59,6 +59,7 @@ public class Program
         builder.Services.AddScoped<IAttemptReviewService, AttemptReviewService>();
         builder.Services.AddScoped<IStatsService, StatsService>();
         builder.Services.AddScoped<ICategoryService, CategoryService>();
+        builder.Services.AddScoped<IConceptClusteringService, ConceptClusteringService>();
         builder.Services.AddScoped<IExtractedContentService, ExtractedContentService>();
         builder.Services.AddScoped<IPendingQuizService, PendingQuizService>();
         builder.Services.AddScoped<IFinalExamService, FinalExamService>();

@@ -26,8 +26,11 @@ public class UserKnowledgeState
 
     public string? MistakePatternsJson { get; set; }
 
+    public Guid? ConceptClusterId { get; set; }
+
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
     // Navigation properties
     public User? User { get; set; }
+    public ConceptCluster? ConceptCluster { get; set; }
 }
