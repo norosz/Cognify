@@ -53,6 +53,7 @@ public class LearningAnalyticsBackgroundWorker(
             .Where(s => s.UpdatedAt >= since)
             .Select(s => s.UserId)
             .Union(db.Attempts.AsNoTracking().Where(a => a.CreatedAt >= since).Select(a => a.UserId))
+            .Union(db.ExamAttempts.AsNoTracking().Where(a => a.CreatedAt >= since).Select(a => a.UserId))
             .Union(db.LearningInteractions.AsNoTracking().Where(i => i.CreatedAt >= since).Select(i => i.UserId))
             .Distinct()
             .Take(BatchSize)
@@ -78,11 +79,11 @@ public class LearningAnalyticsBackgroundWorker(
                 var run = await agentRunService.CreateAsync(userId, AgentRunType.Analytics, inputHash, promptVersion: "analytics-v1");
                 await agentRunService.MarkRunningAsync(run.Id, model: "statistical-engine");
 
-                var summary = await analytics.GetSummaryAsync(userId);
-                var trends = await analytics.GetTrendsAsync(userId, null, null, 7);
-                var topics = await analytics.GetTopicDistributionAsync(userId, 20, 5);
-                var heatmap = await analytics.GetRetentionHeatmapAsync(userId, 30);
-                var forecast = await analytics.GetDecayForecastAsync(userId, 6, 14, 2);
+                var summary = await analytics.GetSummaryAsync(userId, includeExams: false);
+                var trends = await analytics.GetTrendsAsync(userId, null, null, 7, includeExams: false);
+                var topics = await analytics.GetTopicDistributionAsync(userId, 20, 5, includeExams: false);
+                var heatmap = await analytics.GetRetentionHeatmapAsync(userId, 30, includeExams: false);
+                var forecast = await analytics.GetDecayForecastAsync(userId, 6, 14, 2, includeExams: false);
 
                 var payload = new
                 {

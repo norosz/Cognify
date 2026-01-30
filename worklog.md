@@ -5,6 +5,39 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-30 11:35  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Added `includeExams` filtering to analytics endpoints and computation service
+- Filtered learning interactions by exam vs practice when `includeExams=false`
+- Updated review queue endpoint to accept `includeExams`
+- Updated analytics background worker to use `includeExams=false`
+- Updated status board to mark includeExams filtering complete
+
+**CHANGED FILES**
+- Cognify.Server/Controllers/LearningAnalyticsController.cs
+- Cognify.Server/Controllers/KnowledgeStatesController.cs
+- Cognify.Server/Services/Interfaces/ILearningAnalyticsService.cs
+- Cognify.Server/Services/Interfaces/ILearningAnalyticsComputationService.cs
+- Cognify.Server/Services/Interfaces/IKnowledgeStateService.cs
+- Cognify.Server/Services/LearningAnalyticsService.cs
+- Cognify.Server/Services/LearningAnalyticsComputationService.cs
+- Cognify.Server/Services/KnowledgeStateService.cs
+- Cognify.Server/Services/LearningAnalyticsBackgroundWorker.cs
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Analytics defaults to practice-only unless `includeExams=true` is explicitly set
+
+**NEXT**
+- Implement module stats endpoint and quiz stats endpoint
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-30 11:10  
 **Author:** GitHub Copilot  
 

@@ -4,10 +4,10 @@ namespace Cognify.Server.Services.Interfaces;
 
 public interface ILearningAnalyticsService
 {
-    Task<LearningAnalyticsSummaryDto> GetSummaryAsync();
-    Task<PerformanceTrendsDto> GetTrendsAsync(DateTime? from, DateTime? to, int bucketDays);
-    Task<TopicDistributionDto> GetTopicDistributionAsync(int maxTopics, int maxWeakTopics);
-    Task<List<RetentionHeatmapPointDto>> GetRetentionHeatmapAsync(int maxTopics);
-    Task<DecayForecastDto> GetDecayForecastAsync(int maxTopics, int days, int stepDays);
-    Task<List<MistakePatternSummaryDto>> GetMistakePatternsAsync(int maxItems, int maxTopics);
+    Task<LearningAnalyticsSummaryDto> GetSummaryAsync(bool includeExams);
+    Task<PerformanceTrendsDto> GetTrendsAsync(DateTime? from, DateTime? to, int bucketDays, bool includeExams);
+    Task<TopicDistributionDto> GetTopicDistributionAsync(int maxTopics, int maxWeakTopics, bool includeExams);
+    Task<List<RetentionHeatmapPointDto>> GetRetentionHeatmapAsync(int maxTopics, bool includeExams);
+    Task<DecayForecastDto> GetDecayForecastAsync(int maxTopics, int days, int stepDays, bool includeExams);
+    Task<List<MistakePatternSummaryDto>> GetMistakePatternsAsync(int maxItems, int maxTopics, bool includeExams);
 }

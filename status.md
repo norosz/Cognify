@@ -74,6 +74,7 @@ Authoritative implementation details live in [implementation.md](implementation.
 - **[Docs]** Replace audit-style docs with V2 Alpha plan (routes/endpoints/checklists)
 - **[Backend]** Add schema: `ExamAttempt`, `Module.CurrentFinalExamQuizId` + migration
 - **[Backend]** Implement exam endpoints + final exam regenerate/save pointer flow
+- **[Backend]** Add `includeExams` filtering to analytics + review queue
 
 ---
 

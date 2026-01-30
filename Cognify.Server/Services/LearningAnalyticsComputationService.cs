@@ -8,7 +8,7 @@ namespace Cognify.Server.Services;
 
 public class LearningAnalyticsComputationService(ApplicationDbContext context, IDecayPredictionService decayService) : ILearningAnalyticsComputationService
 {
-    public async Task<LearningAnalyticsSummaryDto> GetSummaryAsync(Guid userId)
+    public async Task<LearningAnalyticsSummaryDto> GetSummaryAsync(Guid userId, bool includeExams)
     {
         var now = DateTime.UtcNow;
 
@@ -17,15 +17,8 @@ public class LearningAnalyticsComputationService(ApplicationDbContext context, I
             .Where(s => s.UserId == userId)
             .ToListAsync();
 
-        var attempts = await context.Attempts
-            .AsNoTracking()
-            .Where(a => a.UserId == userId)
-            .ToListAsync();
-
-        var interactions = await context.LearningInteractions
-            .AsNoTracking()
-            .Where(i => i.UserId == userId)
-            .ToListAsync();
+        var attempts = await GetAttemptSnapshotsAsync(userId, includeExams);
+        var interactions = await GetInteractionsAsync(userId, includeExams);
 
         var totalTopics = states.Count;
         var averageMastery = totalTopics > 0 ? states.Average(s => s.MasteryScore) : 0;
@@ -62,7 +55,7 @@ public class LearningAnalyticsComputationService(ApplicationDbContext context, I
         var recencyPenalty = lastActivity == null ? 0.15 : Math.Clamp((now - lastActivity.Value).TotalDays / 30.0, 0, 0.15);
         var examReadiness = hasAnyLearningActivity ? Clamp(readinessBase - recencyPenalty) : 0;
 
-        var learningVelocity = await CalculateLearningVelocityAsync(userId, now);
+        var learningVelocity = await CalculateLearningVelocityAsync(userId, now, includeExams);
 
         return new LearningAnalyticsSummaryDto
         {
@@ -78,17 +71,14 @@ public class LearningAnalyticsComputationService(ApplicationDbContext context, I
         };
     }
 
-    public async Task<PerformanceTrendsDto> GetTrendsAsync(Guid userId, DateTime? from, DateTime? to, int bucketDays)
+    public async Task<PerformanceTrendsDto> GetTrendsAsync(Guid userId, DateTime? from, DateTime? to, int bucketDays, bool includeExams)
     {
         var now = DateTime.UtcNow;
         var start = from ?? now.AddDays(-60);
         var end = to ?? now;
         var bucket = Math.Max(1, bucketDays);
 
-        var attempts = await context.Attempts
-            .AsNoTracking()
-            .Where(a => a.UserId == userId && a.CreatedAt >= start && a.CreatedAt <= end)
-            .ToListAsync();
+        var attempts = await GetAttemptSnapshotsAsync(userId, includeExams, start, end);
 
         var points = new List<PerformanceTrendPointDto>();
         var cursor = start.Date;
@@ -121,7 +111,7 @@ public class LearningAnalyticsComputationService(ApplicationDbContext context, I
         };
     }
 
-    public async Task<TopicDistributionDto> GetTopicDistributionAsync(Guid userId, int maxTopics, int maxWeakTopics)
+    public async Task<TopicDistributionDto> GetTopicDistributionAsync(Guid userId, int maxTopics, int maxWeakTopics, bool includeExams)
     {
         var topicsLimit = Math.Max(1, maxTopics);
         var weakLimit = Math.Max(1, maxWeakTopics);
@@ -131,10 +121,7 @@ public class LearningAnalyticsComputationService(ApplicationDbContext context, I
             .Where(s => s.UserId == userId)
             .ToListAsync();
 
-        var interactions = await context.LearningInteractions
-            .AsNoTracking()
-            .Where(i => i.UserId == userId)
-            .ToListAsync();
+        var interactions = await GetInteractionsAsync(userId, includeExams);
 
         var topicStats = interactions
             .GroupBy(i => i.Topic)
@@ -188,7 +175,7 @@ public class LearningAnalyticsComputationService(ApplicationDbContext context, I
         };
     }
 
-    public async Task<List<RetentionHeatmapPointDto>> GetRetentionHeatmapAsync(Guid userId, int maxTopics)
+    public async Task<List<RetentionHeatmapPointDto>> GetRetentionHeatmapAsync(Guid userId, int maxTopics, bool includeExams)
     {
         var limit = Math.Max(1, maxTopics);
 
@@ -209,7 +196,7 @@ public class LearningAnalyticsComputationService(ApplicationDbContext context, I
             .ToList();
     }
 
-    public async Task<DecayForecastDto> GetDecayForecastAsync(Guid userId, int maxTopics, int days, int stepDays)
+    public async Task<DecayForecastDto> GetDecayForecastAsync(Guid userId, int maxTopics, int days, int stepDays, bool includeExams)
     {
         var now = DateTime.UtcNow;
         var topicLimit = Math.Max(1, maxTopics);
@@ -253,7 +240,7 @@ public class LearningAnalyticsComputationService(ApplicationDbContext context, I
         };
     }
 
-    public async Task<List<MistakePatternSummaryDto>> GetMistakePatternsAsync(Guid userId, int maxItems, int maxTopics)
+    public async Task<List<MistakePatternSummaryDto>> GetMistakePatternsAsync(Guid userId, int maxItems, int maxTopics, bool includeExams)
     {
         var itemLimit = Math.Max(1, maxItems);
         var topicLimit = Math.Max(1, maxTopics);
@@ -291,9 +278,9 @@ public class LearningAnalyticsComputationService(ApplicationDbContext context, I
             .ToList();
     }
 
-    private async Task<double> CalculateLearningVelocityAsync(Guid userId, DateTime now)
+    private async Task<double> CalculateLearningVelocityAsync(Guid userId, DateTime now, bool includeExams)
     {
-        var trends = await GetTrendsAsync(userId, now.AddDays(-30), now, 7);
+        var trends = await GetTrendsAsync(userId, now.AddDays(-30), now, 7, includeExams);
         var points = trends.Points;
         if (points.Count < 2)
         {
@@ -304,18 +291,15 @@ public class LearningAnalyticsComputationService(ApplicationDbContext context, I
         var last = points.Last().AverageScore;
         var scoreDelta = (last - first) / 100.0;
 
-        var timeTrend = await CalculateTimeTrendAsync(userId, now);
+        var timeTrend = await CalculateTimeTrendAsync(userId, now, includeExams);
         var velocity = (scoreDelta * 0.7) + (timeTrend * 0.3);
         return Clamp(velocity);
     }
 
-    private async Task<double> CalculateTimeTrendAsync(Guid userId, DateTime now)
+    private async Task<double> CalculateTimeTrendAsync(Guid userId, DateTime now, bool includeExams)
     {
         var from = now.AddDays(-30);
-        var attempts = await context.Attempts
-            .AsNoTracking()
-            .Where(a => a.UserId == userId && a.CreatedAt >= from && a.TimeSpentSeconds.HasValue)
-            .ToListAsync();
+        var attempts = await GetAttemptSnapshotsAsync(userId, includeExams, from, null, true);
 
         if (attempts.Count < 2)
         {
@@ -349,7 +333,7 @@ public class LearningAnalyticsComputationService(ApplicationDbContext context, I
         return score * difficultyWeight * timeFactor;
     }
 
-    private static double CalculateWeightedAttemptAccuracy(List<Attempt> attempts)
+    private static double CalculateWeightedAttemptAccuracy(List<AttemptSnapshot> attempts)
     {
         if (attempts.Count == 0)
         {
@@ -410,5 +394,70 @@ public class LearningAnalyticsComputationService(ApplicationDbContext context, I
     private static double Clamp(double value)
     {
         return Math.Max(0, Math.Min(1, value));
+    }
+
+    private sealed record AttemptSnapshot(double Score, string? Difficulty, int? TimeSpentSeconds, DateTime CreatedAt);
+
+    private async Task<List<AttemptSnapshot>> GetAttemptSnapshotsAsync(
+        Guid userId,
+        bool includeExams,
+        DateTime? from = null,
+        DateTime? to = null,
+        bool requireTimeSpent = false)
+    {
+        var attemptQuery = context.Attempts.AsNoTracking().Where(a => a.UserId == userId);
+        if (from.HasValue)
+        {
+            attemptQuery = attemptQuery.Where(a => a.CreatedAt >= from.Value);
+        }
+        if (to.HasValue)
+        {
+            attemptQuery = attemptQuery.Where(a => a.CreatedAt <= to.Value);
+        }
+        if (requireTimeSpent)
+        {
+            attemptQuery = attemptQuery.Where(a => a.TimeSpentSeconds.HasValue);
+        }
+
+        var attempts = await attemptQuery
+            .Select(a => new AttemptSnapshot(a.Score, a.Difficulty, a.TimeSpentSeconds, a.CreatedAt))
+            .ToListAsync();
+
+        if (!includeExams)
+        {
+            return attempts;
+        }
+
+        var examQuery = context.ExamAttempts.AsNoTracking().Where(a => a.UserId == userId);
+        if (from.HasValue)
+        {
+            examQuery = examQuery.Where(a => a.CreatedAt >= from.Value);
+        }
+        if (to.HasValue)
+        {
+            examQuery = examQuery.Where(a => a.CreatedAt <= to.Value);
+        }
+        if (requireTimeSpent)
+        {
+            examQuery = examQuery.Where(a => a.TimeSpentSeconds.HasValue);
+        }
+
+        var examAttempts = await examQuery
+            .Select(a => new AttemptSnapshot(a.Score, a.Difficulty, a.TimeSpentSeconds, a.CreatedAt))
+            .ToListAsync();
+
+        attempts.AddRange(examAttempts);
+        return attempts;
+    }
+
+    private async Task<List<LearningInteraction>> GetInteractionsAsync(Guid userId, bool includeExams)
+    {
+        var query = context.LearningInteractions.AsNoTracking().Where(i => i.UserId == userId);
+        if (!includeExams)
+        {
+            query = query.Where(i => i.ExamAttemptId == null);
+        }
+
+        return await query.ToListAsync();
     }
 }

@@ -5,39 +5,39 @@ namespace Cognify.Server.Services;
 
 public class LearningAnalyticsService(IUserContextService userContext, ILearningAnalyticsComputationService computationService) : ILearningAnalyticsService
 {
-    public async Task<LearningAnalyticsSummaryDto> GetSummaryAsync()
+    public async Task<LearningAnalyticsSummaryDto> GetSummaryAsync(bool includeExams)
     {
         var userId = userContext.GetCurrentUserId();
-        return await computationService.GetSummaryAsync(userId);
+        return await computationService.GetSummaryAsync(userId, includeExams);
     }
 
-    public async Task<PerformanceTrendsDto> GetTrendsAsync(DateTime? from, DateTime? to, int bucketDays)
+    public async Task<PerformanceTrendsDto> GetTrendsAsync(DateTime? from, DateTime? to, int bucketDays, bool includeExams)
     {
         var userId = userContext.GetCurrentUserId();
-        return await computationService.GetTrendsAsync(userId, from, to, bucketDays);
+        return await computationService.GetTrendsAsync(userId, from, to, bucketDays, includeExams);
     }
 
-    public async Task<TopicDistributionDto> GetTopicDistributionAsync(int maxTopics, int maxWeakTopics)
+    public async Task<TopicDistributionDto> GetTopicDistributionAsync(int maxTopics, int maxWeakTopics, bool includeExams)
     {
         var userId = userContext.GetCurrentUserId();
-        return await computationService.GetTopicDistributionAsync(userId, maxTopics, maxWeakTopics);
+        return await computationService.GetTopicDistributionAsync(userId, maxTopics, maxWeakTopics, includeExams);
     }
 
-    public async Task<List<RetentionHeatmapPointDto>> GetRetentionHeatmapAsync(int maxTopics)
+    public async Task<List<RetentionHeatmapPointDto>> GetRetentionHeatmapAsync(int maxTopics, bool includeExams)
     {
         var userId = userContext.GetCurrentUserId();
-        return await computationService.GetRetentionHeatmapAsync(userId, maxTopics);
+        return await computationService.GetRetentionHeatmapAsync(userId, maxTopics, includeExams);
     }
 
-    public async Task<DecayForecastDto> GetDecayForecastAsync(int maxTopics, int days, int stepDays)
+    public async Task<DecayForecastDto> GetDecayForecastAsync(int maxTopics, int days, int stepDays, bool includeExams)
     {
         var userId = userContext.GetCurrentUserId();
-        return await computationService.GetDecayForecastAsync(userId, maxTopics, days, stepDays);
+        return await computationService.GetDecayForecastAsync(userId, maxTopics, days, stepDays, includeExams);
     }
 
-    public async Task<List<MistakePatternSummaryDto>> GetMistakePatternsAsync(int maxItems, int maxTopics)
+    public async Task<List<MistakePatternSummaryDto>> GetMistakePatternsAsync(int maxItems, int maxTopics, bool includeExams)
     {
         var userId = userContext.GetCurrentUserId();
-        return await computationService.GetMistakePatternsAsync(userId, maxItems, maxTopics);
+        return await computationService.GetMistakePatternsAsync(userId, maxItems, maxTopics, includeExams);
     }
 }

@@ -151,7 +151,7 @@ public class KnowledgeStateService(
         return states.Select(MapToDto).ToList();
     }
 
-    public async Task<List<ReviewQueueItemDto>> GetReviewQueueAsync(int maxItems = 10)
+    public async Task<List<ReviewQueueItemDto>> GetReviewQueueAsync(int maxItems = 10, bool includeExams = false)
     {
         var userId = userContext.GetCurrentUserId();
         var now = DateTime.UtcNow;

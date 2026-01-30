@@ -18,9 +18,11 @@ public class KnowledgeStatesController(IKnowledgeStateService knowledgeStateServ
     }
 
     [HttpGet("review-queue")]
-    public async Task<ActionResult<List<ReviewQueueItemDto>>> GetReviewQueue([FromQuery] int maxItems = 10)
+    public async Task<ActionResult<List<ReviewQueueItemDto>>> GetReviewQueue(
+        [FromQuery] int maxItems = 10,
+        [FromQuery] bool includeExams = false)
     {
-        var items = await knowledgeStateService.GetReviewQueueAsync(maxItems);
+        var items = await knowledgeStateService.GetReviewQueueAsync(maxItems, includeExams);
         return Ok(items);
     }
 }

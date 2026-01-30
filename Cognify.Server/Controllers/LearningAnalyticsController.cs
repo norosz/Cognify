@@ -11,9 +11,9 @@ namespace Cognify.Server.Controllers;
 public class LearningAnalyticsController(ILearningAnalyticsService analyticsService) : ControllerBase
 {
     [HttpGet("summary")]
-    public async Task<ActionResult<LearningAnalyticsSummaryDto>> GetSummary()
+    public async Task<ActionResult<LearningAnalyticsSummaryDto>> GetSummary([FromQuery] bool includeExams = false)
     {
-        var summary = await analyticsService.GetSummaryAsync();
+        var summary = await analyticsService.GetSummaryAsync(includeExams);
         return Ok(summary);
     }
 
@@ -21,7 +21,8 @@ public class LearningAnalyticsController(ILearningAnalyticsService analyticsServ
     public async Task<ActionResult<PerformanceTrendsDto>> GetTrends(
         [FromQuery] DateTime? from,
         [FromQuery] DateTime? to,
-        [FromQuery] int bucketDays = 7)
+        [FromQuery] int bucketDays = 7,
+        [FromQuery] bool includeExams = false)
     {
         if (bucketDays is < 1 or > 90)
         {
@@ -33,12 +34,15 @@ public class LearningAnalyticsController(ILearningAnalyticsService analyticsServ
             return Problem("from must be <= to.", statusCode: StatusCodes.Status400BadRequest);
         }
 
-        var trends = await analyticsService.GetTrendsAsync(from, to, bucketDays);
+        var trends = await analyticsService.GetTrendsAsync(from, to, bucketDays, includeExams);
         return Ok(trends);
     }
 
     [HttpGet("topics")]
-    public async Task<ActionResult<TopicDistributionDto>> GetTopics([FromQuery] int maxTopics = 20, [FromQuery] int maxWeakTopics = 5)
+    public async Task<ActionResult<TopicDistributionDto>> GetTopics(
+        [FromQuery] int maxTopics = 20,
+        [FromQuery] int maxWeakTopics = 5,
+        [FromQuery] bool includeExams = false)
     {
         if (maxTopics is < 1 or > 100)
         {
@@ -50,24 +54,30 @@ public class LearningAnalyticsController(ILearningAnalyticsService analyticsServ
             return Problem("maxWeakTopics must be between 0 and 50.", statusCode: StatusCodes.Status400BadRequest);
         }
 
-        var topics = await analyticsService.GetTopicDistributionAsync(maxTopics, maxWeakTopics);
+        var topics = await analyticsService.GetTopicDistributionAsync(maxTopics, maxWeakTopics, includeExams);
         return Ok(topics);
     }
 
     [HttpGet("retention-heatmap")]
-    public async Task<ActionResult<List<RetentionHeatmapPointDto>>> GetRetentionHeatmap([FromQuery] int maxTopics = 30)
+    public async Task<ActionResult<List<RetentionHeatmapPointDto>>> GetRetentionHeatmap(
+        [FromQuery] int maxTopics = 30,
+        [FromQuery] bool includeExams = false)
     {
         if (maxTopics is < 1 or > 200)
         {
             return Problem("maxTopics must be between 1 and 200.", statusCode: StatusCodes.Status400BadRequest);
         }
 
-        var points = await analyticsService.GetRetentionHeatmapAsync(maxTopics);
+        var points = await analyticsService.GetRetentionHeatmapAsync(maxTopics, includeExams);
         return Ok(points);
     }
 
     [HttpGet("decay-forecast")]
-    public async Task<ActionResult<DecayForecastDto>> GetDecayForecast([FromQuery] int maxTopics = 6, [FromQuery] int days = 14, [FromQuery] int stepDays = 2)
+    public async Task<ActionResult<DecayForecastDto>> GetDecayForecast(
+        [FromQuery] int maxTopics = 6,
+        [FromQuery] int days = 14,
+        [FromQuery] int stepDays = 2,
+        [FromQuery] bool includeExams = false)
     {
         if (maxTopics is < 1 or > 50)
         {
@@ -84,14 +94,15 @@ public class LearningAnalyticsController(ILearningAnalyticsService analyticsServ
             return Problem("stepDays must be between 1 and 30.", statusCode: StatusCodes.Status400BadRequest);
         }
 
-        var forecast = await analyticsService.GetDecayForecastAsync(maxTopics, days, stepDays);
+        var forecast = await analyticsService.GetDecayForecastAsync(maxTopics, days, stepDays, includeExams);
         return Ok(forecast);
     }
 
     [HttpGet("mistake-patterns")]
     public async Task<ActionResult<List<MistakePatternSummaryDto>>> GetMistakePatterns(
         [FromQuery] int maxItems = 8,
-        [FromQuery] int maxTopics = 3)
+        [FromQuery] int maxTopics = 3,
+        [FromQuery] bool includeExams = false)
     {
         if (maxItems is < 1 or > 50)
         {
@@ -103,7 +114,7 @@ public class LearningAnalyticsController(ILearningAnalyticsService analyticsServ
             return Problem("maxTopics must be between 1 and 10.", statusCode: StatusCodes.Status400BadRequest);
         }
 
-        var patterns = await analyticsService.GetMistakePatternsAsync(maxItems, maxTopics);
+        var patterns = await analyticsService.GetMistakePatternsAsync(maxItems, maxTopics, includeExams);
         return Ok(patterns);
     }
 }
