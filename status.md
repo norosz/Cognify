@@ -1,177 +1,81 @@
-# 🚀 Project Status Board
 
-## 📋 To Do
+# 🚀 Project Status Board — V2 Alpha
 
-### 🚨 Build/Run Blockers
+This board tracks the **V2 Alpha** refinement scope (quiz pages, stats, exams, notes UX, review queue clarity).
+Authoritative implementation details live in [implementation.md](implementation.md).
 
-###  Notes
-- [ ] **[UX]** Confirm Note preview renders reliably for long notes (scroll sync + KaTeX)
+---
 
-### 🤖 AI Generation, Agents & Quizzes
+## 🎯 V2 Alpha Scope (commitment)
 
-### 🧠 User Knowledge & AI Feedback
+- Quizzes have dedicated pages (detail/stats/history, results, review)
+- Quiz submit shows loading + prevents double-submit
+- Quiz cards show difficulty (color) + category (AI suggested, user override)
+- Module page refactor with module-level stats and an Exams section
+- Module Final Exam:
+	- fixed until regenerate
+	- tracked via separate `ExamAttempt`
+	- current exam pointer: `Module.CurrentFinalExamQuizId`
+- Statistics moved to its own page (`/statistics`)
+- Notes:
+	- show related uploaded + extracted documents (downloadable)
+	- images render inline
+	- split user vs AI note content (two inputs)
+- Review queue rules:
+	- low score (<60% default, configurable) OR repeated concept mistakes (>=2 default) OR due topics
+- `includeExams` query param added to analytics endpoints (default false)
 
-### 🎯 Adaptive Quiz Engine
+---
 
-### 📉 Decay & Mistake Intelligence
+## 🧭 Decisions (locked)
 
-### 📊 AI Learning Dashboard (Frontend)
+- Separate `ExamAttempt` entity/table (not stored in `Attempt`).
+- Final Exam is fixed until regenerate; retake creates additional `ExamAttempt` rows.
+- `includeExams` param on analytics endpoints; practice stats exclude exams by default.
+- Concept identification via embeddings + topic clustering per module; clusters labeled by AI.
 
-### 🤖 AI Agents & Pipelines (v2)
-
-### 💾 File Management Enhancements
-
-### 🔁 Contract & UX Consistency
-
-### 🧪 Quality Gates
-- [ ] **[Quality]** Add a build gate to catch Angular template integrity regressions (e.g., `ng build`)
+---
 
 ## 🏗️ In Progress
 
-### 🚨 Stabilization (Jan 29 Audit)
+- **[Docs]** Replace audit-style docs with V2 Alpha plan (routes/endpoints/checklists)
 
-## ✅ Done
-- [x] **[Frontend/Angular]** Fix Angular bootstrap conflict (only one bootstrap path: AppModule vs `bootstrapApplication`)
-- [x] **[Frontend/Angular]** Resolve template error: unknown element `app-notification-container`
-- [x] **[Frontend/TS]** Reduce RxJS/TSConfig “deprecation” noise so real errors stand out
-- [x] **[Frontend]** Remove duplicate `DocumentListComponent` import in Module Detail
-- [x] **[Backend/Frontend Contract]** Confirm legacy quiz endpoint is fully retired; remove remaining client/docs references
-- [x] **[Backend/Frontend]** Surface user mistake patterns in analytics/knowledge views (DTO + UI)
-- [x] **[Frontend]** Unblock Angular build and restore dashboard + note editor compilation
-- [x] **[Frontend]** Fix Dashboard template parsing errors (invalid control-flow + mismatched tags)
-- [x] **[Frontend]** Fix Dashboard analytics bindings (missing DTO fields + missing helper methods)
-- [x] **[Frontend]** Restore minimal working dashboard (modules list + core analytics cards) before advanced visualizations
-- [x] **[Frontend]** Fix Note Editor preview binding collision (string vs element)
-- [x] **[Frontend]** Fix Angular TypeScript config (set explicit `rootDir`)
-- [x] **[Frontend]** Ensure Angular templates avoid self-closing custom component tags
-- [x] **[Frontend]** Align Pending failure status with backend enum (`Failed`, not `Error`)
-- [x] **[Frontend]** Remove duplicate Pending polling + duplicate toast notifications (single source of truth)
-- [x] **[Frontend]** Retire/deprecate legacy analytics client service (keep one canonical service)
-- [x] **[Backend]** Standardize error responses to RFC7807 `ProblemDetails` (avoid raw exception leakage)
-- [x] **[Backend]** Persist structured mistake categories (UserMistakePatterns)
-- [x] **[UX]** Add clearer empty/error states for analytics panels with guidance
-- [x] **[Frontend]** Surface which topic/note the adaptive quiz targeted in notifications
-- [x] **[Backend/Frontend]** Embedded PDF images rendered via `EmbeddedImagesJson`
-- [x] **[Docs]** Align `PROJECT_SPEC.md` v2 agent contract field names with actual DTO contracts
-- [x] **[Docs]** Align blob path conventions and extraction flow in docs with current implementation
-- [x] **[Backend]** Improve adaptive topic selection (rank best eligible instead of “first eligible”)
-- [x] **[UX]** Consolidate quiz generation UX (remove legacy direct-generate component)
-- [x] **[Backend]** Expand mistake taxonomy beyond `IncorrectAnswer`/`Unanswered`
-- [x] **[UX]** Clarify extraction → note flow in Pending (Review & Save creates a Note)
-- [x] **[Backend]** Provide an authenticated way to fetch extracted image blobs (SAS URLs via NoteService)
-- [x] **[Backend]** Feed `KnownMistakePatterns` into grading contract requests (close the feedback loop)
-- [x] **[Frontend]** Render extracted embedded images inside Notes (Markdown preview + saved notes)
-- [x] **[Backend]** Allow extraction for `.json`/`.yaml` uploads by treating them as text
-- [x] **[Backend]** Guard extraction when `Document.Status != Uploaded`
-- [x] **[Backend]** Implement `LearningAnalyticsService` (Aggregator)
-- [x] **[Backend]** Implement prompting that includes Mastery/ForgettingRisk/MistakePatterns
-- [x] **[Backend]** Implement `DecayPredictionService` (Spaced Repetition)
-- [x] **[Backend]** Implement `MistakeAnalysisService` (Error Pattern Detection)
-- [x] **[Backend]** Update `UserKnowledgeState` with `MistakePatterns` & `ForgettingRisk`
-- [x] **[Frontend]** Build Knowledge Map Visualization
-- [x] **[Frontend]** Build Memory Decay Chart
-- [x] **[Frontend]** Build Concept Weakness List
-- [x] **[Backend]** Add `FileSizeBytes` to Document Entity/DTO
-- [x] **[Frontend]** Display File Size in Document Card in MB
-- [x] **[Refactor]** Define strict v2 agent contracts (OCR / QuizGen / Grading) + versioning + input-hash idempotency
-- [x] **[Refactor]** Align quiz output with v2 contracts (Rubric DTO + persistence strategy; keep `QuestionSet`/`Question` compatibility)
-- [x] **[Test]** Make background worker test-safe (no OpenAI key required; deterministic test runs)
-- [x] **[Test]** Add idempotency tests for pending extraction and quiz creation
-- [x] **[Backend]** Implement `Material`, `MaterialExtraction`, `Note` (Updated) Entities
-- [x] **[Backend]** Implement `LearningInteraction`, `AnswerEvaluation`, `UserKnowledgeState` Entities
-- [x] **[Backend]** Migrate DB to v2 Schema
-- [x] **[Agent]** Extract embedded images + metadata for PDF materials
-- [x] **[Agent]** Populate extraction contract output (blocks/confidence/images)
-- [x] **[Agent]** Implement Question Generation Agent (Pipe B)
-- [x] **[Agent]** Implement Grading Agent (Pipe C)
-- [x] **[Agent]** Implement Learning Analytics Agent (Statistical Engine)
-- [x] **[Agent]** Generate rubric content in quiz generation output (v2 contract)
-- [x] **[Agent]** Phase 3: PDF text-layer extraction via pending pipeline
-- [x] **[Backend]** Create `AdaptiveQuizService` (knowledge-state target selection)
-- [x] **[Backend]** Add endpoint to initiate adaptive quiz (reuse PendingQuiz flow)
-- [x] **[Frontend]** Add Review Queue UI (due topics) + “Generate Review Quiz” action
-- [x] **[Frontend]** Add Weak Topics UI (high forgetting risk) + “Generate Weakness Quiz” action
-- [x] **[Test]** Add backend + frontend tests for adaptive generation flow
-- [x] **Context**: Read Project Specifications and Rules
-- [x] **Database**: Create EF Core Entity Models
-- [x] **Database**: Implement `ApplicationDbContext` (Relationships, Delete Behavior)
-- [x] **Infra**: Configure Persistent SQL Server (Port 14333, Volume)
-- [x] **Database**: Generate `InitialCreate` Migration
-- [x] **[Backend]** Implement `AuthService` (Password hashing, JWT generation)
-- [x] **[Backend]** Create `AuthController` (Login, Register endpoints)
-- [x] **[Backend]** Implement Unit & Integration Tests (Auth Module)
-- [x] **[Frontend]** Create `AuthService` (Login, Register, Token storage)
-- [x] **[Frontend]** Build Login Page & Route
-- [x] **[Frontend]** Build Registration Page & Route
-- [x] **[Frontend]** Add Auth Interceptor (Attach JWT to requests)
-- [x] **[Backend]** Implement `ModuleService` (CRUD logic, Owner validation)
-- [x] **[Backend]** Create `ModulesController`
-- [x] **[Frontend]** Build Dashboard/Home (Module List)
-- [x] **[Frontend]** Build Create Module UI
-- [x] **[Frontend]** Build Module Detail View (Tabs/Layout)
-- [x] **[Frontend]** Implement Main Layout & Navigation
-- [x] **[Security]** Refactor Auth: JWT Decode, Password Confirmation
-- [x] **[Backend]** Implement `BlobStorageService` (Azurite integration)
-- [x] **[Backend]** Implement `DocumentService` (Upload, metadata)
-- [x] **[Backend]** Create `DocumentsController`
-- [x] **[Frontend]** Build Document List Component
-- [x] **[Frontend]** Implement File Upload UI
-- [x] **[Frontend]** Fixed Upload Crash & Implemented Force Download
-- [x] **[Project]** Detailed Planning & Documentation
-- [x] **[Backend]** Configure OpenAI Service (Aspire/Settings)
-- [x] **[Backend]** Implement `AiService` (Prompt engineering, API call)
-- [x] **[Backend]** Create `AiController` (Generate questions endpoint)
-- [x] **[Backend]** Implement `QuestionService` & `AttemptService`
-- [x] **[Backend]** Create `AttemptsController` (Submit, Score)
-- [x] **[Frontend]** Build Quiz Generation UI
-- [x] **[Frontend]** Build Quiz Taking Interface
-- [x] **[Frontend]** Build Quiz Result/Score View
-- [x] **[Frontend]** UI Fixes & Theme Updates (Light-blue primary, dark mode consistency)
-- [x] **[Frontend]** Frontend Unit Tests for AI Components
-- [x] **[Frontend]** Global Notification System (Toast stack, extraction state tracking)
-- [x] **[Backend]** Implement Pending Items System (ExtractedContent, PendingQuiz)
-- [x] **[Backend]** Async AI Task Persistence & Fix Build Errors
-- [x] **[Frontend]** New Dashboard Layout (Leetify-inspired, Side-navigation)
-- [x] **[Frontend]** Build Pending Management UI (Review, Save, Delete)
-- [x] **[Frontend]** Integrated Background Quiz Generation Flow
-- [x] **[Test]** Improved Backend Test Coverage (PendingQuizService, NoteService - 37 tests)
-- [x] **[Test]** Improved Frontend Test Coverage (PendingService, PendingComponent - 85 tests)
-- [x] **[Frontend]** Refactor Document Cards (Header Status, Icons, Watermark Data)
-- [x] **[Test]** Verified Document Card Refactor (96 tests pass)
-- [x] **[Backend]** Implement Token Validation (`/auth/me`) & Profile Management
-- [x] **[Frontend]** Implement Startup Token Validation (Modern `provideAppInitializer`)
-- [x] **[Frontend]** Build Profile Management UI (Update Profile, Change Password)
-- [x] **[Refactor]** Modernize Angular Config & Backend Patterns
-- [x] **[Bug Fix]** Fixed `NG0203` Injection Error in App Initializer
-- [x] **[Frontend]** Added Profile Link to Sidebar Navigation
-- [x] **[Backend]** Implement Optional Username (Dto, Service, JWT Claim)
-- [x] **[Frontend]** Implement Optional Username in Register UI & Sidebar Display
-- [x] **[UI/UX]** Style Profile Component (Glassmorphism) & Add Notifications
-- [x] **[UI/UX]** Refine Empty States (Shadows & Borders) for Modules/Quizzes/Notes
-- [x] **[UI/UX]** Standardize Empty State Backgrounds & Consistency
-- [x] **[UI/UX]** Refactor Empty States to use `mat-card` with proper Elevation
-- [x] **[Bug Fix]** Fixed Password Form Validation Error on Reset
-- [x] **[Testing]** Updated & Created Tests for Auth, Profile, and Register Features
-- [x] **[Frontend]** Implement `MultiSelect` (Checkbox) Quiz Type & UI
-- [x] **[Backend]** Implement Strict File Extension & Size Validation
-- [x] **[Bug Fix]** Fixed `MultipleSelect` quiz generation fallback & mapping
-- [x] **[Refactor]** Global JSON String Enum Converter for Backend & Tests
-- [x] **[UI/UX]** Renamed Document Status `Ready` -> `Uploaded`
-- [x] **[UI/UX]** Enhanced Quiz Cards & Taking UI with Type Indicators
-- [x] **[Testing]** Verified all 56 Backend & 109 Frontend tests pass
-- [x] **[Refactor]** Phase 0: Replace AI `Task.Run` with durable background worker (pending processing)
-- [x] **[Refactor]** Phase 0: Normalize ExtractedContent status to enum + string conversion
-- [x] **[Refactor]** Phase 0: Fix AI prompt difficulty level bug
-- [x] **[Refactor]** Phase 0: Remove legacy quiz generation endpoint usage
-- [x] **[Refactor]** Phase 0: Add durable AgentRun tracking (schema + worker integration)
-- [x] **[Backend]** Create `UserKnowledgeState` Entity (Topic, Mastery, Confidence)
-- [x] **[Backend]** Implement `KnowledgeStateService` (Update logic)
-- [x] **[Backend]** Add `LearningInteraction` + `AnswerEvaluation` entities
-- [x] **[Backend]** Implement `Quiz`, `QuizQuestion`, `QuizRubric` Entities (renamed + migrated)
-- [x] **[Backend]** Implement `NoteService` (CRUD)
-- [x] **[Backend]** Create `NotesController`
-- [x] **[Frontend]** Build Note List Component
-- [x] **[Frontend]** Build Note Editor (Markdown/Text)
-- [x] **[Agent]** Implement Handwriting Parsing Agent (OCR)
-- [x] **[Agent]** Implement Question Generation Agent (Advanced) & Grading
-- [x] **[Agent]** Implement Grading Agent
+---
+
+## ⏭️ Next (ordered)
+
+1) **[Backend]** Add schema: `ExamAttempt`, `Module.CurrentFinalExamQuizId` + migration
+2) **[Backend]** Implement exam endpoints + final exam regenerate/save pointer flow
+3) **[Backend]** Add `includeExams` filtering to analytics + review queue endpoints
+4) **[Frontend]** Add `/statistics` page; shrink dashboard to actions + summary
+5) **[Frontend]** Add quiz pages: detail/stats, results, review (green/red + AI explain)
+6) **[Frontend]** Refactor module page to card layout + module stats + exam section
+7) **[Frontend]** Notes detail page: sources list + downloads + inline images + split inputs
+8) **[Backend/Frontend]** Categories: AI suggest + user override for modules/quizzes
+9) **[Backend]** Concept clustering pipeline (per module) + concept IDs stored
+
+---
+
+## 📋 To Do (V2 Alpha)
+
+- [ ] **[UX]** Quiz submit loading indicator + disabled state
+- [ ] **[UX]** Difficulty badge colors on quiz cards (consistent palette)
+- [ ] **[Backend]** Module stats endpoint `/api/modules/{moduleId}/stats`
+- [ ] **[Backend]** Quiz stats endpoint `/api/quizzes/{quizId}/stats`
+- [ ] **[Backend]** Attempt review endpoint(s) for mistakes + explanations
+- [ ] **[Frontend]** Quiz result page: retake + review CTA
+- [ ] **[Frontend]** Review page: green/red borders + AI explain button
+- [ ] **[Docs/Quality]** Add `ng build` quality gate
+
+---
+
+## ✅ Done (since V2 Alpha declaration)
+
+- (none yet)
+
+---
+
+## 🗂️ Done Archive (pre-V2 Alpha)
+
+The previous status board contained a very large historical “Done” ledger (Jan 2026 stabilization + v2 pipeline buildout).
+It has been intentionally removed here to keep the V2 Alpha board readable; use git history/blame to retrieve it.
