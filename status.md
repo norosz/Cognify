@@ -44,26 +44,14 @@ Authoritative implementation details live in [implementation.md](implementation.
 
 ## ⏭️ Next (ordered)
 
-1) **[Backend]** Add schema: `ExamAttempt`, `Module.CurrentFinalExamQuizId` + migration
-2) **[Backend]** Implement exam endpoints + final exam regenerate/save pointer flow
-3) **[Backend]** Add `includeExams` filtering to analytics + review queue endpoints
-4) **[Frontend]** Add quiz pages: detail/stats, results, review (green/red + AI explain)
-5) **[Frontend]** Refactor module page to card layout
-6) **[Frontend]** Notes detail page: sources list + downloads + inline images + split inputs
-7) **[Backend/Frontend]** Categories: AI suggest + user override for modules/quizzes
-8) **[Backend]** Concept clustering pipeline (per module) + concept IDs stored
+1) **[Frontend]** Refactor module page to card layout
+2) **[Frontend]** Notes detail page: sources list + downloads + inline images + split inputs
+3) **[Backend]** Concept clustering pipeline (per module) + concept IDs stored
 
 ---
 
 ## 📋 To Do (V2 Alpha)
 
-- [ ] **[UX]** Quiz submit loading indicator + disabled state
-- [ ] **[UX]** Difficulty badge colors on quiz cards (consistent palette)
-- [ ] **[Backend]** Module stats endpoint `/api/modules/{moduleId}/stats`
-- [ ] **[Backend]** Quiz stats endpoint `/api/quizzes/{quizId}/stats`
-- [ ] **[Backend]** Attempt review endpoint(s) for mistakes + explanations
-- [ ] **[Frontend]** Quiz result page: retake + review CTA
-- [ ] **[Frontend]** Review page: green/red borders + AI explain button
 - [ ] **[Docs/Quality]** Add `ng build` quality gate
 
 ---

@@ -5,6 +5,26 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-30 17:55  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Cleaned status board by removing completed items from Next and To Do
+
+**CHANGED FILES**
+- status.md
+- worklog.md
+
+**DECISIONS**
+- None
+
+**NEXT**
+- Implement notes detail page (sources + inline images + split inputs)
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-30 17:40  
 **Author:** GitHub Copilot  
 
