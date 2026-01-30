@@ -61,7 +61,7 @@ public class LearningAnalyticsServiceTests : IDisposable
 
         await _context.SaveChangesAsync();
 
-        var summary = await _service.GetSummaryAsync();
+        var summary = await _service.GetSummaryAsync(false);
 
         summary.TotalTopics.Should().Be(2);
         summary.TotalAttempts.Should().Be(2);
@@ -104,7 +104,7 @@ public class LearningAnalyticsServiceTests : IDisposable
 
         await _context.SaveChangesAsync();
 
-        var topics = await _service.GetTopicDistributionAsync(10, 1);
+        var topics = await _service.GetTopicDistributionAsync(10, 1, false);
 
         topics.WeakestTopics.Should().HaveCount(1);
         topics.WeakestTopics[0].Topic.Should().Be("Chemistry / Bonds");

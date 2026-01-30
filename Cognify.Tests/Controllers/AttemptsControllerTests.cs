@@ -15,7 +15,8 @@ public class AttemptsControllerTests
     public async Task SubmitAttempt_ReturnsBadRequest_OnIdMismatch()
     {
         var attemptService = new Mock<IAttemptService>();
-        var controller = new AttemptsController(attemptService.Object);
+        var reviewService = new Mock<IAttemptReviewService>();
+        var controller = new AttemptsController(attemptService.Object, reviewService.Object);
 
         var result = await controller.SubmitAttempt(Guid.NewGuid(), new SubmitAttemptDto
         {
@@ -31,12 +32,13 @@ public class AttemptsControllerTests
     public async Task SubmitAttempt_ReturnsOk_OnSuccess()
     {
         var attemptService = new Mock<IAttemptService>();
+        var reviewService = new Mock<IAttemptReviewService>();
         var quizId = Guid.NewGuid();
         var dto = new SubmitAttemptDto { QuizId = quizId };
         var expected = new AttemptDto { Id = Guid.NewGuid(), QuizId = quizId, UserId = Guid.NewGuid(), Score = 100 };
 
         attemptService.Setup(s => s.SubmitAttemptAsync(dto)).ReturnsAsync(expected);
-        var controller = new AttemptsController(attemptService.Object);
+        var controller = new AttemptsController(attemptService.Object, reviewService.Object);
 
         var result = await controller.SubmitAttempt(quizId, dto);
 
@@ -48,11 +50,12 @@ public class AttemptsControllerTests
     public async Task SubmitAttempt_ReturnsNotFound_WhenMissing()
     {
         var attemptService = new Mock<IAttemptService>();
+        var reviewService = new Mock<IAttemptReviewService>();
         var quizId = Guid.NewGuid();
         var dto = new SubmitAttemptDto { QuizId = quizId };
 
         attemptService.Setup(s => s.SubmitAttemptAsync(dto)).ThrowsAsync(new KeyNotFoundException());
-        var controller = new AttemptsController(attemptService.Object);
+        var controller = new AttemptsController(attemptService.Object, reviewService.Object);
 
         var result = await controller.SubmitAttempt(quizId, dto);
 
@@ -65,6 +68,7 @@ public class AttemptsControllerTests
     public async Task GetMyAttempts_ReturnsOk()
     {
         var attemptService = new Mock<IAttemptService>();
+        var reviewService = new Mock<IAttemptReviewService>();
         var quizId = Guid.NewGuid();
         var attempts = new List<AttemptDto>
         {
@@ -72,7 +76,7 @@ public class AttemptsControllerTests
         };
 
         attemptService.Setup(s => s.GetAttemptsAsync(quizId)).ReturnsAsync(attempts);
-        var controller = new AttemptsController(attemptService.Object);
+        var controller = new AttemptsController(attemptService.Object, reviewService.Object);
 
         var result = await controller.GetMyAttempts(quizId);
 

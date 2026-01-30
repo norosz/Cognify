@@ -76,6 +76,7 @@ Authoritative implementation details live in [implementation.md](implementation.
 - **[Frontend]** Refactor module page to card layout
 - **[Backend]** Concept clustering pipeline (per module) + concept IDs stored
 - **[Docs/Quality]** Add `ng build` quality gate
+- **[Tests]** Fix backend test build errors after constructor/signature changes
 - **[Backend]** Fix duplicate CreateNoteDto properties build error
 
 ---

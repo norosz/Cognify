@@ -39,14 +39,15 @@ public class LearningAnalyticsBackgroundWorkerTests : IDisposable
             .Returns(Task.CompletedTask);
 
         var analytics = new Mock<ILearningAnalyticsComputationService>();
-        analytics.Setup(s => s.GetSummaryAsync(userId)).ReturnsAsync(new Cognify.Server.Dtos.Analytics.LearningAnalyticsSummaryDto());
-        analytics.Setup(s => s.GetTrendsAsync(userId, It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<int>()))
+        analytics.Setup(s => s.GetSummaryAsync(userId, It.IsAny<bool>()))
+            .ReturnsAsync(new Cognify.Server.Dtos.Analytics.LearningAnalyticsSummaryDto());
+        analytics.Setup(s => s.GetTrendsAsync(userId, It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<int>(), It.IsAny<bool>()))
             .ReturnsAsync(new Cognify.Server.Dtos.Analytics.PerformanceTrendsDto());
-        analytics.Setup(s => s.GetTopicDistributionAsync(userId, It.IsAny<int>(), It.IsAny<int>()))
+        analytics.Setup(s => s.GetTopicDistributionAsync(userId, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>()))
             .ReturnsAsync(new Cognify.Server.Dtos.Analytics.TopicDistributionDto());
-        analytics.Setup(s => s.GetRetentionHeatmapAsync(userId, It.IsAny<int>()))
+        analytics.Setup(s => s.GetRetentionHeatmapAsync(userId, It.IsAny<int>(), It.IsAny<bool>()))
             .ReturnsAsync([]);
-        analytics.Setup(s => s.GetDecayForecastAsync(userId, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>()))
+        analytics.Setup(s => s.GetDecayForecastAsync(userId, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<bool>()))
             .ReturnsAsync(new Cognify.Server.Dtos.Analytics.DecayForecastDto());
 
         var services = new ServiceCollection();

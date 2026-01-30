@@ -41,7 +41,7 @@ public class LearningAnalyticsControllerTests
             LastActivityAt = DateTime.UtcNow
         };
 
-        service.Setup(s => s.GetSummaryAsync()).ReturnsAsync(summary);
+        service.Setup(s => s.GetSummaryAsync(false)).ReturnsAsync(summary);
         var controller = new LearningAnalyticsController(service.Object);
 
         var result = await controller.GetSummary();
