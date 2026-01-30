@@ -8,6 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FormsModule } from '@angular/forms';
 import { QuizService } from '../../services/quiz.service';
 import { QuizDto, SubmitAttemptDto, AttemptDto } from '../../../../core/models/quiz.models';
@@ -29,7 +30,8 @@ import { MarkdownLatexPipe } from '../../../../shared/pipes/markdown-latex.pipe'
     FormsModule,
     DragDropModule,
     MarkdownLatexPipe,
-    MatCheckboxModule
+    MatCheckboxModule,
+    MatProgressSpinnerModule
   ],
   templateUrl: './quiz-taking.component.html',
   styleUrl: './quiz-taking.component.scss'

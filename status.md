@@ -80,6 +80,7 @@ Authoritative implementation details live in [implementation.md](implementation.
 - **[Backend]** Implement AI explanation endpoint for mistakes
 - **[Backend]** Implement category suggestion + override endpoints
 - **[Backend]** Implement note sources endpoint (related docs + extractions)
+- **[Frontend]** Add quiz submit loading + disabled state
 
 ---
 

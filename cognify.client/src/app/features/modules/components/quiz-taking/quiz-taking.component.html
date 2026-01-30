@@ -138,9 +138,10 @@
     </div>
 
     <div mat-dialog-actions align="end">
-        <button mat-button (click)="close()">{{ result() ? 'Close' : 'Cancel' }}</button>
+        <button mat-button (click)="close()" [disabled]="submitting()">{{ result() ? 'Close' : 'Cancel' }}</button>
         <button *ngIf="!result()" mat-flat-button color="primary" (click)="submit()" [disabled]="submitting()">
-            Submit
+            <mat-progress-spinner *ngIf="submitting()" diameter="18" mode="indeterminate"></mat-progress-spinner>
+            <span>{{ submitting() ? 'Submitting...' : 'Submit' }}</span>
         </button>
     </div>
 </ng-container>

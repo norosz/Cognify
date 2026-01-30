@@ -5,6 +5,31 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-30 14:10  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Added submit loading indicator and disabled state in quiz-taking dialog
+- Styled submit spinner for inline display
+- Updated status board to mark quiz submit loading complete
+
+**CHANGED FILES**
+- cognify.client/src/app/features/modules/components/quiz-taking/quiz-taking.component.ts
+- cognify.client/src/app/features/modules/components/quiz-taking/quiz-taking.component.html
+- cognify.client/src/app/features/modules/components/quiz-taking/quiz-taking.component.scss
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Disable cancel action while submit is in progress to prevent double-submit
+
+**NEXT**
+- Add difficulty badge colors on quiz cards
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-30 13:45  
 **Author:** GitHub Copilot  
 

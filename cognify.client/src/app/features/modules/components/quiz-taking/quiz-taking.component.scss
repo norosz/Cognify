@@ -79,6 +79,12 @@
     margin: 24px 0;
 }
 
+button mat-progress-spinner {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 8px;
+}
+
 /* Matching UI */
 .matching-interaction {
     display: flex;
