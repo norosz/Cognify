@@ -5,6 +5,26 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-31 12:05  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Reduced pending polling interval to 5 seconds
+
+**CHANGED FILES**
+- cognify.client/src/app/core/services/pending.service.ts
+- worklog.md
+
+**DECISIONS**
+- Increase polling cadence to improve pending refresh responsiveness
+
+**NEXT**
+- None
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-31 11:35  
 **Author:** GitHub Copilot  
 

@@ -119,8 +119,8 @@ export class PendingService {
             this.hasHydratedState = true;
         }
 
-        // Poll every 10 seconds
-        this.pollingSubscription = timer(0, 10000).pipe(
+        // Poll every 5 seconds
+        this.pollingSubscription = timer(0, 5000).pipe(
             switchMap(() => forkJoin({
                 extracted: this.getExtractedContents(),
                 quizzes: this.getPendingQuizzes(),
