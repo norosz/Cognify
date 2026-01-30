@@ -16,7 +16,7 @@
                 *ngFor="let item of quizzes()"
                 class="quiz-card cognify-glass-card"
                 [routerLink]="['/quizzes', item.quiz.id]"
-                [queryParams]="{ returnTo: '/modules/' + moduleId }">
+                [queryParams]="{ returnTo: '/modules/' + moduleId + ';tab=quizzes' }">
                 <mat-card-header>
                     <div mat-card-avatar>
                         <mat-icon>{{ getQuizTypeInfo(item.quiz.type).icon }}</mat-icon>

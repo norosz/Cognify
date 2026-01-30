@@ -30,7 +30,8 @@ export class CreateModuleDialogComponent {
 
   form = this.fb.group({
     title: [this.data?.module?.title || '', [Validators.required, Validators.maxLength(100)]],
-    description: [this.data?.module?.description || '', [Validators.maxLength(500)]]
+    description: [this.data?.module?.description || '', [Validators.maxLength(500)]],
+    category: [this.data?.module?.categoryLabel || '', [Validators.maxLength(200)]]
   });
 
   onSubmit() {
@@ -47,7 +48,8 @@ export class CreateModuleDialogComponent {
       } else {
         const dto: CreateModuleDto = {
           title: this.form.value.title!,
-          description: this.form.value.description || ''
+          description: this.form.value.description || '',
+          categoryLabel: this.form.value.category?.trim() || undefined
         };
 
         this.moduleService.createModule(dto).subscribe({

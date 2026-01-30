@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Cognify.Server.Services;
 
-public class ModuleService(ApplicationDbContext context, IUserContextService userContext) : IModuleService
+public class ModuleService(ApplicationDbContext context, IUserContextService userContext, IAiService aiService) : IModuleService
 {
     public async Task<List<ModuleDto>> GetModulesAsync()
     {
@@ -57,11 +57,31 @@ public class ModuleService(ApplicationDbContext context, IUserContextService use
     public async Task<ModuleDto> CreateModuleAsync(CreateModuleDto dto)
     {
         var userId = userContext.GetCurrentUserId();
+        var categoryLabel = dto.CategoryLabel?.Trim();
+        var categorySource = string.IsNullOrWhiteSpace(categoryLabel) ? null : "User";
+
+        if (string.IsNullOrWhiteSpace(categoryLabel))
+        {
+            var contextText = BuildModuleCreationContext(dto.Title, dto.Description);
+            var suggestions = await aiService.SuggestCategoriesAsync(contextText, 3);
+            categoryLabel = suggestions.Suggestions.FirstOrDefault()?.Label?.Trim();
+
+            if (string.IsNullOrWhiteSpace(categoryLabel)
+                || string.Equals(categoryLabel, "Uncategorized", StringComparison.OrdinalIgnoreCase))
+            {
+                categoryLabel = "General";
+            }
+
+            categorySource = "AI";
+        }
+
         var module = new Module
         {
             Title = dto.Title,
             Description = dto.Description,
-            OwnerUserId = userId
+            OwnerUserId = userId,
+            CategoryLabel = categoryLabel,
+            CategorySource = categorySource
         };
 
         context.Modules.Add(module);
@@ -113,5 +133,21 @@ public class ModuleService(ApplicationDbContext context, IUserContextService use
         context.Modules.Remove(module);
         await context.SaveChangesAsync();
         return true;
+    }
+
+    private static string BuildModuleCreationContext(string title, string? description)
+    {
+        var builder = new List<string>
+        {
+            $"Module title: {title}"
+        };
+
+        if (!string.IsNullOrWhiteSpace(description))
+        {
+            builder.Add($"Description: {description}");
+        }
+
+        builder.Add("Suggest a concise academic category for this module.");
+        return string.Join("\n", builder);
     }
 }

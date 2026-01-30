@@ -5,6 +5,38 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-30 19:10  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Generated default module category on create (AI fallback, avoid “Uncategorized”)
+- Updated quiz detail return routing to module “Quizzes & Exams” tab
+- Removed quiz generation accordion in favor of flat question list
+- Renamed module detail quiz tab label to “Quizzes & Exams”
+- Enabled review quiz generation button when queue is empty
+
+**CHANGED FILES**
+- Cognify.Server/Services/ModuleService.cs
+- Cognify.Tests/Services/ModuleServiceTests.cs
+- cognify.client/src/app/features/modules/components/quiz-generation/quiz-generation.component.ts
+- cognify.client/src/app/features/modules/components/quiz-generation/quiz-generation.component.html
+- cognify.client/src/app/features/modules/components/quiz-generation/quiz-generation.component.scss
+- cognify.client/src/app/features/modules/components/quiz-list/quiz-list.component.html
+- cognify.client/src/app/features/modules/module-detail/module-detail.component.html
+- cognify.client/src/app/features/dashboard/dashboard.component.html
+- status.md
+- worklog.md
+
+**DECISIONS**
+- If AI suggests “Uncategorized” during module creation, default to “General” instead
+
+**NEXT**
+- Verify remaining UX polish items and run tests if needed
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-31 04:25  
 **Author:** GitHub Copilot  
 

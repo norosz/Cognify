@@ -64,6 +64,37 @@
     color: #aaa;
 }
 
+.question-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.question-card {
+    padding: 16px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.question-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.question-title {
+    font-weight: 600;
+    color: #e0e0e0;
+}
+
+.question-preview {
+    color: #9e9e9e;
+    font-size: 13px;
+    text-align: right;
+}
+
 .options-list {
     display: flex;
     flex-direction: column;

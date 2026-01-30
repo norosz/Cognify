@@ -41,16 +41,14 @@
     <div *ngIf="!loading() && !error() && questions().length > 0">
         <p class="summary-text">Generated {{ questions().length }} questions.</p>
 
-        <mat-accordion multi>
-            <mat-expansion-panel *ngFor="let q of questions(); let i = index">
-                <mat-expansion-panel-header>
-                    <mat-panel-title>
-                        Q{{ i + 1 }} ({{q.type}})
-                    </mat-panel-title>
-                    <mat-panel-description>
-                        {{ q.prompt | slice:0:40 }}...
-                    </mat-panel-description>
-                </mat-expansion-panel-header>
+        <div class="question-list">
+            <div class="question-card" *ngFor="let q of questions(); let i = index">
+                <div class="question-header">
+                    <div class="question-title">Q{{ i + 1 }} ({{ q.type }})</div>
+                    <div class="question-preview">
+                        {{ q.prompt | slice:0:80 }}<span *ngIf="q.prompt?.length > 80">…</span>
+                    </div>
+                </div>
 
                 <p class="question-prompt">{{ q.prompt }}</p>
 
@@ -76,8 +74,8 @@
                 </div>
 
                 <p class="explanation" *ngIf="q.explanation"><strong>Explanation:</strong> {{ q.explanation }}</p>
-            </mat-expansion-panel>
-        </mat-accordion>
+            </div>
+        </div>
     </div>
 </div>
 

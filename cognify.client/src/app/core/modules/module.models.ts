@@ -38,6 +38,7 @@ export interface ModuleStatsDto {
 export interface CreateModuleDto {
     title: string;
     description?: string;
+    categoryLabel?: string;
 }
 
 export interface UpdateModuleDto {

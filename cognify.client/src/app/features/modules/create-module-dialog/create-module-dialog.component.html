@@ -13,6 +13,12 @@
             <mat-label>Description</mat-label>
             <textarea matInput formControlName="description" rows="4" placeholder="Brief description..."></textarea>
         </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width" *ngIf="!isEditMode">
+            <mat-label>Category</mat-label>
+            <input matInput formControlName="category" placeholder="Optional (AI can generate one)" />
+            <mat-hint>Optional — leave blank to let AI generate a category.</mat-hint>
+        </mat-form-field>
     </form>
 </mat-dialog-content>
 <mat-dialog-actions align="end">

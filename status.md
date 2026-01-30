@@ -73,10 +73,7 @@ Before each commit/push:
 
 ## ⏭️ Next (ordered)
 
-1) Final Exam v2: selected-notes source + note-less exams + gating dialog
-2) Statistics v2: Practice/Exams tabs + module-category breakdown + quiz-category filters (practice only)
-3) Module create category: optional input + AI default category on create
-4) UX polish: quiz back-routing to module “Quizzes & Exams” tab + remove quiz accordions + rename module tab label
+1) (none)
 
 ---
 
@@ -123,7 +120,6 @@ Before each commit/push:
 
 - [x] Backend: add `IncludeInFinalExam` on Note (default false)
 - [x] Backend: allow final exam quizzes/pending quizzes to be note-less (exams only)
-- [ ] Backend: final exam generation uses selected module notes as the source
 - [x] Backend: final exam generation uses selected module notes as the source
 - [x] Backend: regenerate returns `FinalExam.NoNotesSelected` when zero notes selected
 - [x] Backend: add bulk “Include all notes for exam” endpoint
@@ -140,15 +136,15 @@ Before each commit/push:
 
 ### Epic G — Module create category defaults
 
-- [ ] Frontend: module create dialog includes optional category input + helper text
-- [ ] Backend: module create accepts category; if omitted, AI generates default category
-- [ ] Backend/UX: avoid “Uncategorized” in normal create flow
+- [x] Frontend: module create dialog includes optional category input + helper text
+- [x] Backend: module create accepts category; if omitted, AI generates default category
+- [x] Backend/UX: avoid “Uncategorized” in normal create flow
 
 ### Epic H — UX polish
 
-- [ ] Frontend: module detail quiz tab label is “Quizzes & Exams”
-- [ ] Frontend: quiz detail Back navigates to module detail “Quizzes & Exams” tab
-- [ ] Frontend: remove quiz accordions/collapsibles (prefer flat sections)
+- [x] Frontend: module detail quiz tab label is “Quizzes & Exams”
+- [x] Frontend: quiz detail Back navigates to module detail “Quizzes & Exams” tab
+- [x] Frontend: remove quiz accordions/collapsibles (prefer flat sections)
 
 ---
 

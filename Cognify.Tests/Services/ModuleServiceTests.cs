@@ -28,7 +28,7 @@ public class ModuleServiceTests : IDisposable
         _userId = Guid.NewGuid();
         _userContextMock.Setup(x => x.GetCurrentUserId()).Returns(_userId);
 
-        _service = new ModuleService(_context, _userContextMock.Object);
+        _service = new ModuleService(_context, _userContextMock.Object, new NullAiService());
     }
 
     [Fact]
