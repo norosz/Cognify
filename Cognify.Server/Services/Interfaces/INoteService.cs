@@ -9,5 +9,6 @@ public interface INoteService
     Task<NoteSourcesDto?> GetSourcesAsync(Guid id);
     Task<NoteDto> CreateAsync(CreateNoteDto dto);
     Task<NoteDto?> UpdateAsync(Guid id, UpdateNoteDto dto);
+    Task<NoteDto?> UpdateExamInclusionAsync(Guid id, NoteExamInclusionDto dto);
     Task<bool> DeleteAsync(Guid id);
 }

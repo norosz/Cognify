@@ -6,6 +6,7 @@ export interface Note {
     content: string | null;
     userContent?: string | null;
     aiContent?: string | null;
+    includeInFinalExam?: boolean;
     createdAt: string;
     embeddedImages?: NoteEmbeddedImage[] | null;
 }
@@ -31,6 +32,10 @@ export interface UpdateNoteRequest {
     content?: string;
     userContent?: string;
     aiContent?: string;
+}
+
+export interface NoteExamInclusionRequest {
+    includeInFinalExam: boolean;
 }
 
 export interface NoteSourceDocumentDto {

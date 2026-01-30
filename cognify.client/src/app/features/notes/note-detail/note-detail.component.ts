@@ -6,6 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { NoteService } from '../../../core/services/note.service';
 import { Note, NoteEmbeddedImage, NoteSourceDocumentDto, NoteSourcesDto } from '../../../core/models/note.model';
 import { MarkdownLatexPipe } from '../../../shared/pipes/markdown-latex.pipe';
@@ -28,6 +29,7 @@ import { NoteImagePreviewDialogComponent } from '../components/note-image-previe
     MatIconModule,
     MatDialogModule,
     MatProgressSpinnerModule,
+    MatSlideToggleModule,
     MarkdownLatexPipe
   ],
   templateUrl: './note-detail.component.html',
@@ -101,6 +103,22 @@ export class NoteDetailComponent implements OnInit {
     dialogRef.afterClosed().subscribe(result => {
       if (result?.id) {
         this.loadNote(result.id);
+      }
+    });
+  }
+
+  updateExamInclusion(includeInFinalExam: boolean) {
+    const current = this.note();
+    if (!current) return;
+
+    const previousValue = current.includeInFinalExam ?? false;
+    this.note.set({ ...current, includeInFinalExam });
+
+    this.noteService.updateFinalExamInclusion(current.id, { includeInFinalExam }).subscribe({
+      next: (updated) => this.note.set(updated),
+      error: () => {
+        this.note.set({ ...current, includeInFinalExam: previousValue });
+        this.notification.error('Failed to update final exam inclusion.');
       }
     });
   }

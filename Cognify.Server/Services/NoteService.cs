@@ -164,6 +164,25 @@ public class NoteService(ApplicationDbContext context, IUserContextService userC
         return MapToDto(note);
     }
 
+    public async Task<NoteDto?> UpdateExamInclusionAsync(Guid id, NoteExamInclusionDto dto)
+    {
+        var userId = userContext.GetCurrentUserId();
+
+        var note = await context.Notes
+            .Include(n => n.Module)
+            .FirstOrDefaultAsync(n => n.Id == id);
+
+        if (note == null || note.Module == null || note.Module.OwnerUserId != userId)
+        {
+            return null;
+        }
+
+        note.IncludeInFinalExam = dto.IncludeInFinalExam;
+        await context.SaveChangesAsync();
+
+        return MapToDto(note);
+    }
+
     public async Task<bool> DeleteAsync(Guid id)
     {
         var userId = userContext.GetCurrentUserId();
@@ -195,6 +214,7 @@ public class NoteService(ApplicationDbContext context, IUserContextService userC
             Content = note.Content,
             UserContent = note.UserContent,
             AiContent = note.AiContent,
+            IncludeInFinalExam = note.IncludeInFinalExam,
             CreatedAt = note.CreatedAt,
             EmbeddedImages = embeddedImages
         };

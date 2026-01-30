@@ -22,6 +22,8 @@ public class Note
 
     public string? EmbeddedImagesJson { get; set; }
 
+    public bool IncludeInFinalExam { get; set; } = false;
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     // Navigation properties

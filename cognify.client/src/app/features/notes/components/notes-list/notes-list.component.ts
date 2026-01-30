@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { NoteService } from '../../../../core/services/note.service';
@@ -25,6 +26,7 @@ import { MarkdownLatexPipe } from '../../../../shared/pipes/markdown-latex.pipe'
         MatIconModule,
         MatDialogModule,
         MatMenuModule,
+        MatSlideToggleModule,
         MatProgressSpinnerModule,
         MarkdownLatexPipe
     ],
@@ -123,6 +125,34 @@ export class NotesListComponent implements OnInit {
                 }
             });
         }
+    }
+
+    updateExamInclusion(note: Note, includeInFinalExam: boolean): void {
+        const previousValue = note.includeInFinalExam ?? false;
+
+        this.notes.set(this.notes().map(existing =>
+            existing.id === note.id
+                ? { ...existing, includeInFinalExam }
+                : existing
+        ));
+
+        this.noteService.updateFinalExamInclusion(note.id, { includeInFinalExam }).subscribe({
+            next: (updated) => {
+                this.notes.set(this.notes().map(existing =>
+                    existing.id === updated.id
+                        ? { ...existing, includeInFinalExam: updated.includeInFinalExam }
+                        : existing
+                ));
+            },
+            error: () => {
+                this.notes.set(this.notes().map(existing =>
+                    existing.id === note.id
+                        ? { ...existing, includeInFinalExam: previousValue }
+                        : existing
+                ));
+                this.notification.error('Failed to update final exam inclusion.');
+            }
+        });
     }
 
     openNoteDetail(note: Note): void {

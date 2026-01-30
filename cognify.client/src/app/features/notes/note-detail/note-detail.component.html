@@ -14,6 +14,13 @@
       <p>Created {{ note.createdAt | date:'medium' }}</p>
     </div>
     <div class="note-actions">
+      <mat-slide-toggle
+        class="exam-toggle"
+        color="primary"
+        [checked]="note.includeInFinalExam"
+        (change)="updateExamInclusion($event.checked)">
+        Include in Final Exam
+      </mat-slide-toggle>
       <button mat-stroked-button color="primary" (click)="generateQuiz()">
         <mat-icon>auto_awesome</mat-icon>
         Generate Quiz

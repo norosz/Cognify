@@ -585,6 +585,9 @@ namespace Cognify.Server.Migrations
                     b.Property<string>("EmbeddedImagesJson")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IncludeInFinalExam")
+                        .HasColumnType("bit");
+
                     b.Property<Guid>("ModuleId")
                         .HasColumnType("uniqueidentifier");
 

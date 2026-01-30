@@ -9,6 +9,7 @@ public class NoteDto
     public string? Content { get; set; }
     public string? UserContent { get; set; }
     public string? AiContent { get; set; }
+    public bool IncludeInFinalExam { get; set; }
     public DateTime CreatedAt { get; set; }
     public IReadOnlyList<NoteEmbeddedImageDto>? EmbeddedImages { get; set; }
 }

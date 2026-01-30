@@ -8,7 +8,12 @@
 .note-actions {
   margin-left: auto;
   display: flex;
+  align-items: center;
   gap: 12px;
+}
+
+.exam-toggle {
+  font-size: 12px;
 }
 
 .note-title h1 {

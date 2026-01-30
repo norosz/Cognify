@@ -34,6 +34,14 @@
                 </div>
             </mat-card-content>
             <mat-card-actions align="end" (click)="$event.stopPropagation()">
+                <mat-slide-toggle
+                    class="exam-toggle"
+                    color="primary"
+                    [checked]="note.includeInFinalExam"
+                    (click)="$event.stopPropagation()"
+                    (change)="updateExamInclusion(note, $event.checked)">
+                    Include in Final Exam
+                </mat-slide-toggle>
                 <button mat-icon-button (click)="generateQuiz(note); $event.stopPropagation()"
                     matTooltip="Generate Quiz">
                     <mat-icon>psychology</mat-icon>

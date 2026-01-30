@@ -5,6 +5,43 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-31 02:30  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Added IncludeInFinalExam flag to notes and exposed it via notes API
+- Added final exam inclusion toggles in module notes list and note detail UI
+
+**CHANGED FILES**
+- Cognify.Server/Models/Note.cs
+- Cognify.Server/Dtos/Notes/NoteDto.cs
+- Cognify.Server/Dtos/Notes/NoteExamInclusionDto.cs
+- Cognify.Server/Services/Interfaces/INoteService.cs
+- Cognify.Server/Services/NoteService.cs
+- Cognify.Server/Controllers/NotesController.cs
+- Cognify.Server/Migrations/20260131021000_AddNoteExamInclusion.cs
+- Cognify.Server/Migrations/ApplicationDbContextModelSnapshot.cs
+- cognify.client/src/app/core/models/note.model.ts
+- cognify.client/src/app/core/services/note.service.ts
+- cognify.client/src/app/features/notes/components/notes-list/notes-list.component.ts
+- cognify.client/src/app/features/notes/components/notes-list/notes-list.component.html
+- cognify.client/src/app/features/notes/components/notes-list/notes-list.component.scss
+- cognify.client/src/app/features/notes/note-detail/note-detail.component.ts
+- cognify.client/src/app/features/notes/note-detail/note-detail.component.html
+- cognify.client/src/app/features/notes/note-detail/note-detail.component.scss
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Note inclusion defaults to false and is toggled explicitly in list/detail UI
+
+**NEXT**
+- Implement final exam gating dialog + bulk include-all endpoint
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-31 02:05  
 **Author:** GitHub Copilot  
 

@@ -65,6 +65,17 @@ public class NotesController(INoteService noteService) : ControllerBase
         return Ok(updatedNote);
     }
 
+    [HttpPut("{id}/final-exam-inclusion")]
+    public async Task<ActionResult<NoteDto>> UpdateFinalExamInclusion(Guid id, NoteExamInclusionDto dto)
+    {
+        var updatedNote = await noteService.UpdateExamInclusionAsync(id, dto);
+        if (updatedNote == null)
+        {
+            return NotFound();
+        }
+        return Ok(updatedNote);
+    }
+
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(Guid id)
     {
