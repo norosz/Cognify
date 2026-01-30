@@ -5,8 +5,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTabsModule } from '@angular/material/tabs';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSelectModule } from '@angular/material/select';
 import { NgxEchartsModule } from 'ngx-echarts';
 import { forkJoin } from 'rxjs';
 import { LearningAnalyticsService } from '../../core/services/learning-analytics.service';
@@ -18,7 +16,6 @@ import {
   RetentionHeatmapPointDto,
   DecayForecastDto,
   MistakePatternSummaryDto,
-  CategoryBreakdownDto,
   CategoryBreakdownItemDto
 } from '../../core/models/analytics.models';
 
@@ -32,8 +29,6 @@ import {
     MatProgressSpinnerModule,
     MatButtonModule,
     MatTabsModule,
-    MatFormFieldModule,
-    MatSelectModule,
     NgxEchartsModule
   ],
   templateUrl: './statistics.component.html',
@@ -48,9 +43,6 @@ export class StatisticsComponent implements OnInit {
   retentionHeatmap = signal<RetentionHeatmapPointDto[]>([]);
   decayForecast = signal<DecayForecastDto | null>(null);
   mistakePatterns = signal<MistakePatternSummaryDto[]>([]);
-  categoryBreakdown = signal<CategoryBreakdownItemDto[]>([]);
-  quizCategoryOptions = signal<string[]>([]);
-  selectedQuizCategories = signal<string[]>([]);
 
   examSummary = signal<ExamAnalyticsSummaryDto | null>(null);
   examCategoryBreakdown = signal<CategoryBreakdownItemDto[]>([]);
@@ -60,20 +52,12 @@ export class StatisticsComponent implements OnInit {
   distributionOptions = signal<any>({});
   heatmapOptions = signal<any>({});
   decayOptions = signal<any>({});
-  categoryOptions = signal<any>({});
-  categoryMetric = signal<'attempts' | 'average'>('attempts');
   examCategoryOptions = signal<any>({});
   examCategoryMetric = signal<'attempts' | 'average'>('attempts');
 
   ngOnInit() {
-    this.loadQuizCategories();
     this.loadPracticeAnalytics();
     this.loadExamAnalytics();
-  }
-
-  setCategoryMetric(metric: 'attempts' | 'average') {
-    this.categoryMetric.set(metric);
-    this.categoryOptions.set(this.buildCategoryBreakdownOptions(this.categoryBreakdown(), metric));
   }
 
   setExamCategoryMetric(metric: 'attempts' | 'average') {
@@ -81,27 +65,16 @@ export class StatisticsComponent implements OnInit {
     this.examCategoryOptions.set(this.buildExamCategoryBreakdownOptions(this.examCategoryBreakdown(), metric));
   }
 
-  setQuizCategoryFilters(values: string[]) {
-    this.selectedQuizCategories.set(values);
-    this.loadPracticeAnalytics();
-  }
 
   loadPracticeAnalytics() {
     this.isAnalyticsLoading.set(true);
-    const filters = this.selectedQuizCategories();
-
     forkJoin({
       summary: this.analyticsService.getSummary(false),
       trends: this.analyticsService.getTrends({ bucketDays: 7 }, false),
       topics: this.analyticsService.getTopics({ maxTopics: 20, maxWeakTopics: 5 }, false),
       heatmap: this.analyticsService.getRetentionHeatmap({ maxTopics: 12 }, false),
       decay: this.analyticsService.getDecayForecast({ maxTopics: 5, days: 14, stepDays: 2 }, false),
-      mistakes: this.analyticsService.getMistakePatterns({ maxItems: 6, maxTopics: 3 }, false),
-      categories: this.analyticsService.getCategoryBreakdown({
-        includeExams: false,
-        groupBy: 'moduleCategory',
-        filterQuizCategories: filters
-      })
+      mistakes: this.analyticsService.getMistakePatterns({ maxItems: 6, maxTopics: 3 }, false)
     }).subscribe({
       next: (data) => {
         this.analyticsSummary.set(data.summary);
@@ -110,14 +83,12 @@ export class StatisticsComponent implements OnInit {
         this.retentionHeatmap.set(data.heatmap);
         this.decayForecast.set(data.decay);
         this.mistakePatterns.set(data.mistakes);
-        this.categoryBreakdown.set(data.categories.items || []);
 
         this.readinessOptions.set(this.buildReadinessGaugeOptions(data.summary));
         this.velocityOptions.set(this.buildVelocitySparklineOptions(data.trends));
         this.distributionOptions.set(this.buildTopicDistributionOptions(data.topics));
         this.heatmapOptions.set(this.buildHeatmapOptions(data.heatmap));
         this.decayOptions.set(this.buildDecayForecastOptions(data.decay));
-        this.categoryOptions.set(this.buildCategoryBreakdownOptions(data.categories.items || [], this.categoryMetric()));
 
         this.isAnalyticsLoading.set(false);
       },
@@ -129,17 +100,8 @@ export class StatisticsComponent implements OnInit {
         this.heatmapOptions.set({});
         this.decayOptions.set({});
         this.mistakePatterns.set([]);
-        this.categoryBreakdown.set([]);
-        this.categoryOptions.set({});
         this.isAnalyticsLoading.set(false);
       }
-    });
-  }
-
-  loadQuizCategories() {
-    this.analyticsService.getQuizCategories().subscribe({
-      next: (items) => this.quizCategoryOptions.set(items),
-      error: () => this.quizCategoryOptions.set([])
     });
   }
 
@@ -161,31 +123,6 @@ export class StatisticsComponent implements OnInit {
     });
   }
 
-  private buildCategoryBreakdownOptions(items: CategoryBreakdownItemDto[], metric: 'attempts' | 'average') {
-    const labels = items.map(i => i.categoryLabel);
-    const values = items.map(i => metric === 'attempts'
-      ? i.practiceAttemptCount
-      : Math.round(i.practiceAverageScore));
-
-    return {
-      grid: { left: 140, right: 20, top: 10, bottom: 20 },
-      xAxis: { type: 'value', min: 0, max: metric === 'attempts' ? undefined : 100 },
-      yAxis: { type: 'category', data: labels },
-      tooltip: {
-        formatter: ({ name, value }: any) => metric === 'attempts'
-          ? `${name}: ${value} attempts`
-          : `${name}: ${value}% avg`
-      },
-      series: [
-        {
-          type: 'bar',
-          data: values,
-          itemStyle: { color: '#8f73ff' },
-          barWidth: 14
-        }
-      ]
-    };
-  }
 
   private buildExamCategoryBreakdownOptions(items: CategoryBreakdownItemDto[], metric: 'attempts' | 'average') {
     const labels = items.map(i => i.categoryLabel);

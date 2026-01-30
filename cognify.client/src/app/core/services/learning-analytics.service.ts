@@ -55,7 +55,7 @@ export class LearningAnalyticsService {
         });
     }
 
-    getCategoryBreakdown(params?: { includeExams?: boolean; groupBy?: 'moduleCategory' | 'quizCategory'; filterQuizCategories?: string[] }): Observable<CategoryBreakdownDto> {
+    getCategoryBreakdown(params?: { includeExams?: boolean; groupBy?: 'moduleCategory' | 'quizCategory'; filterQuizCategories?: string[]; moduleId?: string }): Observable<CategoryBreakdownDto> {
         const query: Record<string, any> = { includeExams: params?.includeExams ?? false };
 
         if (params?.groupBy) {
@@ -64,6 +64,10 @@ export class LearningAnalyticsService {
 
         if (params?.filterQuizCategories && params.filterQuizCategories.length > 0) {
             query['filterQuizCategories'] = params.filterQuizCategories.join(',');
+        }
+
+        if (params?.moduleId) {
+            query['moduleId'] = params.moduleId;
         }
 
         return this.http.get<CategoryBreakdownDto>(`${this.apiUrl}/category-breakdown`, {

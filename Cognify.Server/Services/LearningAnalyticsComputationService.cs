@@ -111,7 +111,7 @@ public class LearningAnalyticsComputationService(ApplicationDbContext context, I
         };
     }
 
-    public async Task<CategoryBreakdownDto> GetCategoryBreakdownAsync(Guid userId, bool includeExams, string groupBy, IReadOnlyList<string> quizCategoryFilters)
+    public async Task<CategoryBreakdownDto> GetCategoryBreakdownAsync(Guid userId, bool includeExams, string groupBy, IReadOnlyList<string> quizCategoryFilters, Guid? moduleId = null)
     {
         var normalizedFilters = quizCategoryFilters
             .Where(f => !string.IsNullOrWhiteSpace(f))
@@ -123,11 +123,21 @@ public class LearningAnalyticsComputationService(ApplicationDbContext context, I
             .Where(m => m.OwnerUserId == userId)
             .Select(m => new { m.Id, CategoryLabel = NormalizeCategoryLabel(m.CategoryLabel) });
 
+        if (moduleId.HasValue)
+        {
+            moduleQuery = moduleQuery.Where(m => m.Id == moduleId.Value);
+        }
+
         var quizQuery = context.Quizzes
             .AsNoTracking()
             .Include(q => q.Note)
             .ThenInclude(n => n!.Module)
             .Where(q => q.Note != null && q.Note.Module!.OwnerUserId == userId);
+
+        if (moduleId.HasValue)
+        {
+            quizQuery = quizQuery.Where(q => q.Note!.Module!.Id == moduleId.Value);
+        }
 
         if (normalizedFilters.Count > 0)
         {
@@ -151,6 +161,11 @@ public class LearningAnalyticsComputationService(ApplicationDbContext context, I
             .ThenInclude(n => n!.Module)
             .Where(a => a.UserId == userId && a.Quiz != null && a.Quiz.Note != null)
             .ToListAsync();
+
+        if (moduleId.HasValue)
+        {
+            attempts = attempts.Where(a => a.Quiz!.Note!.Module!.Id == moduleId.Value).ToList();
+        }
 
         if (normalizedFilters.Count > 0)
         {
@@ -222,6 +237,11 @@ public class LearningAnalyticsComputationService(ApplicationDbContext context, I
                 .Include(a => a.Module)
                 .Where(a => a.UserId == userId)
                 .ToListAsync();
+
+            if (moduleId.HasValue)
+            {
+                exams = exams.Where(a => a.ModuleId == moduleId.Value).ToList();
+            }
 
             foreach (var group in exams.GroupBy(a => NormalizeCategoryLabel(a.Module?.CategoryLabel)))
             {

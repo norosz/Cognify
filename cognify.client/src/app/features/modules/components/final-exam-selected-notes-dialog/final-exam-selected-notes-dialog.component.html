@@ -1,0 +1,15 @@
+<h2 mat-dialog-title>Selected notes for final exam</h2>
+
+<mat-dialog-content class="dialog-content">
+  <p class="text-secondary">These notes will be used to generate the final exam:</p>
+  <div class="note-list">
+    <div class="note-item" *ngFor="let note of data.notes">
+      {{ note.title }}
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Cancel</button>
+  <button mat-flat-button color="accent" (click)="confirm()">Regenerate Exam</button>
+</mat-dialog-actions>

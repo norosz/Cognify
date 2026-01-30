@@ -180,6 +180,10 @@ Before each commit/push:
 - **[Backend]** Fix concept clustering tracking query for tests
 - **[Backend]** Remove cascade delete on LearningInteraction -> ExamAttempt
 - **[Frontend]** Add MatCardModule import for module detail view
+- **[Frontend]** Fix create module dialog ngIf import error
+- **[Frontend]** Move category breakdown to module detail and remove from Statistics page
+- **[Frontend]** Add final exam selected-notes confirmation dialog
+- **[Backend]** Fix final exam selected-notes query translation
 
 ---
 

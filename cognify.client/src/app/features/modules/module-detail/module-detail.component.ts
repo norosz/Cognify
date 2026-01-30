@@ -9,8 +9,11 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { NgxEchartsModule } from 'ngx-echarts';
 import { ModuleService } from '../../../core/modules/module.service';
 import { ModuleDto, ModuleStatsDto } from '../../../core/modules/module.models';
+import { LearningAnalyticsService } from '../../../core/services/learning-analytics.service';
+import { CategoryBreakdownItemDto } from '../../../core/models/analytics.models';
 import { FinalExamService } from '../../../core/services/final-exam.service';
 import { ExamAttemptService } from '../../../core/services/exam-attempt.service';
 import { PendingQuizDto, PendingService } from '../../../core/services/pending.service';
@@ -24,6 +27,9 @@ import { QuizListComponent } from '../components/quiz-list/quiz-list.component';
 import { ExamTakingComponent } from '../../exams/exam-taking/exam-taking.component';
 import { CategoryHistoryBatchDto } from '../../../core/models/category.models';
 import { FinalExamNoteDialogComponent } from '../components/final-exam-note-dialog/final-exam-note-dialog.component';
+import { FinalExamSelectedNotesDialogComponent } from '../components/final-exam-selected-notes-dialog/final-exam-selected-notes-dialog.component';
+import { NoteService } from '../../../core/services/note.service';
+import { Note } from '../../../core/models/note.model';
 
 @Component({
   selector: 'app-module-detail',
@@ -39,6 +45,7 @@ import { FinalExamNoteDialogComponent } from '../components/final-exam-note-dial
     MatFormFieldModule,
     MatInputModule,
     MatAutocompleteModule,
+    NgxEchartsModule,
     DocumentListComponent,
     NotesListComponent,
     QuizListComponent
@@ -56,6 +63,8 @@ export class ModuleDetailComponent implements OnInit {
   private notificationService = inject(NotificationService);
   private dialog = inject(MatDialog);
   private documentsService = inject(DocumentsService);
+  private noteService = inject(NoteService);
+  private analyticsService = inject(LearningAnalyticsService);
 
   module = signal<ModuleDto | null>(null);
   moduleStats = signal<ModuleStatsDto | null>(null);
@@ -78,6 +87,8 @@ export class ModuleDetailComponent implements OnInit {
   categoryHistoryCursor = signal<string | null>(null);
   categoryHistoryHasMore = signal<boolean>(false);
   suggestingCategory = signal<boolean>(false);
+  moduleCategoryBreakdown = signal<CategoryBreakdownItemDto[]>([]);
+  moduleCategoryOptions = signal<any>({});
 
   @ViewChild(DocumentListComponent) documentList!: DocumentListComponent;
   @ViewChild(NotesListComponent) notesList!: NotesListComponent;
@@ -111,6 +122,7 @@ export class ModuleDetailComponent implements OnInit {
       this.loadFinalExam(id);
       this.loadExamAttempts(id);
       this.loadPendingFinalExam(id);
+      this.loadModuleCategoryBreakdown(id);
     }
 
     this.route.params.subscribe(params => {
@@ -143,6 +155,23 @@ export class ModuleDetailComponent implements OnInit {
       error: () => {
         this.finalExamError.set('Failed to load final exam.');
         this.finalExamLoading.set(false);
+      }
+    });
+  }
+
+  loadModuleCategoryBreakdown(moduleId: string) {
+    this.analyticsService.getCategoryBreakdown({
+      includeExams: false,
+      groupBy: 'quizCategory',
+      moduleId
+    }).subscribe({
+      next: (data) => {
+        this.moduleCategoryBreakdown.set(data.items || []);
+        this.moduleCategoryOptions.set(this.buildModuleCategoryOptions(data.items || []));
+      },
+      error: () => {
+        this.moduleCategoryBreakdown.set([]);
+        this.moduleCategoryOptions.set({});
       }
     });
   }
@@ -210,7 +239,60 @@ export class ModuleDetailComponent implements OnInit {
   regenerateFinalExam() {
     const moduleId = this.moduleId();
     if (!moduleId || this.regeneratingFinalExam()) return;
+    this.loadSelectedNotesAndConfirm(moduleId);
+  }
 
+  private isNoNotesSelectedError(err: any): boolean {
+    const code = err?.error?.code ?? err?.error?.extensions?.code;
+    return code === 'FinalExam.NoNotesSelected';
+  }
+
+  private openNoNotesDialog(moduleId: string) {
+    const dialogRef = this.dialog.open(FinalExamNoteDialogComponent, {
+      width: '420px'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (!result) return;
+
+      this.finalExamService.includeAllNotes(moduleId).subscribe({
+        next: () => this.regenerateFinalExam(),
+        error: () => this.notificationService.error('Failed to include notes for final exam.')
+      });
+    });
+  }
+
+  private loadSelectedNotesAndConfirm(moduleId: string) {
+    this.regeneratingFinalExam.set(true);
+    this.noteService.getNotesByModuleId(moduleId).subscribe({
+      next: (notes) => {
+        const selected = notes.filter(note => note.includeInFinalExam && !this.isFinalExamMarkerNote(note));
+        this.regeneratingFinalExam.set(false);
+
+        if (selected.length === 0) {
+          this.openNoNotesDialog(moduleId);
+          return;
+        }
+
+        const dialogRef = this.dialog.open(FinalExamSelectedNotesDialogComponent, {
+          width: '420px',
+          data: { notes: selected }
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+          if (result) {
+            this.executeRegenerateFinalExam(moduleId);
+          }
+        });
+      },
+      error: () => {
+        this.regeneratingFinalExam.set(false);
+        this.notificationService.error('Failed to load notes for final exam.');
+      }
+    });
+  }
+
+  private executeRegenerateFinalExam(moduleId: string) {
     this.regeneratingFinalExam.set(true);
     this.finalExamService.regenerateFinalExam(moduleId, {
       questionCount: 20,
@@ -242,24 +324,30 @@ export class ModuleDetailComponent implements OnInit {
     });
   }
 
-  private isNoNotesSelectedError(err: any): boolean {
-    const code = err?.error?.code ?? err?.error?.extensions?.code;
-    return code === 'FinalExam.NoNotesSelected';
+  private isFinalExamMarkerNote(note: Note): boolean {
+    return note.title === 'Final Exam' && (note.content ?? '').includes('<!-- cognify:final-exam -->');
   }
 
-  private openNoNotesDialog(moduleId: string) {
-    const dialogRef = this.dialog.open(FinalExamNoteDialogComponent, {
-      width: '420px'
-    });
+  private buildModuleCategoryOptions(items: CategoryBreakdownItemDto[]) {
+    const labels = items.map(i => i.categoryLabel);
+    const values = items.map(i => i.practiceAttemptCount);
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (!result) return;
-
-      this.finalExamService.includeAllNotes(moduleId).subscribe({
-        next: () => this.regenerateFinalExam(),
-        error: () => this.notificationService.error('Failed to include notes for final exam.')
-      });
-    });
+    return {
+      grid: { left: 140, right: 20, top: 10, bottom: 20 },
+      xAxis: { type: 'value', min: 0 },
+      yAxis: { type: 'category', data: labels },
+      tooltip: {
+        formatter: ({ name, value }: any) => `${name}: ${value} attempts`
+      },
+      series: [
+        {
+          type: 'bar',
+          data: values,
+          itemStyle: { color: '#8f73ff' },
+          barWidth: 14
+        }
+      ]
+    };
   }
 
   saveFinalExam() {

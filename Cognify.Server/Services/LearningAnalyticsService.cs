@@ -41,10 +41,10 @@ public class LearningAnalyticsService(IUserContextService userContext, ILearning
         return await computationService.GetMistakePatternsAsync(userId, maxItems, maxTopics, includeExams);
     }
 
-    public async Task<CategoryBreakdownDto> GetCategoryBreakdownAsync(bool includeExams, string groupBy, IReadOnlyList<string> quizCategoryFilters)
+    public async Task<CategoryBreakdownDto> GetCategoryBreakdownAsync(bool includeExams, string groupBy, IReadOnlyList<string> quizCategoryFilters, Guid? moduleId = null)
     {
         var userId = userContext.GetCurrentUserId();
-        return await computationService.GetCategoryBreakdownAsync(userId, includeExams, groupBy, quizCategoryFilters);
+        return await computationService.GetCategoryBreakdownAsync(userId, includeExams, groupBy, quizCategoryFilters, moduleId);
     }
 
     public async Task<List<string>> GetQuizCategoriesAsync()

@@ -5,6 +5,45 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-30 21:10  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Fixed create module dialog by adding CommonModule for ngIf
+- Added module detail category breakdown chart (module-scoped)
+- Removed category breakdown from Statistics page
+- Added selected-notes confirmation dialog for final exam regenerate
+- Fixed final exam selected-notes query translation error
+
+**CHANGED FILES**
+- cognify.client/src/app/features/modules/create-module-dialog/create-module-dialog.component.ts
+- cognify.client/src/app/features/modules/components/final-exam-selected-notes-dialog/final-exam-selected-notes-dialog.component.ts
+- cognify.client/src/app/features/modules/components/final-exam-selected-notes-dialog/final-exam-selected-notes-dialog.component.html
+- cognify.client/src/app/features/modules/components/final-exam-selected-notes-dialog/final-exam-selected-notes-dialog.component.scss
+- cognify.client/src/app/features/modules/module-detail/module-detail.component.ts
+- cognify.client/src/app/features/modules/module-detail/module-detail.component.html
+- cognify.client/src/app/features/modules/module-detail/module-detail.component.scss
+- cognify.client/src/app/features/statistics/statistics.component.ts
+- cognify.client/src/app/features/statistics/statistics.component.html
+- cognify.client/src/app/core/services/learning-analytics.service.ts
+- Cognify.Server/Controllers/LearningAnalyticsController.cs
+- Cognify.Server/Services/LearningAnalyticsService.cs
+- Cognify.Server/Services/Interfaces/ILearningAnalyticsService.cs
+- Cognify.Server/Services/Interfaces/ILearningAnalyticsComputationService.cs
+- Cognify.Server/Services/LearningAnalyticsComputationService.cs
+- Cognify.Server/Services/FinalExamService.cs
+- worklog.md
+
+**DECISIONS**
+- Module detail shows quiz-category breakdown scoped to that module
+
+**NEXT**
+- None
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-30 20:40  
 **Author:** GitHub Copilot  
 

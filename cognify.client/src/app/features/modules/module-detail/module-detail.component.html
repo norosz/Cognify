@@ -70,6 +70,20 @@
 <div class="module-card-grid">
     <mat-card class="module-card cognify-glass-card">
         <mat-card-header>
+            <mat-card-title>Category Breakdown</mat-card-title>
+            <mat-card-subtitle>Quiz categories in this module (practice only)</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+            <div *ngIf="moduleCategoryBreakdown().length === 0" class="empty-inline">
+                <mat-icon>category</mat-icon>
+                <p>No category data yet.</p>
+            </div>
+            <div *ngIf="moduleCategoryBreakdown().length > 0" class="chart chart-tall" echarts [options]="moduleCategoryOptions()"></div>
+        </mat-card-content>
+    </mat-card>
+
+    <mat-card class="module-card cognify-glass-card">
+        <mat-card-header>
             <mat-card-title>Module Stats</mat-card-title>
             <mat-card-subtitle>Overview of activity and mastery</mat-card-subtitle>
         </mat-card-header>

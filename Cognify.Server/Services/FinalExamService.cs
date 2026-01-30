@@ -155,9 +155,12 @@ public class FinalExamService(
 
     private async Task<int> GetSelectedNotesCountAsync(Guid moduleId)
     {
-        return await context.Notes
+        var notes = await context.Notes
+            .AsNoTracking()
             .Where(n => n.ModuleId == moduleId && n.IncludeInFinalExam)
-            .CountAsync(n => !IsFinalExamMarkerNote(n));
+            .ToListAsync();
+
+        return notes.Count(n => !IsFinalExamMarkerNote(n));
     }
 
     private static bool IsFinalExamMarkerNote(Note note)

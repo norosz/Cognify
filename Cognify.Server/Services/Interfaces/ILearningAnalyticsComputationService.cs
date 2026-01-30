@@ -10,7 +10,7 @@ public interface ILearningAnalyticsComputationService
     Task<List<RetentionHeatmapPointDto>> GetRetentionHeatmapAsync(Guid userId, int maxTopics, bool includeExams);
     Task<DecayForecastDto> GetDecayForecastAsync(Guid userId, int maxTopics, int days, int stepDays, bool includeExams);
     Task<List<MistakePatternSummaryDto>> GetMistakePatternsAsync(Guid userId, int maxItems, int maxTopics, bool includeExams);
-    Task<CategoryBreakdownDto> GetCategoryBreakdownAsync(Guid userId, bool includeExams, string groupBy, IReadOnlyList<string> quizCategoryFilters);
+    Task<CategoryBreakdownDto> GetCategoryBreakdownAsync(Guid userId, bool includeExams, string groupBy, IReadOnlyList<string> quizCategoryFilters, Guid? moduleId = null);
     Task<List<string>> GetQuizCategoriesAsync(Guid userId);
     Task<ExamAnalyticsSummaryDto> GetExamSummaryAsync(Guid userId);
     Task<CategoryBreakdownDto> GetExamCategoryBreakdownAsync(Guid userId);

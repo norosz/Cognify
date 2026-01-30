@@ -122,13 +122,14 @@ public class LearningAnalyticsController(ILearningAnalyticsService analyticsServ
     public async Task<ActionResult<CategoryBreakdownDto>> GetCategoryBreakdown(
         [FromQuery] bool includeExams = false,
         [FromQuery] string groupBy = "moduleCategory",
-        [FromQuery] string? filterQuizCategories = null)
+        [FromQuery] string? filterQuizCategories = null,
+        [FromQuery] Guid? moduleId = null)
     {
         var filters = string.IsNullOrWhiteSpace(filterQuizCategories)
             ? Array.Empty<string>()
             : filterQuizCategories.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-        var breakdown = await analyticsService.GetCategoryBreakdownAsync(includeExams, groupBy, filters);
+        var breakdown = await analyticsService.GetCategoryBreakdownAsync(includeExams, groupBy, filters, moduleId);
         return Ok(breakdown);
     }
 
