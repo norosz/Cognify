@@ -124,6 +124,10 @@
                                     {{quiz.questionCount}} questions
                                 </span>
                             </div>
+                            <div class="saving-hint" *ngIf="isSavingQuiz(quiz.id)">
+                                <mat-icon>sync</mat-icon>
+                                <span>{{ isExamPending(quiz) ? 'Saving exam...' : 'Saving quiz...' }}</span>
+                            </div>
                             <p class="error-text" *ngIf="quiz.errorMessage">{{quiz.errorMessage}}</p>
                             <span class="date">{{quiz.createdAt | date:'medium'}}</span>
                         </div>
@@ -132,7 +136,7 @@
                             <button mat-button color="primary" (click)="saveQuiz(quiz)"
                                 [disabled]="quiz.status !== 'Ready' || isSavingQuiz(quiz.id)">
                                 <mat-icon>save_alt</mat-icon>
-                                <span>Save Quiz</span>
+                                <span>{{ isExamPending(quiz) ? 'Save Exam' : 'Save Quiz' }}</span>
                             </button>
                             <button mat-icon-button color="warn" (click)="deleteQuiz(quiz.id)" matTooltip="Discard"
                                 [disabled]="isSavingQuiz(quiz.id)">
@@ -140,7 +144,7 @@
                             </button>
                         </div>
 
-                        <div class="loading-bar" *ngIf="quiz.status === 'Generating'">
+                        <div class="loading-bar" *ngIf="quiz.status === 'Generating' || isSavingQuiz(quiz.id)">
                             <div class="progress-animation"></div>
                         </div>
                     </div>

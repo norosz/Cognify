@@ -136,6 +136,10 @@ export class PendingComponent implements OnInit {
     return this.savingQuizIds().has(id);
   }
 
+  isExamPending(quiz: PendingQuizDto): boolean {
+    return !quiz.noteId;
+  }
+
   deleteQuiz(id: string): void {
     if (confirm('Are you sure you want to discard this quiz?')) {
       this.pendingService.deletePendingQuiz(id).subscribe({
