@@ -97,6 +97,46 @@ public class KnowledgeStateService(
         await context.SaveChangesAsync();
     }
 
+    public async Task RecordExamAttemptAsync(ExamAttempt attempt, Quiz quiz, IReadOnlyCollection<KnowledgeInteractionInput> interactions)
+    {
+        var topic = BuildTopic(quiz);
+        var now = DateTime.UtcNow;
+
+        foreach (var interaction in interactions)
+        {
+            var interactionEntity = new LearningInteraction
+            {
+                UserId = attempt.UserId,
+                Topic = topic,
+                Type = LearningInteractionType.QuizAnswer,
+                ExamAttemptId = attempt.Id,
+                QuestionId = interaction.QuestionId,
+                UserAnswer = interaction.UserAnswer,
+                IsCorrect = interaction.IsCorrect,
+                CreatedAt = now
+            };
+
+            context.LearningInteractions.Add(interactionEntity);
+
+            var mistakes = interaction.DetectedMistakes?.ToList() ?? mistakeService.DetectMistakes(interaction);
+
+            var evaluation = new AnswerEvaluation
+            {
+                LearningInteraction = interactionEntity,
+                Score = interaction.Score > 0 ? interaction.Score : (interaction.IsCorrect ? 1 : 0),
+                MaxScore = interaction.MaxScore > 0 ? interaction.MaxScore : 1,
+                Feedback = interaction.Feedback,
+                ConfidenceEstimate = interaction.ConfidenceEstimate,
+                DetectedMistakesJson = mistakes.Count == 0 ? null : JsonSerializer.Serialize(mistakes),
+                CreatedAt = now
+            };
+
+            context.AnswerEvaluations.Add(evaluation);
+        }
+
+        await context.SaveChangesAsync();
+    }
+
     public async Task<List<UserKnowledgeStateDto>> GetMyStatesAsync()
     {
         var userId = userContext.GetCurrentUserId();

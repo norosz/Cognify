@@ -5,6 +5,42 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-30 11:10  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Implemented module final exam endpoints (get/regenerate/save) with fixed-until-regenerate behavior
+- Implemented exam attempt submission and retrieval endpoints
+- Added FinalExamService and ExamAttemptService
+- Added exam DTOs and extended knowledge service to record exam interactions without updating mastery
+- Updated status board to mark exam endpoints complete
+
+**CHANGED FILES**
+- Cognify.Server/Dtos/Exam/ExamAttemptDtos.cs
+- Cognify.Server/Dtos/Module/ModuleFinalExamDtos.cs
+- Cognify.Server/Services/Interfaces/IFinalExamService.cs
+- Cognify.Server/Services/Interfaces/IExamAttemptService.cs
+- Cognify.Server/Services/Interfaces/IKnowledgeStateService.cs
+- Cognify.Server/Services/FinalExamService.cs
+- Cognify.Server/Services/ExamAttemptService.cs
+- Cognify.Server/Services/KnowledgeStateService.cs
+- Cognify.Server/Controllers/ModuleFinalExamController.cs
+- Cognify.Server/Controllers/ExamAttemptsController.cs
+- Cognify.Server/Program.cs
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Exam attempts do not update knowledge state, but do persist interactions/evaluations
+- Final exam regenerate clears existing pending quizzes for the final exam note
+
+**NEXT**
+- Add `includeExams` filtering to analytics + review queue endpoints
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-30 10:45  
 **Author:** GitHub Copilot  
 
