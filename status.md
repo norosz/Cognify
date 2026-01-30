@@ -83,6 +83,7 @@ Authoritative implementation details live in [implementation.md](implementation.
 - **[Backend/Tests]** Fix concept clustering tracking and note sources download URL
 - **[Tests]** Stabilize concept clustering test seed data
 - **[Backend]** Fix concept clustering tracking query for tests
+- **[Backend]** Remove cascade delete on LearningInteraction -> ExamAttempt
 
 ---
 

@@ -5,6 +5,27 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-30 21:24  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Disabled cascade delete on LearningInteraction -> ExamAttempt FK
+
+**CHANGED FILES**
+- Cognify.Server/Data/ApplicationDbContext.cs
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Use DeleteBehavior.NoAction to avoid multiple cascade paths
+
+**NEXT**
+- Rebuild/migrate to confirm FK constraint
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-30 21:18  
 **Author:** GitHub Copilot  
 

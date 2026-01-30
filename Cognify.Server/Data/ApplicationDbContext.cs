@@ -166,7 +166,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasOne(i => i.ExamAttempt)
             .WithMany()
             .HasForeignKey(i => i.ExamAttemptId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.NoAction);
 
         modelBuilder.Entity<LearningInteraction>()
             .Property(i => i.Type)
