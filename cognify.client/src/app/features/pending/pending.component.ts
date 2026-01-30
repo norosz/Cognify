@@ -38,6 +38,7 @@ export class PendingComponent implements OnInit {
   pendingQuizzes = this.pendingService.pendingQuizzes;
   isLoading = signal<boolean>(false);
   selectedTabIndex = signal<number>(0); // Added
+  savingQuizIds = signal<Set<string>>(new Set());
 
   ngOnInit(): void {
     // Check matrix params (route.params) for tab selection
@@ -106,6 +107,14 @@ export class PendingComponent implements OnInit {
   }
 
   saveQuiz(quiz: PendingQuizDto): void {
+    if (this.savingQuizIds().has(quiz.id)) {
+      return;
+    }
+
+    const nextSet = new Set(this.savingQuizIds());
+    nextSet.add(quiz.id);
+    this.savingQuizIds.set(nextSet);
+
     this.pendingService.saveQuiz(quiz.id).subscribe({
       next: () => {
         this.notificationService.success(
@@ -116,7 +125,15 @@ export class PendingComponent implements OnInit {
         this.loadPendingItems();
       },
       error: () => this.notificationService.error('Failed to save quiz')
+    }).add(() => {
+      const updatedSet = new Set(this.savingQuizIds());
+      updatedSet.delete(quiz.id);
+      this.savingQuizIds.set(updatedSet);
     });
+  }
+
+  isSavingQuiz(id: string): boolean {
+    return this.savingQuizIds().has(id);
   }
 
   deleteQuiz(id: string): void {

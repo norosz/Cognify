@@ -5,6 +5,27 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-30 22:20  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Disabled pending quiz actions while save is in progress
+
+**CHANGED FILES**
+- cognify.client/src/app/features/pending/pending.component.ts
+- cognify.client/src/app/features/pending/pending.component.html
+- worklog.md
+
+**DECISIONS**
+- Prevent duplicate save clicks for pending quizzes
+
+**NEXT**
+- None
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-30 22:10  
 **Author:** GitHub Copilot  
 

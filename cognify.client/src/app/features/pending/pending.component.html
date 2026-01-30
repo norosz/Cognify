@@ -130,11 +130,12 @@
 
                         <div class="card-actions">
                             <button mat-button color="primary" (click)="saveQuiz(quiz)"
-                                [disabled]="quiz.status !== 'Ready'">
+                                [disabled]="quiz.status !== 'Ready' || isSavingQuiz(quiz.id)">
                                 <mat-icon>save_alt</mat-icon>
                                 <span>Save Quiz</span>
                             </button>
-                            <button mat-icon-button color="warn" (click)="deleteQuiz(quiz.id)" matTooltip="Discard">
+                            <button mat-icon-button color="warn" (click)="deleteQuiz(quiz.id)" matTooltip="Discard"
+                                [disabled]="isSavingQuiz(quiz.id)">
                                 <mat-icon>delete_outline</mat-icon>
                             </button>
                         </div>
