@@ -78,6 +78,7 @@ Authoritative implementation details live in [implementation.md](implementation.
 - **[Docs/Quality]** Add `ng build` quality gate (removed per request)
 - **[Tests]** Fix backend test build errors after constructor/signature changes
 - **[Backend]** Fix duplicate CreateNoteDto properties build error
+- **[Tests]** Add backend tests for concept clustering and note sources
 
 ---
 

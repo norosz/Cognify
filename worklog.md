@@ -5,6 +5,29 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-30 20:25  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Added backend tests for concept clustering service
+- Expanded note service tests for split content and sources
+
+**CHANGED FILES**
+- Cognify.Tests/Services/ConceptClusteringServiceTests.cs
+- Cognify.Tests/Services/NoteServiceTests.cs
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Tests use in-memory EF Core with mock user context
+
+**NEXT**
+- Identify any remaining backend tests to add
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-30 20:10  
 **Author:** GitHub Copilot  
 

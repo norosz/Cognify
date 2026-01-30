@@ -38,7 +38,7 @@ public class NoteServiceTests : IDisposable
     {
         var ownerId = sameUser ? _userId : Guid.NewGuid();
         var module = new Module { Id = Guid.NewGuid(), OwnerUserId = ownerId, Title = "Test Module", Description = "Desc" };
-        var note = new Note { Id = Guid.NewGuid(), ModuleId = module.Id, Title = "Test Note", Content = "Content" };
+        var note = new Note { Id = Guid.NewGuid(), ModuleId = module.Id, Title = "Test Note", Content = "Content", UserContent = "Content" };
 
         _context.Modules.Add(module);
         _context.Notes.Add(note);
@@ -75,12 +75,14 @@ public class NoteServiceTests : IDisposable
         _context.Modules.Add(module);
         await _context.SaveChangesAsync();
 
-        var dto = new CreateNoteDto { ModuleId = module.Id, Title = "New Note", Content = "New Content" };
+        var dto = new CreateNoteDto { ModuleId = module.Id, Title = "New Note", UserContent = "User Content", AiContent = "AI Content" };
 
         var result = await _service.CreateAsync(dto);
 
         result.Should().NotBeNull();
         result.Title.Should().Be("New Note");
+        result.UserContent.Should().Be("User Content");
+        result.AiContent.Should().Be("AI Content");
 
         var dbNote = await _context.Notes.FindAsync(result.Id);
         dbNote.Should().NotBeNull();
@@ -93,7 +95,7 @@ public class NoteServiceTests : IDisposable
         _context.Modules.Add(module);
         await _context.SaveChangesAsync();
 
-        var dto = new CreateNoteDto { ModuleId = module.Id, Title = "New Note", Content = "New Content" };
+        var dto = new CreateNoteDto { ModuleId = module.Id, Title = "New Note", UserContent = "New Content" };
 
         Func<Task> act = async () => await _service.CreateAsync(dto);
 
@@ -104,7 +106,7 @@ public class NoteServiceTests : IDisposable
     public async Task UpdateAsync_ShouldUpdate_WhenUserOwns()
     {
         var (moduleId, noteId) = await SeedDataAsync(sameUser: true);
-        var dto = new UpdateNoteDto { Title = "Updated Title", Content = "Updated Content" };
+        var dto = new UpdateNoteDto { Title = "Updated Title", UserContent = "Updated Content", AiContent = "AI Summary" };
 
         var result = await _service.UpdateAsync(noteId, dto);
 
@@ -113,13 +115,15 @@ public class NoteServiceTests : IDisposable
 
         var dbNote = await _context.Notes.FindAsync(noteId);
         dbNote!.Title.Should().Be("Updated Title");
+        dbNote.UserContent.Should().Be("Updated Content");
+        dbNote.AiContent.Should().Be("AI Summary");
     }
 
     [Fact]
     public async Task UpdateAsync_ShouldReturnNull_WhenUserDoesNotOwn()
     {
         var (_, noteId) = await SeedDataAsync(sameUser: false);
-        var dto = new UpdateNoteDto { Title = "Updated Title", Content = "Updated Content" };
+        var dto = new UpdateNoteDto { Title = "Updated Title", UserContent = "Updated Content" };
 
         var result = await _service.UpdateAsync(noteId, dto);
 
@@ -193,6 +197,66 @@ public class NoteServiceTests : IDisposable
         await _context.SaveChangesAsync();
 
         var result = await _service.GetByIdAsync(note.Id);
+
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetSourcesAsync_ReturnsSources_ForOwnedNote()
+    {
+        var module = new Module { Id = Guid.NewGuid(), OwnerUserId = _userId, Title = "Module" };
+        var note = new Note { Id = Guid.NewGuid(), ModuleId = module.Id, Title = "Note", Content = "Content" };
+        var document = new Document
+        {
+            Id = Guid.NewGuid(),
+            ModuleId = module.Id,
+            FileName = "doc.pdf",
+            BlobPath = "docs/doc.pdf",
+            Status = DocumentStatus.Uploaded,
+            FileSize = 1234
+        };
+        var extracted = new ExtractedContent
+        {
+            Id = Guid.NewGuid(),
+            UserId = _userId,
+            DocumentId = document.Id,
+            ModuleId = module.Id,
+            Status = ExtractedContentStatus.Ready,
+            IsSaved = false
+        };
+
+        _context.Modules.Add(module);
+        _context.Notes.Add(note);
+        _context.Documents.Add(document);
+        _context.ExtractedContents.Add(extracted);
+        await _context.SaveChangesAsync();
+
+        _blobStorageMock
+            .Setup(b => b.GenerateDownloadSasToken("docs/doc.pdf", It.IsAny<DateTimeOffset>(), "doc.pdf"))
+            .Returns("https://download/doc");
+
+        var result = await _service.GetSourcesAsync(note.Id);
+
+        result.Should().NotBeNull();
+        result!.UploadedDocuments.Should().HaveCount(1);
+        result.UploadedDocuments[0].FileName.Should().Be("doc.pdf");
+        result.UploadedDocuments[0].DownloadUrl.Should().Be("https://download/doc");
+
+        result.ExtractedDocuments.Should().HaveCount(1);
+        result.ExtractedDocuments[0].DocumentId.Should().Be(document.Id);
+    }
+
+    [Fact]
+    public async Task GetSourcesAsync_ReturnsNull_WhenUserDoesNotOwn()
+    {
+        var module = new Module { Id = Guid.NewGuid(), OwnerUserId = Guid.NewGuid(), Title = "Module" };
+        var note = new Note { Id = Guid.NewGuid(), ModuleId = module.Id, Title = "Note", Content = "Content" };
+
+        _context.Modules.Add(module);
+        _context.Notes.Add(note);
+        await _context.SaveChangesAsync();
+
+        var result = await _service.GetSourcesAsync(note.Id);
 
         result.Should().BeNull();
     }
