@@ -5,6 +5,26 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-30 22:10  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Aligned exam matching chip colors with quiz matching styles
+
+**CHANGED FILES**
+- cognify.client/src/app/features/exams/exam-taking/exam-taking.component.scss
+- worklog.md
+
+**DECISIONS**
+- Matching color palette is shared across quiz/exam flows
+
+**NEXT**
+- None
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-30 22:00  
 **Author:** GitHub Copilot  
 

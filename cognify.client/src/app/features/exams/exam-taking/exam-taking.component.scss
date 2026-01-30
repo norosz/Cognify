@@ -44,25 +44,41 @@
 }
 
 .match-chip {
-    padding: 8px 10px;
-    border-radius: 10px;
-    margin-bottom: 8px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(255, 255, 255, 0.05);
     cursor: pointer;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    background: rgba(255, 255, 255, 0.04);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
-    align-items: center;
     justify-content: space-between;
-    gap: 8px;
-}
+    align-items: center;
+    font-size: 14px;
+    user-select: none;
+    margin-bottom: 8px;
 
-.match-chip.selected {
-    border-color: #8f73ff;
-    box-shadow: 0 0 0 2px rgba(143, 115, 255, 0.2);
+    &:hover:not(.matched) {
+        background: rgba(255, 255, 255, 0.15);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(118, 75, 162, 0.3);
+    }
 }
 
 .match-chip.matched {
-    border-color: rgba(76, 175, 80, 0.6);
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-weight: 500;
+}
+
+.match-chip.selected,
+.match-chip.selected-pair-def {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border: 2px solid #ffffff !important;
+    color: white;
+    box-shadow: 0 4px 15px rgba(118, 75, 162, 0.6) !important;
+    opacity: 1 !important;
+    transform: scale(1.05) !important;
+    z-index: 10;
 }
 
 .ordering-list {
@@ -110,9 +126,9 @@
     color: #f44336;
 }
 
-.pair-1 { background: rgba(76, 175, 80, 0.1); }
-.pair-2 { background: rgba(156, 39, 176, 0.1); }
-.pair-3 { background: rgba(33, 150, 243, 0.1); }
-.pair-4 { background: rgba(255, 152, 0, 0.1); }
-.pair-5 { background: rgba(233, 30, 99, 0.1); }
-.pair-6 { background: rgba(0, 188, 212, 0.1); }
+.pair-1.matched { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: #0f3d32; box-shadow: 0 4px 15px rgba(67, 233, 123, 0.4); }
+.pair-2.matched { background: linear-gradient(135deg, #a855f7 0%, #d8b4fe 100%); color: #3b0764; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4); }
+.pair-3.matched { background: linear-gradient(135deg, #3b82f6 0%, #93c5fd 100%); color: #172554; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); }
+.pair-4.matched { background: linear-gradient(135deg, #f97316 0%, #fdba74 100%); color: #431407; box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4); }
+.pair-5.matched { background: linear-gradient(135deg, #ec4899 0%, #fbcfe8 100%); color: #831843; box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4); }
+.pair-6.matched { background: linear-gradient(135deg, #14b8a6 0%, #5eead4 100%); color: #134e4a; box-shadow: 0 4px 15px rgba(20, 184, 166, 0.4); }
