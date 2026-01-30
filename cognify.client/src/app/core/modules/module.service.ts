@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ModuleDto, CreateModuleDto, UpdateModuleDto } from './module.models';
+import { ModuleDto, CreateModuleDto, UpdateModuleDto, ModuleStatsDto } from './module.models';
 
 @Injectable({
     providedIn: 'root'
@@ -17,6 +17,10 @@ export class ModuleService {
 
     getModule(id: string): Observable<ModuleDto> {
         return this.http.get<ModuleDto>(`${this.apiUrl}/${id}`);
+    }
+
+    getModuleStats(id: string): Observable<ModuleStatsDto> {
+        return this.http.get<ModuleStatsDto>(`${this.apiUrl}/${id}/stats`);
     }
 
     createModule(dto: CreateModuleDto): Observable<ModuleDto> {

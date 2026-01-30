@@ -5,6 +5,33 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-30 15:05  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Added module stats models and API call in ModuleService
+- Rendered module statistics section (KPIs + weak topics)
+- Updated status board to mark module stats section complete
+
+**CHANGED FILES**
+- cognify.client/src/app/core/modules/module.models.ts
+- cognify.client/src/app/core/modules/module.service.ts
+- cognify.client/src/app/features/modules/module-detail/module-detail.component.ts
+- cognify.client/src/app/features/modules/module-detail/module-detail.component.html
+- cognify.client/src/app/features/modules/module-detail/module-detail.component.scss
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Module stats show practice vs exam attempts separately and list top 5 weak topics
+
+**NEXT**
+- Implement quiz stats page and quiz detail routing
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-30 14:40  
 **Author:** GitHub Copilot  
 

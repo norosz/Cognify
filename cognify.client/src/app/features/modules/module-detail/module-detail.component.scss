@@ -42,3 +42,77 @@
     color: #666;
     font-style: italic;
 }
+
+.module-stats {
+    margin-bottom: 2rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: #9aa0a6;
+}
+
+.stat-value {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.stat-sub {
+    font-size: 0.8rem;
+    color: #b0b7c3;
+}
+
+.weak-topics {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 1rem;
+}
+
+.weak-topics h3 {
+    margin: 0 0 0.75rem 0;
+    color: #ffffff;
+    font-size: 1rem;
+}
+
+.weak-topic {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.weak-topic:last-child {
+    border-bottom: none;
+}
+
+.weak-topic-title {
+    font-weight: 500;
+    color: #e0e0e0;
+}
+
+.weak-topic-meta {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.8rem;
+    color: #b0b7c3;
+}

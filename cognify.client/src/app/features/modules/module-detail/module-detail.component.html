@@ -9,6 +9,58 @@
     </div>
 </div>
 
+<div class="module-stats">
+    <div *ngIf="statsLoading()" class="loading">
+        <p>Loading statistics...</p>
+    </div>
+
+    <div *ngIf="statsError()" class="error-container">
+        <p class="error-text">{{ statsError() }}</p>
+    </div>
+
+    <ng-container *ngIf="moduleStats() as stats">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-label">Documents</span>
+                <span class="stat-value">{{ stats.totalDocuments }}</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Notes</span>
+                <span class="stat-value">{{ stats.totalNotes }}</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Quizzes</span>
+                <span class="stat-value">{{ stats.totalQuizzes }}</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Practice Attempts</span>
+                <span class="stat-value">{{ stats.practiceAttemptCount }}</span>
+                <span class="stat-sub">Avg {{ stats.practiceAverageScore | number:'1.0-0' }}%</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Exam Attempts</span>
+                <span class="stat-value">{{ stats.examAttemptCount }}</span>
+                <span class="stat-sub">Avg {{ stats.examAverageScore | number:'1.0-0' }}%</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Average Mastery</span>
+                <span class="stat-value">{{ stats.averageMastery | percent:'1.0-0' }}</span>
+            </div>
+        </div>
+
+        <div class="weak-topics" *ngIf="stats.weakTopics.length > 0">
+            <h3>Weak Topics</h3>
+            <div class="weak-topic" *ngFor="let topic of stats.weakTopics">
+                <div class="weak-topic-title">{{ topic.topic }}</div>
+                <div class="weak-topic-meta">
+                    <span>Mastery: {{ topic.masteryScore | percent:'1.0-0' }}</span>
+                    <span>Risk: {{ topic.forgettingRisk | percent:'1.0-0' }}</span>
+                </div>
+            </div>
+        </div>
+    </ng-container>
+</div>
+
 <mat-tab-group [selectedIndex]="selectedTabIndex()" (selectedIndexChange)="selectedTabIndex.set($event)">
     <mat-tab label="Documents">
         <div class="tab-content">

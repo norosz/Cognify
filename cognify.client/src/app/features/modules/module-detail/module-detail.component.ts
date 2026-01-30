@@ -6,7 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ModuleService } from '../../../core/modules/module.service';
-import { ModuleDto } from '../../../core/modules/module.models';
+import { ModuleDto, ModuleStatsDto } from '../../../core/modules/module.models';
 import { DocumentListComponent } from '../components/document-list/document-list.component';
 import { NotesListComponent } from '../../notes/components/notes-list/notes-list.component';
 import { UploadDocumentDialogComponent } from '../components/upload-document-dialog/upload-document-dialog.component';
@@ -37,6 +37,9 @@ export class ModuleDetailComponent implements OnInit {
   private documentsService = inject(DocumentsService);
 
   module = signal<ModuleDto | null>(null);
+  moduleStats = signal<ModuleStatsDto | null>(null);
+  statsLoading = signal<boolean>(false);
+  statsError = signal<string | null>(null);
   selectedTabIndex = signal<number>(0);
 
   @ViewChild(DocumentListComponent) documentList!: DocumentListComponent;
@@ -49,6 +52,19 @@ export class ModuleDetailComponent implements OnInit {
       this.moduleService.getModule(id).subscribe({
         next: (data) => this.module.set(data),
         error: (err) => console.error('Failed to load module', err)
+      });
+
+      this.statsLoading.set(true);
+      this.moduleService.getModuleStats(id).subscribe({
+        next: (stats) => {
+          this.moduleStats.set(stats);
+          this.statsLoading.set(false);
+        },
+        error: (err) => {
+          console.error('Failed to load module stats', err);
+          this.statsError.set('Failed to load module statistics.');
+          this.statsLoading.set(false);
+        }
       });
     }
 

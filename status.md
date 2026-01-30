@@ -82,6 +82,7 @@ Authoritative implementation details live in [implementation.md](implementation.
 - **[Backend]** Implement note sources endpoint (related docs + extractions)
 - **[Frontend]** Add quiz submit loading + disabled state
 - **[Frontend]** Add difficulty badge colors on quiz cards
+- **[Frontend]** Add module statistics section on module page
 
 ---
 
