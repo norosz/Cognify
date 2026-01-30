@@ -5,6 +5,32 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-31 00:12  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Added includeExams toggle on Statistics page with localStorage persistence
+- Wired includeExams into analytics service calls and dashboard review queue
+
+**CHANGED FILES**
+- cognify.client/src/app/core/services/learning-analytics.service.ts
+- cognify.client/src/app/core/services/knowledge.service.ts
+- cognify.client/src/app/features/statistics/statistics.component.ts
+- cognify.client/src/app/features/statistics/statistics.component.html
+- cognify.client/src/app/features/dashboard/dashboard.component.ts
+- status.md
+- worklog.md
+
+**DECISIONS**
+- includeExams preference stored under cognify.analytics.includeExams
+
+**NEXT**
+- Implement categories history + eligibility gating
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-30 23:55  
 **Author:** GitHub Copilot  
 

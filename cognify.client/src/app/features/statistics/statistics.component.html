@@ -3,6 +3,9 @@
         <h1>Statistics</h1>
         <p class="text-secondary">Track mastery, decay, and readiness over time.</p>
     </div>
+    <mat-slide-toggle [checked]="includeExams()" (change)="setIncludeExams($event.checked)">
+        Include exams
+    </mat-slide-toggle>
 </div>
 
 <mat-card class="summary-card cognify-glass-card">

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { NgxEchartsModule } from 'ngx-echarts';
 import { forkJoin } from 'rxjs';
 import { LearningAnalyticsService } from '../../core/services/learning-analytics.service';
@@ -23,6 +24,7 @@ import {
     MatCardModule,
     MatIconModule,
     MatProgressSpinnerModule,
+    MatSlideToggleModule,
     NgxEchartsModule
   ],
   templateUrl: './statistics.component.html',
@@ -43,21 +45,35 @@ export class StatisticsComponent implements OnInit {
   distributionOptions = signal<any>({});
   heatmapOptions = signal<any>({});
   decayOptions = signal<any>({});
+  includeExams = signal<boolean>(false);
+
+  private includeExamsKey = 'cognify.analytics.includeExams';
 
   ngOnInit() {
+    const saved = localStorage.getItem(this.includeExamsKey);
+    if (saved !== null) {
+      this.includeExams.set(saved === 'true');
+    }
+    this.loadAnalytics();
+  }
+
+  setIncludeExams(value: boolean) {
+    this.includeExams.set(value);
+    localStorage.setItem(this.includeExamsKey, String(value));
     this.loadAnalytics();
   }
 
   loadAnalytics() {
     this.isAnalyticsLoading.set(true);
+    const includeExams = this.includeExams();
 
     forkJoin({
-      summary: this.analyticsService.getSummary(),
-      trends: this.analyticsService.getTrends({ bucketDays: 7 }),
-      topics: this.analyticsService.getTopics({ maxTopics: 20, maxWeakTopics: 5 }),
-      heatmap: this.analyticsService.getRetentionHeatmap({ maxTopics: 12 }),
-      decay: this.analyticsService.getDecayForecast({ maxTopics: 5, days: 14, stepDays: 2 }),
-      mistakes: this.analyticsService.getMistakePatterns({ maxItems: 6, maxTopics: 3 })
+      summary: this.analyticsService.getSummary(includeExams),
+      trends: this.analyticsService.getTrends({ bucketDays: 7 }, includeExams),
+      topics: this.analyticsService.getTopics({ maxTopics: 20, maxWeakTopics: 5 }, includeExams),
+      heatmap: this.analyticsService.getRetentionHeatmap({ maxTopics: 12 }, includeExams),
+      decay: this.analyticsService.getDecayForecast({ maxTopics: 5, days: 14, stepDays: 2 }, includeExams),
+      mistakes: this.analyticsService.getMistakePatterns({ maxItems: 6, maxTopics: 3 }, includeExams)
     }).subscribe({
       next: (data) => {
         this.analyticsSummary.set(data.summary);

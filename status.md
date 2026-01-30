@@ -82,8 +82,8 @@ Before each commit/push:
 
 ### Epic B — includeExams toggle
 
-- [ ] Frontend: add persisted includeExams toggle (localStorage)
-- [ ] Frontend: pass includeExams to all analytics calls + review queue
+- [x] Frontend: add persisted includeExams toggle (localStorage)
+- [x] Frontend: pass includeExams to all analytics calls + review queue
 
 ### Epic C — Category breakdown analytics
 

@@ -14,9 +14,9 @@ export class KnowledgeService {
         return this.http.get<UserKnowledgeStateDto[]>(this.apiUrl);
     }
 
-    getReviewQueue(maxItems = 10): Observable<ReviewQueueItemDto[]> {
+    getReviewQueue(maxItems = 10, includeExams = false): Observable<ReviewQueueItemDto[]> {
         return this.http.get<ReviewQueueItemDto[]>(`${this.apiUrl}/review-queue`, {
-            params: { maxItems }
+            params: { maxItems, includeExams }
         });
     }
 }

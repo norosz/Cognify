@@ -45,8 +45,15 @@ export class DashboardComponent implements OnInit {
   weakTopics = signal<UserKnowledgeStateDto[]>([]);
   isKnowledgeLoading = signal<boolean>(false);
   isGenerating = signal<boolean>(false);
+  includeExams = signal<boolean>(false);
+
+  private includeExamsKey = 'cognify.analytics.includeExams';
 
   ngOnInit() {
+    const saved = localStorage.getItem(this.includeExamsKey);
+    if (saved !== null) {
+      this.includeExams.set(saved === 'true');
+    }
     this.loadModules();
     this.loadKnowledge();
   }
@@ -60,9 +67,10 @@ export class DashboardComponent implements OnInit {
 
   loadKnowledge() {
     this.isKnowledgeLoading.set(true);
+    const includeExams = this.includeExams();
 
     forkJoin({
-      reviewQueue: this.knowledgeService.getReviewQueue(5),
+      reviewQueue: this.knowledgeService.getReviewQueue(5, includeExams),
       states: this.knowledgeService.getStates()
     }).subscribe({
       next: (data) => {
