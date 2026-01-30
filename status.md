@@ -1,7 +1,7 @@
 
 # 🚀 Project Status Board — V2 Alpha
 
-This board tracks the **V2 Alpha** refinement scope (quiz pages, stats, exams, notes UX, review queue clarity).
+This board tracks the **V2 Alpha** refinement scope (wiring + UX bugfixes + small backend extensions).
 Authoritative implementation details live in [implementation.md](implementation.md).
 
 ---
@@ -10,7 +10,7 @@ Authoritative implementation details live in [implementation.md](implementation.
 
 - Quizzes have dedicated pages (detail/stats/history, results, review)
 - Quiz submit shows loading + prevents double-submit
-- Quiz cards show difficulty (color) + category (AI suggested, user override)
+- Quiz cards show difficulty (color) + category (AI suggested + user applied)
 - Module page refactor with module-level stats and an Exams section
 - Module Final Exam:
 	- fixed until regenerate
@@ -21,9 +21,13 @@ Authoritative implementation details live in [implementation.md](implementation.
 	- show related uploaded + extracted documents (downloadable)
 	- images render inline
 	- split user vs AI note content (two inputs)
-- Review queue rules:
-	- low score (<60% default, configurable) OR repeated concept mistakes (>=2 default) OR due topics
-- `includeExams` query param added to analytics endpoints (default false)
+- Review queue behavior matches backend (knowledge-state due items + forgetting risk ordering)
+- `includeExams` query param supported on analytics endpoints (default false) and will be wired to a persisted user toggle
+- Categories (Module + Quiz):
+	- AI suggest is gated by content (module: noteCount + quizCount >= 1; quiz: questionCount >= 3)
+	- AI suggest never overwrites current category; user applies via `PUT .../category`
+	- AI suggestions + applied categories are stored as history batches (scrollable dropdown on focus)
+- Category breakdown analytics (combined modules + quizzes) added to Statistics page
 
 ---
 
@@ -31,10 +35,19 @@ Authoritative implementation details live in [implementation.md](implementation.
 
 - Separate `ExamAttempt` entity/table (not stored in `Attempt`).
 - Final Exam is fixed until regenerate; retake creates additional `ExamAttempt` rows.
-- `includeExams` param on analytics endpoints; practice stats exclude exams by default.
+- `includeExams` param on analytics endpoints; frontend will persist a user toggle and pass it consistently.
 - Concept identification via embeddings + topic clustering per module; clusters labeled by AI.
+- Module detail layout: Quizzes section appears above Module Stats.
+- Category history pagination is cursor-based (cursor = batchId), take default = 10.
 
 ---
+
+## ✅ Process (per feature)
+
+Before each commit/push:
+- Update [worklog.md](worklog.md) (STRICT format)
+- Update [status.md](status.md) (move items across sections)
+- Add/update tests if feasible
 
 ## 🏗️ In Progress
 
@@ -44,18 +57,55 @@ Authoritative implementation details live in [implementation.md](implementation.
 
 ## ⏭️ Next (ordered)
 
-- (none)
+1) Categories history + gating (backend + frontend)
+2) Persisted includeExams toggle wiring (analytics + review queue)
+3) Combined category breakdown analytics (endpoint + Statistics card)
+4) Bugfix sweep (module layout, quiz routing/UX, notes UX)
 
 ---
 
 ## 📋 To Do (V2 Alpha)
 
-- (none)
+### Epic A — Categories (modules + quizzes)
+
+- [ ] Backend: add category history tables (batches + items)
+- [ ] Backend: persist `AI` history batch on `POST .../categories/suggest`
+- [ ] Backend: persist `Applied` history batch on `PUT .../category`
+- [ ] Backend: add history endpoints (cursor=batchId, take=10)
+- [ ] Backend: enforce eligibility gating
+	- module: `noteCount + quizCount >= 1`
+	- quiz: `questionCount >= 3`
+- [ ] Backend: expose `questionCount` on quiz detail DTO
+- [ ] Frontend: wire module/quiz category suggest/apply/history services
+- [ ] Frontend: category input opens scrollable history on focus (soft dedupe display)
+- [ ] Frontend: show/edit categories on module cards + module detail + quiz cards + quiz detail
+
+### Epic B — includeExams toggle
+
+- [ ] Frontend: add persisted includeExams toggle (localStorage)
+- [ ] Frontend: pass includeExams to all analytics calls + review queue
+
+### Epic C — Category breakdown analytics
+
+- [ ] Backend: add combined category breakdown endpoint (modules + quizzes)
+- [ ] Frontend: add “Category Breakdown” card on Statistics page (default by attempts)
+
+### Epic D — Bugfix sprint (selected)
+
+- [x] Move Quizzes section above Module Stats (module detail)
+- [ ] Quiz cards: click card navigates to quiz detail; remove “View Details” button
+- [ ] Quiz routing: back from quiz detail returns to the correct module
+- [ ] Result/review UX: score colors, review accordion hidden by default, retake redirects to quiz detail
+- [ ] Notes UX: scrollable content, image thumbnails + modal, correct “AI generated” labeling
+- [ ] Notes actions: generate quiz, delete documents, extract content
+- [ ] Rename “Extract text” → “Extract content”
+- [ ] Rename Pending to “Quizzes & Exams”
 
 ---
 
 ## ✅ Done (since V2 Alpha declaration)
 
+- **[Docs]** Overwrite implementation plan to code-first sprint plan (categories history + category stats + bugfix checklist)
 - **[Docs]** Replace audit-style docs with V2 Alpha plan (routes/endpoints/checklists)
 - **[Backend]** Add schema: `ExamAttempt`, `Module.CurrentFinalExamQuizId` + migration
 - **[Backend]** Implement exam endpoints + final exam regenerate/save pointer flow

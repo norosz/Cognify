@@ -9,6 +9,32 @@
     </div>
 </div>
 
+<mat-tab-group [selectedIndex]="selectedTabIndex()" (selectedIndexChange)="selectedTabIndex.set($event)">
+    <mat-tab label="Documents">
+        <div class="tab-content">
+            <div class="actions-bar">
+                <button mat-raised-button color="primary" (click)="openUploadDialog()">
+                    <mat-icon>upload_file</mat-icon> Upload Document
+                </button>
+            </div>
+
+
+
+            <app-document-list [moduleId]="m.id" (noteCreated)="onNoteCreated()"></app-document-list>
+        </div>
+    </mat-tab>
+    <mat-tab label="Notes">
+        <div class="tab-content">
+            <app-notes-list [moduleId]="m.id" (quizGenerated)="onQuizGenerated()"></app-notes-list>
+        </div>
+    </mat-tab>
+    <mat-tab label="Quizzes">
+        <div class="tab-content">
+            <app-quiz-list [moduleId]="m.id"></app-quiz-list>
+        </div>
+    </mat-tab>
+</mat-tab-group>
+
 <div class="module-card-grid">
     <mat-card class="module-card cognify-glass-card">
         <mat-card-header>
@@ -161,31 +187,6 @@
     </mat-card-content>
 </mat-card>
 
-<mat-tab-group [selectedIndex]="selectedTabIndex()" (selectedIndexChange)="selectedTabIndex.set($event)">
-    <mat-tab label="Documents">
-        <div class="tab-content">
-            <div class="actions-bar">
-                <button mat-raised-button color="primary" (click)="openUploadDialog()">
-                    <mat-icon>upload_file</mat-icon> Upload Document
-                </button>
-            </div>
-
-
-
-            <app-document-list [moduleId]="m.id" (noteCreated)="onNoteCreated()"></app-document-list>
-        </div>
-    </mat-tab>
-    <mat-tab label="Notes">
-        <div class="tab-content">
-            <app-notes-list [moduleId]="m.id" (quizGenerated)="onQuizGenerated()"></app-notes-list>
-        </div>
-    </mat-tab>
-    <mat-tab label="Quizzes">
-        <div class="tab-content">
-            <app-quiz-list [moduleId]="m.id"></app-quiz-list>
-        </div>
-    </mat-tab>
-</mat-tab-group>
 } @else {
 <div class="loading">
     <p>Loading module...</p>

@@ -1,286 +1,274 @@
-# Cognify V2 Alpha Implementation Plan
+# Cognify — Current Implementation Plan (Code-First)
 
-This document is the **authoritative working plan** for V2 Alpha.
+This is the **authoritative execution plan** for the next sprint.
 
-It defines:
-- Frontend routes/pages we will build/refactor
-- Backend endpoints (existing + new/extended)
-- DTO/model additions (including separate `ExamAttempt`)
-- Feature-by-feature checklist with acceptance criteria
+Principle: **code is the source of truth**. This plan documents what we will implement next (wiring + bugfixes + small backend extensions) and what we will not.
 
-Reference docs:
-- Vision/spec: [PROJECT_SPEC.md](PROJECT_SPEC.md)
-- Current status board: [status.md](status.md)
+Related docs:
+- [status.md](status.md) — sprint board (what’s next / in progress / done)
+- [worklog.md](worklog.md) — strict worklog entries (must be updated before each commit)
+- [PROJECT_SPEC.md](PROJECT_SPEC.md) — legacy (to be rewritten later, code-first)
+- [README.md](README.md) — legacy (to be rewritten later, code-first)
 
 ---
 
-## 0) V2 Alpha Scope (what “done” means)
+## 0) Working Agreement (how we ship)
 
-### Must-have UX/Flows
-1) Quiz submit shows a loading state (disable actions, show progress UI)
-2) Quiz difficulty shown on cards (color-coded badge) + immediate UX feedback
-3) Quiz statistics visible (attempt count, best/avg score, progress/trend)
-4) Module page refactor: card-based layout + module statistics section
-5) Quizzes have separate pages (detail + stats + attempt history)
-6) Quiz result/review pages show mistakes (green/red), retake, and AI explanations
-7) Module-based exams (Final Exam) aggregate all quizzes in the module
-8) Dashboard is smaller; analytics/statistics have their own page
-9) Review Queue rules are explicit and predictable
-10) Categories for modules/quizzes: AI suggests, user overrides
-11) Users can see mistakes they made (by question + by concept)
-12) AI explanation for mistakes (on demand, per question/answer)
-
-### Notes + Documents
-5b) Notes page shows related uploaded + extracted documents, downloadable
-5c) Separate user note and AI-generated note inside a note (two inputs)
-5d) Images are pre-rendered inline (not download-only)
+For every feature/bugfix PR chunk:
+1) Implement the change (frontend and/or backend)
+2) Add/update tests when feasible (backend tests preferred; frontend tests only if the repo already has the pattern in that area)
+3) Run the smallest relevant test scope (then expand if needed)
+4) Update [worklog.md](worklog.md) (STRICT format)
+5) Update [status.md](status.md) (move TODO → Done for the completed item)
+6) Commit + push
 
 ---
 
-## 1) Key Decisions (locked)
+## 1) Locked Decisions
 
-- **Exam attempts are separate:** introduce `ExamAttempt` table (do not reuse `Attempt`).
-- **Final Exam is fixed until regenerate:** user retakes the same exam until explicitly regenerated.
-- **Final Exam “current” pointer:** `Module.CurrentFinalExamQuizId` (nullable FK) tracks the current exam quiz.
-- **Analytics can include exams:** analytics endpoints support `includeExams=true|false` (default `false`).
-- **Review Queue rule:** a quiz/topic enters review when:
-	- Low score on attempt (configurable, default `< 60%`) OR
-	- Repeated mistakes on the same concept (threshold default `>= 2`), OR
-	- Spaced repetition due time (existing knowledge-state mechanism).
-- **Concept identification:** embeddings + topic clustering per module; clusters get AI labels; concept IDs are stable.
+### 1.1 Categories (Module + Quiz)
+
+- Users can **view and edit** category for modules and quizzes.
+- AI can **suggest** categories, but:
+	- suggestions **never overwrite** the current category
+	- category changes happen only when user accepts/applies a suggestion (or types their own) and calls `PUT .../category`
+- A user can request **more suggestions** via a button (best UX).
+- Suggest eligibility (UI and backend must match):
+	- Module: allow AI suggest only if `noteCount + quizCount >= 1`
+	- Quiz: allow AI suggest only if `questionCount >= 3`
+- Category history is stored in **batches**:
+	- every AI suggest call persists a new history batch (`source=AI`)
+	- every apply action persists a new history batch (`source=Applied`, single item)
+- Category history dropdown:
+	- opens on input focus
+	- scrollable
+	- shows **only AI suggested + applied** entries
+	- uses **soft dedupe display**: collapse identical labels in the dropdown (e.g., `Math (3)`) while still storing everything
+- History endpoints:
+	- `take` default: `10`
+	- cursor pagination: **cursor is `batchId`** (stable)
+
+### 1.2 Analytics includeExams toggle
+
+- Analytics/review endpoints already support `includeExams` query param (default `false`).
+- Frontend must expose a **user toggle**, persist it (localStorage), and pass it consistently to analytics + review queue requests.
+
+### 1.3 Category statistics (combined)
+
+- Add a **combined** “stats per category” API (modules + quizzes).
+- Default visualization: by `practiceAttemptCount`.
+
+### 1.4 UI layout decision
+
+- On module detail page, **Quizzes section appears above Module Stats**.
+
+### 1.5 Out of scope for this sprint
+
+- Quiz timer and timer analytics (items 17–18 in the bug list) are deferred.
 
 ---
 
-## 2) Frontend Routes (V2 Alpha)
+## 2) Current Code Inventory (what exists today)
 
-Existing (keep):
-- `/dashboard`
-- `/modules`
-- `/modules/:moduleId`
-- `/pending`
-- `/profile`
+### 2.1 Existing backend endpoints we will wire/extend
 
-Add/Refactor (V2 Alpha):
-- `/statistics` — analytics page (move large dashboard analytics here)
-- `/quizzes/:quizId` — quiz detail + stats + attempt history
-- `/quizzes/:quizId/attempts/:attemptId/results` — practice attempt result page
-- `/quizzes/:quizId/attempts/:attemptId/review` — practice attempt review page (green/red + AI explanations)
-
-Module Final Exam:
-- `/modules/:moduleId/final-exam` — show current exam + regenerate + start
-- `/modules/:moduleId/exam-attempts/:examAttemptId/results` — exam result page
-- `/modules/:moduleId/exam-attempts/:examAttemptId/review` — exam review page
-
-Notes:
-- `/notes/:noteId` — note detail page (two inputs + related docs + inline images)
-
----
-
-## 3) Backend API Surface (V2 Alpha)
-
-### 3.1 Conventions
-- All errors must use RFC7807 `ProblemDetails`.
-- Default analytics behavior excludes exams unless `includeExams=true`.
-- All new endpoints should be authenticated and owner-scoped.
-
-### 3.2 Existing Endpoints (reference)
-
-Auth:
-- `POST /auth/register`
-- `POST /auth/login`
-- `GET /auth/me`
-- `POST /auth/change-password`
-- `PUT /auth/update-profile`
-
-Modules/Notes/Documents:
-- Modules CRUD under `/api/modules/...`
-- Notes CRUD under `/api/notes/...`
-- Documents: initiate upload / complete upload / list / delete under `/api/documents/...`
-
-Pending:
-- `GET /api/pending/count`
-- `GET /api/pending/extracted-contents`
-- `POST /api/pending/extracted-contents/{id}/save-as-note`
-- `GET /api/pending/quizzes`
-- `POST /api/pending/quizzes/{id}/save-as-quiz`
-
-Quizzes (QuestionSets) & Attempts:
-- QuestionSets under `/api/questionsets/...`
-- Attempts submit under `/api/attempts` and attempt list per quiz under `/api/quizzes/{quizId}/attempts/me`
-
-Analytics & knowledge:
-- Analytics under `/api/learningAnalytics/...`
-- Review queue under `/api/knowledgeStates/review-queue`
-
-### 3.3 New/Extended Endpoints (V2 Alpha)
-
-#### Module Stats
-- `GET /api/modules/{moduleId}/stats`
-	- Returns module-level KPIs:
-		- practice attempts (count, avg, best)
-		- progress/momentum trend
-		- weak concepts (top N)
-		- optional exam summary (separate section)
-
-#### Quiz Stats
-- `GET /api/quizzes/{quizId}/stats`
-	- Returns quiz-level KPIs:
-		- attempt count, best/avg, last attempt
-		- per-question correctness and per-concept breakdown
-
-#### Quiz Attempt Review (practice)
-- `GET /api/quizzes/{quizId}/attempts/{attemptId}`
-- `GET /api/quizzes/{quizId}/attempts/{attemptId}/review`
-	- Returns per-question review payload:
-		- user answer, correct answer, correctness
-		- concept id/label
-		- mistake categories
-		- optional cached AI explanation
-
-#### Notes: related sources + downloads + images
-- `GET /api/notes/{noteId}/sources`
-	- Returns:
-		- related uploaded documents
-		- related extracted contents
-		- image URLs suitable for inline rendering (SAS)
-
-#### Categories (AI suggest + user override)
+Categories (existing):
 - `POST /api/modules/{moduleId}/categories/suggest`
 - `PUT /api/modules/{moduleId}/category`
 - `POST /api/quizzes/{quizId}/categories/suggest`
 - `PUT /api/quizzes/{quizId}/category`
 
-#### AI: Explain mistakes (on demand)
-- `POST /api/ai/explain-mistake`
-	- Input: question prompt/context, user answer, correct answer, concept label, optional note/module context
-	- Output: explanation markdown + key takeaways
+Concepts (exists; currently unwired in UI):
+- `GET /api/modules/{moduleId}/concepts`
+- `POST /api/modules/{moduleId}/concepts/refresh`
 
-#### Review policy (configurable)
-- `GET /api/knowledgeStates/review-policy`
-- `PUT /api/knowledgeStates/review-policy`
-	- Defaults:
-		- `lowScoreThresholdPercent = 60`
-		- `repeatMistakeThreshold = 2`
+Analytics (exists; currently unwired includeExams toggle in UI):
+- `GET /api/learning-analytics/*?includeExams={bool}`
+- `GET /api/knowledge-states/review-queue?includeExams={bool}`
 
-#### Module Final Exam (fixed until regenerate)
+### 2.2 Frontend key surfaces
 
-Final exam is module-scoped and stored as a normal quiz (QuestionSet) attached to a special note, plus an explicit pointer:
-- `Module.CurrentFinalExamQuizId` is the current exam quiz.
+- Dashboard: module cards + review queue + weakness quiz
+- Module detail: module KPIs + tabs for documents/notes/quizzes
+- Statistics page: analytics dashboards
+- Notes detail page: content + sources list
+- Quiz cards, quiz detail, quiz results/review
+
+---
+
+## 3) Epics (P0) — User Stories + Acceptance Criteria
+
+### Epic A) Categories: view/edit + AI suggest + history (modules + quizzes)
+
+User stories:
+- As a user, I can view the current category for a module/quiz.
+- As a user, I can set/change the category for a module/quiz at any time.
+- As a user, I can request AI category suggestions once the module/quiz has enough content.
+- As a user, I can see history of AI suggestions and applied categories.
+
+Acceptance criteria:
+- Suggest eligibility is identical in UI and backend:
+	- module: `noteCount + quizCount >= 1`
+	- quiz: `questionCount >= 3`
+- `POST .../categories/suggest`:
+	- returns a list of suggestions
+	- persists an `AI` history batch + items
+	- does not modify `CategoryLabel`
+- `PUT .../category`:
+	- sets the category
+	- persists an `Applied` history batch with one item (the applied label)
+- Category input UX:
+	- on focus, opens a scrollable dropdown
+	- shows a soft-deduped list of labels with counts
+	- supports “Load more” (cursor paging) and “More suggestions”
+	- shows AI icon for `AI` batches and check icon for `Applied`
+
+---
+
+### Epic B) Category history API contract (cursor = batchId)
+
+Allowed `source` values:
+- `AI` — sparkle/auto icon, label “AI suggestion”
+- `Applied` — check/verified icon, label “Applied”
 
 Endpoints:
-- `GET /api/modules/{moduleId}/final-exam`
-	- Returns the current final exam quiz (or null if none), plus metadata (last generated, source coverage).
-- `POST /api/modules/{moduleId}/final-exam/regenerate`
-	- Triggers generation via Pending (returns `pendingQuizId`).
-- `POST /api/modules/{moduleId}/final-exam/pending/{pendingQuizId}/save`
-	- Saves pending quiz as a real quiz AND sets `CurrentFinalExamQuizId`.
+- Module: `GET /api/modules/{moduleId}/categories/history?take=10&cursor={batchId?}`
+- Quiz: `GET /api/quizzes/{quizId}/categories/history?take=10&cursor={batchId?}`
 
-Exam attempts:
-- `POST /api/modules/{moduleId}/exam-attempts`
-- `GET /api/modules/{moduleId}/exam-attempts/me`
-- `GET /api/modules/{moduleId}/exam-attempts/{examAttemptId}`
-- `GET /api/modules/{moduleId}/exam-attempts/{examAttemptId}/review`
+Ordering and cursor semantics:
+- Sort by `createdAt DESC, batchId DESC`
+- If `cursor` is provided, return batches strictly older than the cursor in this order
 
-#### Analytics includeExams
-All analytics endpoints support `includeExams` query param (default false):
-- `GET /api/learningAnalytics/summary?includeExams=false`
-- `GET /api/learningAnalytics/trends?includeExams=false`
-- `GET /api/learningAnalytics/topics?includeExams=false`
-- `GET /api/learningAnalytics/heatmap?includeExams=false`
-- `GET /api/learningAnalytics/forecast?includeExams=false`
-- `GET /api/knowledgeStates/review-queue?includeExams=false`
+Response envelope:
+```json
+{
+	"items": [
+		{
+			"batchId": "...",
+			"createdAt": "2026-01-30T00:00:00Z",
+			"source": "AI",
+			"items": [
+				{ "label": "Math", "confidence": 0.78, "rationale": "..." }
+			]
+		}
+	],
+	"nextCursor": "..." 
+}
+```
 
----
-
-## 4) Data Model Additions (V2 Alpha)
-
-### 4.1 `ExamAttempt` (new)
-- Stored separately from practice `Attempt`
-- Fields (minimum):
-	- `Id`, `UserId`, `ModuleId`, `QuizId` (the current final exam quiz), `SubmittedAt`, `ScorePercent`, `TimeSpentSeconds`, `AnswersJson`
-
-### 4.2 `Module.CurrentFinalExamQuizId` (new)
-- Nullable FK to Quiz (QuestionSet)
-- Represents “current final exam” and keeps it fixed until regenerate/save.
-
-### 4.3 Concepts & clustering (new/extended)
-- Introduce a stable concept ID per question (and optionally per interaction):
-	- `ConceptId`, `ConceptLabel`
-- Derived by embedding + clustering within a module.
-
-### 4.4 Categories (new/extended)
-- Store final category label for module/quiz:
-	- `CategoryLabel`, `CategorySource` (`User` / `AI`)
+Validation:
+- `take` default `10`, max `50`
+- invalid `take` or invalid/not-owned `cursor` → `400 ProblemDetails`
 
 ---
 
-## 5) Feature Checklist (V2 Alpha)
+### Epic C) includeExams user toggle (persisted)
 
-### 5.1 Quiz submission UX
-- [ ] Loading state when submitting a quiz attempt (disable submit + show spinner/progress)
-- [ ] Prevent double-submit (idempotent UX)
-- [ ] Show toast + route to Results page on success
+User stories:
+- As a user, I can toggle whether exams are included in analytics.
+- As a user, I can toggle whether exams influence my review queue.
 
-Acceptance:
-- Submitting shows loading within 100ms and blocks additional clicks
-- After response, user lands on result page with score
-
-### 5.2 Quiz cards: difficulty + category
-- [ ] Difficulty badge on quiz card (color-coded)
-- [ ] Category chip (AI suggestion visible; user override saved)
-
-Acceptance:
-- Quiz list shows difficulty + category at a glance
-
-### 5.3 Module page refactor + module statistics
-- [ ] Module page uses card layout for quizzes and key stats
-- [ ] Module stats section shows progress, attempts, weak concepts
-- [ ] Separate “Exams” section with final exam status
-
-### 5.4 Quiz pages (separate pages)
-- [ ] Quiz detail page shows metadata + quiz-level stats
-- [ ] Quiz attempt history list (practice)
-
-### 5.5 Result + review pages
-- [ ] Result page: retake + review
-- [ ] Review page: per-question (green good / red mistake)
-- [ ] Mistake list + AI explanation per mistake (on demand)
-
-### 5.6 Review Queue semantics
-- [ ] Review queue includes:
-	- due topics (existing spaced repetition)
-	- low-score attempts
-	- repeated concept mistakes
-- [ ] Policy is configurable (60% / 2 mistakes defaults)
-
-### 5.7 Notes: sources + split content + images
-- [ ] Note detail page shows:
-	- user note input
-	- AI note content input
-	- related docs (uploaded + extracted), downloadable
-	- inline images (pre-render)
-
-### 5.8 Statistics page
-- [ ] Move dashboard analytics to `/statistics`
-- [ ] Dashboard becomes summary + actions, not a “big stats wall”
-
-### 5.9 Module Final Exam (fixed until regenerate)
-- [ ] Module final exam page shows current exam and attempt history
-- [ ] “Regenerate exam” creates new pending quiz then save promotes it
-- [ ] Exam attempts stored as `ExamAttempt` (separate)
+Acceptance criteria:
+- Toggle is persisted (localStorage) and applied consistently.
+- All analytics calls pass `includeExams`.
+- Review queue call passes `includeExams`.
 
 ---
 
-## 6) Risks / Non-goals (V2 Alpha)
+### Epic D) Category breakdown analytics (combined)
 
-Non-goals for V2 Alpha (explicitly defer if time is tight):
-- Fully automated scheduling (background-generated quizzes without user action)
-- Advanced misconception taxonomy UI beyond concept clustering + mistake categories
-- Multi-user sharing/collaboration
+User stories:
+- As a user, I can see activity and performance broken down by category.
+
+P0 KPI payload per category:
+- `categoryLabel` (empty/null bucketed to `Uncategorized`)
+- `moduleCount`, `quizCount`
+- Practice attempt KPIs: `practiceAttemptCount`, `practiceAverageScore`, `practiceBestScore`, `lastPracticeAttemptAt`
+- Exam attempt KPIs: `examAttemptCount`, `examAverageScore`, `examBestScore`, `lastExamAttemptAt`
+
+Acceptance criteria:
+- One combined endpoint returns per-category rows.
+- Statistics page shows a “Category Breakdown” card:
+	- default metric: `practiceAttemptCount`
+	- toggle metric: `practiceAverageScore`
 
 ---
 
-## 7) Archive
+## 4) UI/UX Bugfix Sprint (P0/P1)
 
-The previous `implementation.md` was an evidence-based “Implementation Audit (README vs Code)”.
-If you need the historical audit text, use git history/blame to retrieve prior versions.
+These items are treated as bugfixes/UX corrections.
+
+### Module / Dashboard
+1) Quizzes section is above Module Stats on module detail.
+9) Regenerate exam button disabled unless module has content (notes or quizzes or docs).
+16) Module cards show labeled counts:
+	 - Documents: X
+	 - Notes: Y
+	 - Quizzes & Exams: Z
+15) Review queue correctness: verify behavior and fix if needed.
+
+### Notes page
+2) Note content area is smaller and scrollable; pre-rendered images are thumbnail-sized; clicking opens a modal/large view.
+3) Extracted notes are labeled as AI-generated (not “Your notes”).
+4) Notes page supports “Generate quiz”.
+5) Notes page supports deleting related documents.
+6) Notes page supports “Extract content” (same as upload flow).
+
+### Upload / Pending
+7) Rename “Extract text” → “Extract content”.
+14) Pending quizzes renamed to “Quizzes & Exams”.
+
+### Quiz cards / routing / results
+8) Quiz “View Details” back-navigation returns to the correct module (not dashboard).
+10) Remove “View Details” button; clicking the card navigates to quiz detail.
+11) Score color thresholds:
+		- <50% red
+		- 50–70% white
+		- 70%+ green
+12) Review UI is under the score and hidden by default (accordion/collapsible).
+13) After retake, redirect user to quiz detail page.
+
+### Deferred
+17) Optional quiz timer.
+18) Statistics for timer.
+
+---
+
+## 5) Implementation Tasks (Numbered)
+
+### P0 — Categories + history + gating
+1) Backend: add history tables (batches + items) and DbContext configuration.
+2) Backend: persist `AI` history batch in module/quiz suggest endpoints.
+3) Backend: persist `Applied` history batch on `PUT .../category`.
+4) Backend: implement history endpoints with cursor pagination (`batchId`).
+5) Backend: enforce eligibility:
+	 - module: `noteCount + quizCount >= 1`
+	 - quiz: `questionCount >= 3`
+6) Backend: expose `questionCount` in quiz detail DTO so UI can gate without extra calls.
+
+7) Frontend: add modules/quizzes service methods for suggest/apply/history.
+8) Frontend: category input with on-focus dropdown + soft dedupe display + “Load more” + “More suggestions”.
+9) Frontend: show category on module cards + module detail + quiz cards + quiz detail.
+
+### P0 — includeExams toggle
+10) Frontend: persisted `includeExams` toggle and pass it into analytics + review queue calls.
+
+### P0 — Category breakdown analytics
+11) Backend: add a combined `category-breakdown` analytics endpoint (modules + quizzes, KPIs above).
+12) Frontend: Statistics page card for category breakdown.
+
+### P0/P1 — Bugfix list
+13) Apply the UI/UX bugfix sprint items (1–16), adding tests when feasible.
+
+---
+
+## 6) Tests (expectations)
+
+Backend (preferred):
+- Category history persistence + paging + validation tests
+- Eligibility validation tests returning RFC7807
+- Category breakdown endpoint tests
+
+Frontend:
+- Only add unit tests if the surrounding feature area already has tests; otherwise rely on integration/manual verification for UI-only changes.
+
