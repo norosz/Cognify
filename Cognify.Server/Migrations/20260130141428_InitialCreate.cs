@@ -265,8 +265,7 @@ namespace Cognify.Server.Migrations
                         name: "FK_LearningInteractions_ExamAttempts_ExamAttemptId",
                         column: x => x.ExamAttemptId,
                         principalTable: "ExamAttempts",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_LearningInteractions_Users_UserId",
                         column: x => x.UserId,

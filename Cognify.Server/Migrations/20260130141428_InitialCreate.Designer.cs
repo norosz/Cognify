@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Cognify.Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260130133000_InitialCreate")]
+    [Migration("20260130141428_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -952,7 +952,7 @@ namespace Cognify.Server.Migrations
                     b.HasOne("Cognify.Server.Models.ExamAttempt", "ExamAttempt")
                         .WithMany()
                         .HasForeignKey("ExamAttemptId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("Cognify.Server.Models.User", "User")
                         .WithMany()

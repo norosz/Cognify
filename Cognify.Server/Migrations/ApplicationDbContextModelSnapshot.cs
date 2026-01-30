@@ -949,7 +949,7 @@ namespace Cognify.Server.Migrations
                     b.HasOne("Cognify.Server.Models.ExamAttempt", "ExamAttempt")
                         .WithMany()
                         .HasForeignKey("ExamAttemptId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("Cognify.Server.Models.User", "User")
                         .WithMany()
