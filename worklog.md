@@ -5,6 +5,27 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-30 19:35  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Fixed duplicate `UserContent`/`AiContent` properties in `CreateNoteDto`
+
+**CHANGED FILES**
+- Cognify.Server/Dtos/Notes/CreateNoteDto.cs
+- status.md
+- worklog.md
+
+**DECISIONS**
+- None
+
+**NEXT**
+- None
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-30 19:20  
 **Author:** GitHub Copilot  
 

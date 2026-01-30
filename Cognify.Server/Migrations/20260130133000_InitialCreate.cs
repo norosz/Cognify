@@ -59,54 +59,6 @@ namespace Cognify.Server.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Modules",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Title = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    OwnerUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Modules", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Modules_Users_OwnerUserId",
-                        column: x => x.OwnerUserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "UserKnowledgeStates",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Topic = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    SourceNoteId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    MasteryScore = table.Column<double>(type: "float", nullable: false),
-                    ConfidenceScore = table.Column<double>(type: "float", nullable: false),
-                    ForgettingRisk = table.Column<double>(type: "float", nullable: false),
-                    NextReviewAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    LastReviewedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    MistakePatternsJson = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_UserKnowledgeStates", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_UserKnowledgeStates_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "UserMistakePatterns",
                 columns: table => new
                 {
@@ -132,6 +84,117 @@ namespace Cognify.Server.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "AnswerEvaluations",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    LearningInteractionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Score = table.Column<double>(type: "float", nullable: false),
+                    MaxScore = table.Column<double>(type: "float", nullable: false),
+                    Feedback = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: true),
+                    DetectedMistakesJson = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ConfidenceEstimate = table.Column<double>(type: "float", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AnswerEvaluations", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Attempts",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    QuizId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    AnswersJson = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Score = table.Column<double>(type: "float", nullable: false),
+                    TimeSpentSeconds = table.Column<int>(type: "int", nullable: true),
+                    Difficulty = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Attempts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Attempts_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ConceptClusters",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ModuleId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Label = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ConceptClusters", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ConceptTopics",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ConceptClusterId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Topic = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ConceptTopics", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ConceptTopics_ConceptClusters_ConceptClusterId",
+                        column: x => x.ConceptClusterId,
+                        principalTable: "ConceptClusters",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserKnowledgeStates",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Topic = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    SourceNoteId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    MasteryScore = table.Column<double>(type: "float", nullable: false),
+                    ConfidenceScore = table.Column<double>(type: "float", nullable: false),
+                    ForgettingRisk = table.Column<double>(type: "float", nullable: false),
+                    NextReviewAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastReviewedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    MistakePatternsJson = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ConceptClusterId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserKnowledgeStates", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserKnowledgeStates_ConceptClusters_ConceptClusterId",
+                        column: x => x.ConceptClusterId,
+                        principalTable: "ConceptClusters",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_UserKnowledgeStates_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Documents",
                 columns: table => new
                 {
@@ -147,12 +210,68 @@ namespace Cognify.Server.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Documents", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ExamAttempts",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ModuleId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    QuizId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    AnswersJson = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Score = table.Column<double>(type: "float", nullable: false),
+                    TimeSpentSeconds = table.Column<int>(type: "int", nullable: true),
+                    Difficulty = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ExamAttempts", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Documents_Modules_ModuleId",
-                        column: x => x.ModuleId,
-                        principalTable: "Modules",
+                        name: "FK_ExamAttempts_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "LearningInteractions",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Topic = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    AttemptId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    ExamAttemptId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    QuestionId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    UserAnswer = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IsCorrect = table.Column<bool>(type: "bit", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_LearningInteractions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_LearningInteractions_Attempts_AttemptId",
+                        column: x => x.AttemptId,
+                        principalTable: "Attempts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_LearningInteractions_ExamAttempts_ExamAttemptId",
+                        column: x => x.ExamAttemptId,
+                        principalTable: "ExamAttempts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_LearningInteractions_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -186,15 +305,27 @@ namespace Cognify.Server.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_ExtractedContents_Modules_ModuleId",
-                        column: x => x.ModuleId,
-                        principalTable: "Modules",
-                        principalColumn: "Id");
-                    table.ForeignKey(
                         name: "FK_ExtractedContents_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "MaterialExtractions",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    MaterialId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ExtractedText = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    BlocksJson = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    OverallConfidence = table.Column<double>(type: "float", nullable: true),
+                    ImagesJson = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MaterialExtractions", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -222,12 +353,6 @@ namespace Cognify.Server.Migrations
                         principalTable: "Documents",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Materials_Modules_ModuleId",
-                        column: x => x.ModuleId,
-                        principalTable: "Modules",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
                         name: "FK_Materials_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
@@ -236,26 +361,27 @@ namespace Cognify.Server.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "MaterialExtractions",
+                name: "Modules",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    MaterialId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ExtractedText = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    BlocksJson = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    OverallConfidence = table.Column<double>(type: "float", nullable: true),
-                    ImagesJson = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Title = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    OwnerUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CurrentFinalExamQuizId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    CategoryLabel = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    CategorySource = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_MaterialExtractions", x => x.Id);
+                    table.PrimaryKey("PK_Modules", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_MaterialExtractions_Materials_MaterialId",
-                        column: x => x.MaterialId,
-                        principalTable: "Materials",
+                        name: "FK_Modules_Users_OwnerUserId",
+                        column: x => x.OwnerUserId,
+                        principalTable: "Users",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -266,6 +392,8 @@ namespace Cognify.Server.Migrations
                     ModuleId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UserContent = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    AiContent = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     SourceMaterialId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     EmbeddedImagesJson = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
@@ -342,6 +470,8 @@ namespace Cognify.Server.Migrations
                     Difficulty = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Type = table.Column<int>(type: "int", nullable: false),
                     RubricJson = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CategoryLabel = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    CategorySource = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
@@ -351,36 +481,6 @@ namespace Cognify.Server.Migrations
                         name: "FK_Quizzes_Notes_NoteId",
                         column: x => x.NoteId,
                         principalTable: "Notes",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Attempts",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    QuizId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    AnswersJson = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Score = table.Column<double>(type: "float", nullable: false),
-                    TimeSpentSeconds = table.Column<int>(type: "int", nullable: true),
-                    Difficulty = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Attempts", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Attempts_Quizzes_QuizId",
-                        column: x => x.QuizId,
-                        principalTable: "Quizzes",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Attempts_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -408,60 +508,6 @@ namespace Cognify.Server.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "LearningInteractions",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Topic = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    AttemptId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    QuestionId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UserAnswer = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    IsCorrect = table.Column<bool>(type: "bit", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_LearningInteractions", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_LearningInteractions_Attempts_AttemptId",
-                        column: x => x.AttemptId,
-                        principalTable: "Attempts",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_LearningInteractions_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "AnswerEvaluations",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    LearningInteractionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Score = table.Column<double>(type: "float", nullable: false),
-                    MaxScore = table.Column<double>(type: "float", nullable: false),
-                    Feedback = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: true),
-                    DetectedMistakesJson = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ConfidenceEstimate = table.Column<double>(type: "float", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AnswerEvaluations", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_AnswerEvaluations_LearningInteractions_LearningInteractionId",
-                        column: x => x.LearningInteractionId,
-                        principalTable: "LearningInteractions",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
             migrationBuilder.CreateIndex(
                 name: "IX_AgentRuns_UserId",
                 table: "AgentRuns",
@@ -483,9 +529,34 @@ namespace Cognify.Server.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_ConceptClusters_ModuleId",
+                table: "ConceptClusters",
+                column: "ModuleId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ConceptTopics_ConceptClusterId",
+                table: "ConceptTopics",
+                column: "ConceptClusterId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Documents_ModuleId",
                 table: "Documents",
                 column: "ModuleId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ExamAttempts_ModuleId",
+                table: "ExamAttempts",
+                column: "ModuleId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ExamAttempts_QuizId",
+                table: "ExamAttempts",
+                column: "QuizId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ExamAttempts_UserId",
+                table: "ExamAttempts",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ExtractedContents_AgentRunId",
@@ -513,6 +584,11 @@ namespace Cognify.Server.Migrations
                 column: "AttemptId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_LearningInteractions_ExamAttemptId",
+                table: "LearningInteractions",
+                column: "ExamAttemptId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_LearningInteractions_UserId",
                 table: "LearningInteractions",
                 column: "UserId");
@@ -536,6 +612,11 @@ namespace Cognify.Server.Migrations
                 name: "IX_Materials_UserId",
                 table: "Materials",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Modules_CurrentFinalExamQuizId",
+                table: "Modules",
+                column: "CurrentFinalExamQuizId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Modules_OwnerUserId",
@@ -583,6 +664,11 @@ namespace Cognify.Server.Migrations
                 column: "NoteId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_UserKnowledgeStates_ConceptClusterId",
+                table: "UserKnowledgeStates",
+                column: "ConceptClusterId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_UserKnowledgeStates_UserId_Topic",
                 table: "UserKnowledgeStates",
                 columns: new[] { "UserId", "Topic" },
@@ -593,13 +679,106 @@ namespace Cognify.Server.Migrations
                 table: "UserMistakePatterns",
                 columns: new[] { "UserId", "Topic", "Category" },
                 unique: true);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_AnswerEvaluations_LearningInteractions_LearningInteractionId",
+                table: "AnswerEvaluations",
+                column: "LearningInteractionId",
+                principalTable: "LearningInteractions",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Attempts_Quizzes_QuizId",
+                table: "Attempts",
+                column: "QuizId",
+                principalTable: "Quizzes",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_ConceptClusters_Modules_ModuleId",
+                table: "ConceptClusters",
+                column: "ModuleId",
+                principalTable: "Modules",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Documents_Modules_ModuleId",
+                table: "Documents",
+                column: "ModuleId",
+                principalTable: "Modules",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_ExamAttempts_Modules_ModuleId",
+                table: "ExamAttempts",
+                column: "ModuleId",
+                principalTable: "Modules",
+                principalColumn: "Id");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_ExamAttempts_Quizzes_QuizId",
+                table: "ExamAttempts",
+                column: "QuizId",
+                principalTable: "Quizzes",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_ExtractedContents_Modules_ModuleId",
+                table: "ExtractedContents",
+                column: "ModuleId",
+                principalTable: "Modules",
+                principalColumn: "Id");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_MaterialExtractions_Materials_MaterialId",
+                table: "MaterialExtractions",
+                column: "MaterialId",
+                principalTable: "Materials",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Materials_Modules_ModuleId",
+                table: "Materials",
+                column: "ModuleId",
+                principalTable: "Modules",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Modules_Quizzes_CurrentFinalExamQuizId",
+                table: "Modules",
+                column: "CurrentFinalExamQuizId",
+                principalTable: "Quizzes",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.SetNull);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropForeignKey(
+                name: "FK_Materials_Users_UserId",
+                table: "Materials");
+
+            migrationBuilder.DropForeignKey(
+                name: "FK_Modules_Users_OwnerUserId",
+                table: "Modules");
+
+            migrationBuilder.DropForeignKey(
+                name: "FK_Modules_Quizzes_CurrentFinalExamQuizId",
+                table: "Modules");
+
             migrationBuilder.DropTable(
                 name: "AnswerEvaluations");
+
+            migrationBuilder.DropTable(
+                name: "ConceptTopics");
 
             migrationBuilder.DropTable(
                 name: "ExtractedContents");
@@ -626,7 +805,16 @@ namespace Cognify.Server.Migrations
                 name: "AgentRuns");
 
             migrationBuilder.DropTable(
+                name: "ConceptClusters");
+
+            migrationBuilder.DropTable(
                 name: "Attempts");
+
+            migrationBuilder.DropTable(
+                name: "ExamAttempts");
+
+            migrationBuilder.DropTable(
+                name: "Users");
 
             migrationBuilder.DropTable(
                 name: "Quizzes");
@@ -642,9 +830,6 @@ namespace Cognify.Server.Migrations
 
             migrationBuilder.DropTable(
                 name: "Modules");
-
-            migrationBuilder.DropTable(
-                name: "Users");
         }
     }
 }
