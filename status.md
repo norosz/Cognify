@@ -93,6 +93,8 @@ Before each commit/push:
 ### Epic D — Bugfix sprint (selected)
 
 - [x] Move Quizzes section above Module Stats (module detail)
+- [x] Regenerate exam button disabled unless module has content
+- [x] Module cards show labeled counts (Documents/Notes/Quizzes & Exams)
 - [x] Quiz cards: click card navigates to quiz detail; remove “View Details” button
 - [x] Quiz routing: back from quiz detail returns to the correct module
 - [x] Result/review UX: score colors, review accordion hidden by default, retake redirects to quiz detail

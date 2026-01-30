@@ -248,6 +248,12 @@ export class ModuleDetailComponent implements OnInit {
     return status === 'ready' || status === 'completed';
   }
 
+  canRegenerateFinalExam(): boolean {
+    const stats = this.moduleStats();
+    if (!stats) return false;
+    return (stats.totalDocuments + stats.totalNotes + stats.totalQuizzes) > 0;
+  }
+
   private getPendingFinalExamKey(moduleId: string) {
     return `cognify.finalExam.pending.${moduleId}`;
   }

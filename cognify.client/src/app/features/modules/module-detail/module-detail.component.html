@@ -117,7 +117,7 @@
                 <h3>Ready to assess your mastery?</h3>
                 <p class="text-secondary">Regenerate to refresh questions and keep the exam current.</p>
             </div>
-            <button mat-stroked-button color="accent" (click)="regenerateFinalExam()" [disabled]="regeneratingFinalExam()">
+            <button mat-stroked-button color="accent" (click)="regenerateFinalExam()" [disabled]="regeneratingFinalExam() || !canRegenerateFinalExam()">
                 {{ regeneratingFinalExam() ? 'Regenerating...' : 'Regenerate Exam' }}
             </button>
         </div>

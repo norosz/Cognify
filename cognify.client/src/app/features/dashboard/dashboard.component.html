@@ -94,17 +94,26 @@
                 <p>{{ module.description || 'No description provided.' }}</p>
 
                 <div class="stats-row">
-                    <div class="stat-item" matTooltip="Documents">
+                    <div class="stat-item">
                         <mat-icon>description</mat-icon>
-                        <span>{{ module.documentsCount || 0 }}</span>
+                        <div class="stat-text">
+                            <span class="stat-label">Documents</span>
+                            <span class="stat-value">{{ module.documentsCount || 0 }}</span>
+                        </div>
                     </div>
-                    <div class="stat-item" matTooltip="Notes">
+                    <div class="stat-item">
                         <mat-icon>event_note</mat-icon>
-                        <span>{{ module.notesCount || 0 }}</span>
+                        <div class="stat-text">
+                            <span class="stat-label">Notes</span>
+                            <span class="stat-value">{{ module.notesCount || 0 }}</span>
+                        </div>
                     </div>
-                    <div class="stat-item" matTooltip="Quizzes">
+                    <div class="stat-item">
                         <mat-icon>school</mat-icon>
-                        <span>{{ module.quizzesCount || 0 }}</span>
+                        <div class="stat-text">
+                            <span class="stat-label">Quizzes &amp; Exams</span>
+                            <span class="stat-value">{{ module.quizzesCount || 0 }}</span>
+                        </div>
                     </div>
                 </div>
 

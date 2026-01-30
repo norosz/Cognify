@@ -5,6 +5,31 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-30 23:55  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Added labeled counts on module cards (Documents/Notes/Quizzes & Exams)
+- Disabled Regenerate Exam when module has no content
+
+**CHANGED FILES**
+- cognify.client/src/app/features/dashboard/dashboard.component.html
+- cognify.client/src/app/features/dashboard/dashboard.component.scss
+- cognify.client/src/app/features/modules/module-detail/module-detail.component.html
+- cognify.client/src/app/features/modules/module-detail/module-detail.component.ts
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Regenerate Exam requires at least one document, note, or quiz
+
+**NEXT**
+- Review queue correctness and includeExams toggle wiring
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-30 23:35  
 **Author:** GitHub Copilot  
 
