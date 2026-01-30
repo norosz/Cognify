@@ -5,6 +5,38 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-31 01:30  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Added category breakdown analytics endpoint (modules + quizzes)
+- Added Category Breakdown card on Statistics page with metric toggle
+
+**CHANGED FILES**
+- Cognify.Server/Dtos/Analytics/AnalyticsDtos.cs
+- Cognify.Server/Controllers/LearningAnalyticsController.cs
+- Cognify.Server/Services/Interfaces/ILearningAnalyticsService.cs
+- Cognify.Server/Services/Interfaces/ILearningAnalyticsComputationService.cs
+- Cognify.Server/Services/LearningAnalyticsService.cs
+- Cognify.Server/Services/LearningAnalyticsComputationService.cs
+- cognify.client/src/app/core/models/analytics.models.ts
+- cognify.client/src/app/core/services/learning-analytics.service.ts
+- cognify.client/src/app/features/statistics/statistics.component.ts
+- cognify.client/src/app/features/statistics/statistics.component.html
+- cognify.client/src/app/features/statistics/statistics.component.scss
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Category breakdown default view uses practice attempt count
+
+**NEXT**
+- Review queue correctness verification
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-31 01:05  
 **Author:** GitHub Copilot  
 

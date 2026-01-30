@@ -10,4 +10,5 @@ public interface ILearningAnalyticsComputationService
     Task<List<RetentionHeatmapPointDto>> GetRetentionHeatmapAsync(Guid userId, int maxTopics, bool includeExams);
     Task<DecayForecastDto> GetDecayForecastAsync(Guid userId, int maxTopics, int days, int stepDays, bool includeExams);
     Task<List<MistakePatternSummaryDto>> GetMistakePatternsAsync(Guid userId, int maxItems, int maxTopics, bool includeExams);
+    Task<CategoryBreakdownDto> GetCategoryBreakdownAsync(Guid userId, bool includeExams);
 }

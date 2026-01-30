@@ -40,4 +40,10 @@ public class LearningAnalyticsService(IUserContextService userContext, ILearning
         var userId = userContext.GetCurrentUserId();
         return await computationService.GetMistakePatternsAsync(userId, maxItems, maxTopics, includeExams);
     }
+
+    public async Task<CategoryBreakdownDto> GetCategoryBreakdownAsync(bool includeExams)
+    {
+        var userId = userContext.GetCurrentUserId();
+        return await computationService.GetCategoryBreakdownAsync(userId, includeExams);
+    }
 }

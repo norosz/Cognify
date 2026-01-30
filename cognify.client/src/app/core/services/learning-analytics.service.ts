@@ -7,7 +7,8 @@ import {
     TopicDistributionDto,
     RetentionHeatmapPointDto,
     DecayForecastDto,
-    MistakePatternSummaryDto
+    MistakePatternSummaryDto,
+    CategoryBreakdownDto
 } from '../models/analytics.models';
 
 @Injectable({
@@ -50,6 +51,12 @@ export class LearningAnalyticsService {
     getMistakePatterns(params?: { maxItems?: number; maxTopics?: number }, includeExams = false): Observable<MistakePatternSummaryDto[]> {
         return this.http.get<MistakePatternSummaryDto[]>(`${this.apiUrl}/mistake-patterns`, {
             params: { ...(params ?? {}), includeExams } as any
+        });
+    }
+
+    getCategoryBreakdown(includeExams = false): Observable<CategoryBreakdownDto> {
+        return this.http.get<CategoryBreakdownDto>(`${this.apiUrl}/category-breakdown`, {
+            params: { includeExams }
         });
     }
 }

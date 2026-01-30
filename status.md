@@ -87,8 +87,8 @@ Before each commit/push:
 
 ### Epic C — Category breakdown analytics
 
-- [ ] Backend: add combined category breakdown endpoint (modules + quizzes)
-- [ ] Frontend: add “Category Breakdown” card on Statistics page (default by attempts)
+- [x] Backend: add combined category breakdown endpoint (modules + quizzes)
+- [x] Frontend: add “Category Breakdown” card on Statistics page (default by attempts)
 
 ### Epic D — Bugfix sprint (selected)
 

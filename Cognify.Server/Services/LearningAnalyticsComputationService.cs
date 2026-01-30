@@ -396,6 +396,106 @@ public class LearningAnalyticsComputationService(ApplicationDbContext context, I
         return Math.Max(0, Math.Min(1, value));
     }
 
+    public async Task<CategoryBreakdownDto> GetCategoryBreakdownAsync(Guid userId, bool includeExams)
+    {
+        var modules = await context.Modules
+            .AsNoTracking()
+            .Where(m => m.OwnerUserId == userId)
+            .Select(m => new { m.Id, m.CategoryLabel })
+            .ToListAsync();
+
+        var quizzes = await context.Quizzes
+            .AsNoTracking()
+            .Join(context.Notes.AsNoTracking(), q => q.NoteId, n => n.Id, (q, n) => new { q, n })
+            .Join(context.Modules.AsNoTracking(), x => x.n.ModuleId, m => m.Id, (x, m) => new { x.q, m })
+            .Where(x => x.m.OwnerUserId == userId)
+            .Select(x => new { x.q.Id, x.q.CategoryLabel })
+            .ToListAsync();
+
+        var practiceAttempts = await context.Attempts
+            .AsNoTracking()
+            .Join(context.Quizzes.AsNoTracking(), a => a.QuizId, q => q.Id, (a, q) => new { a, q })
+            .Join(context.Notes.AsNoTracking(), x => x.q.NoteId, n => n.Id, (x, n) => new { x.a, x.q, n })
+            .Join(context.Modules.AsNoTracking(), x => x.n.ModuleId, m => m.Id, (x, m) => new { x.a, x.q, m })
+            .Where(x => x.m.OwnerUserId == userId)
+            .Select(x => new { x.a.Score, x.a.CreatedAt, x.q.CategoryLabel })
+            .ToListAsync();
+
+        var examAttempts = includeExams
+            ? await context.ExamAttempts
+                .AsNoTracking()
+                .Join(context.Modules.AsNoTracking(), e => e.ModuleId, m => m.Id, (e, m) => new { e, m })
+                .Where(x => x.m.OwnerUserId == userId)
+                .Select(x => new { x.e.Score, x.e.CreatedAt, x.m.CategoryLabel })
+                .ToListAsync()
+            : [];
+
+        var moduleCounts = modules
+            .GroupBy(m => NormalizeCategoryLabel(m.CategoryLabel))
+            .ToDictionary(g => g.Key, g => g.Count());
+
+        var quizCounts = quizzes
+            .GroupBy(q => NormalizeCategoryLabel(q.CategoryLabel))
+            .ToDictionary(g => g.Key, g => g.Count());
+
+        var practiceGroups = practiceAttempts
+            .GroupBy(a => NormalizeCategoryLabel(a.CategoryLabel))
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        var examGroups = examAttempts
+            .GroupBy(a => NormalizeCategoryLabel(a.CategoryLabel))
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        var categoryKeys = new HashSet<string>(moduleCounts.Keys);
+        foreach (var key in quizCounts.Keys) categoryKeys.Add(key);
+        foreach (var key in practiceGroups.Keys) categoryKeys.Add(key);
+        foreach (var key in examGroups.Keys) categoryKeys.Add(key);
+
+        var items = new List<CategoryBreakdownItemDto>();
+        foreach (var key in categoryKeys)
+        {
+            moduleCounts.TryGetValue(key, out var moduleCount);
+            quizCounts.TryGetValue(key, out var quizCount);
+
+            practiceGroups.TryGetValue(key, out var practice);
+            var practiceAttemptCount = practice?.Count ?? 0;
+            var practiceAverage = practiceAttemptCount > 0 ? practice!.Average(a => a.Score) : 0;
+            var practiceBest = practiceAttemptCount > 0 ? practice!.Max(a => a.Score) : 0;
+            DateTime? lastPractice = practiceAttemptCount > 0 ? practice!.Max(a => a.CreatedAt) : null;
+
+            examGroups.TryGetValue(key, out var exams);
+            var examAttemptCount = includeExams ? exams?.Count ?? 0 : 0;
+            var examAverage = includeExams && (exams?.Count ?? 0) > 0 ? exams!.Average(a => a.Score) : 0;
+            var examBest = includeExams && (exams?.Count ?? 0) > 0 ? exams!.Max(a => a.Score) : 0;
+            DateTime? lastExam = includeExams && (exams?.Count ?? 0) > 0 ? exams!.Max(a => a.CreatedAt) : null;
+
+            items.Add(new CategoryBreakdownItemDto
+            {
+                CategoryLabel = key,
+                ModuleCount = moduleCount,
+                QuizCount = quizCount,
+                PracticeAttemptCount = practiceAttemptCount,
+                PracticeAverageScore = practiceAverage,
+                PracticeBestScore = practiceBest,
+                LastPracticeAttemptAt = lastPractice,
+                ExamAttemptCount = examAttemptCount,
+                ExamAverageScore = examAverage,
+                ExamBestScore = examBest,
+                LastExamAttemptAt = lastExam
+            });
+        }
+
+        return new CategoryBreakdownDto
+        {
+            Items = items.OrderByDescending(i => i.PracticeAttemptCount).ThenBy(i => i.CategoryLabel).ToList()
+        };
+    }
+
+    private static string NormalizeCategoryLabel(string? label)
+    {
+        return string.IsNullOrWhiteSpace(label) ? "Uncategorized" : label.Trim();
+    }
+
     private sealed record AttemptSnapshot(double Score, string? Difficulty, int? TimeSpentSeconds, DateTime CreatedAt);
 
     private async Task<List<AttemptSnapshot>> GetAttemptSnapshotsAsync(

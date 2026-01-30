@@ -86,3 +86,23 @@ public record MistakePatternSummaryDto
     public int TotalCount { get; init; }
     public List<MistakePatternTopicDto> TopTopics { get; init; } = [];
 }
+
+public record CategoryBreakdownItemDto
+{
+    public string CategoryLabel { get; init; } = "Uncategorized";
+    public int ModuleCount { get; init; }
+    public int QuizCount { get; init; }
+    public int PracticeAttemptCount { get; init; }
+    public double PracticeAverageScore { get; init; }
+    public double PracticeBestScore { get; init; }
+    public DateTime? LastPracticeAttemptAt { get; init; }
+    public int ExamAttemptCount { get; init; }
+    public double ExamAverageScore { get; init; }
+    public double ExamBestScore { get; init; }
+    public DateTime? LastExamAttemptAt { get; init; }
+}
+
+public record CategoryBreakdownDto
+{
+    public List<CategoryBreakdownItemDto> Items { get; init; } = [];
+}

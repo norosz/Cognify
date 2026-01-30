@@ -73,3 +73,21 @@ export interface MistakePatternSummaryDto {
     totalCount: number;
     topTopics: MistakePatternTopicDto[];
 }
+
+export interface CategoryBreakdownItemDto {
+    categoryLabel: string;
+    moduleCount: number;
+    quizCount: number;
+    practiceAttemptCount: number;
+    practiceAverageScore: number;
+    practiceBestScore: number;
+    lastPracticeAttemptAt?: string | null;
+    examAttemptCount: number;
+    examAverageScore: number;
+    examBestScore: number;
+    lastExamAttemptAt?: string | null;
+}
+
+export interface CategoryBreakdownDto {
+    items: CategoryBreakdownItemDto[];
+}

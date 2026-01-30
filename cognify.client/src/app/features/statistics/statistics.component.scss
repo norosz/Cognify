@@ -101,6 +101,12 @@
     }
 }
 
+.category-toggle {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
 .chart {
     width: 100%;
     height: 220px;

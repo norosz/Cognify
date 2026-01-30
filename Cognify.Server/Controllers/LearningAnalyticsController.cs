@@ -117,4 +117,11 @@ public class LearningAnalyticsController(ILearningAnalyticsService analyticsServ
         var patterns = await analyticsService.GetMistakePatternsAsync(maxItems, maxTopics, includeExams);
         return Ok(patterns);
     }
+
+    [HttpGet("category-breakdown")]
+    public async Task<ActionResult<CategoryBreakdownDto>> GetCategoryBreakdown([FromQuery] bool includeExams = false)
+    {
+        var breakdown = await analyticsService.GetCategoryBreakdownAsync(includeExams);
+        return Ok(breakdown);
+    }
 }

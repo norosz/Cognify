@@ -4,6 +4,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatButtonModule } from '@angular/material/button';
 import { NgxEchartsModule } from 'ngx-echarts';
 import { forkJoin } from 'rxjs';
 import { LearningAnalyticsService } from '../../core/services/learning-analytics.service';
@@ -13,7 +14,9 @@ import {
   TopicDistributionDto,
   RetentionHeatmapPointDto,
   DecayForecastDto,
-  MistakePatternSummaryDto
+  MistakePatternSummaryDto,
+  CategoryBreakdownDto,
+  CategoryBreakdownItemDto
 } from '../../core/models/analytics.models';
 
 @Component({
@@ -25,6 +28,7 @@ import {
     MatIconModule,
     MatProgressSpinnerModule,
     MatSlideToggleModule,
+    MatButtonModule,
     NgxEchartsModule
   ],
   templateUrl: './statistics.component.html',
@@ -39,12 +43,15 @@ export class StatisticsComponent implements OnInit {
   retentionHeatmap = signal<RetentionHeatmapPointDto[]>([]);
   decayForecast = signal<DecayForecastDto | null>(null);
   mistakePatterns = signal<MistakePatternSummaryDto[]>([]);
+  categoryBreakdown = signal<CategoryBreakdownItemDto[]>([]);
 
   readinessOptions = signal<any>({});
   velocityOptions = signal<any>({});
   distributionOptions = signal<any>({});
   heatmapOptions = signal<any>({});
   decayOptions = signal<any>({});
+  categoryOptions = signal<any>({});
+  categoryMetric = signal<'attempts' | 'average'>('attempts');
   includeExams = signal<boolean>(false);
 
   private includeExamsKey = 'cognify.analytics.includeExams';
@@ -63,6 +70,11 @@ export class StatisticsComponent implements OnInit {
     this.loadAnalytics();
   }
 
+  setCategoryMetric(metric: 'attempts' | 'average') {
+    this.categoryMetric.set(metric);
+    this.categoryOptions.set(this.buildCategoryBreakdownOptions(this.categoryBreakdown(), metric));
+  }
+
   loadAnalytics() {
     this.isAnalyticsLoading.set(true);
     const includeExams = this.includeExams();
@@ -73,7 +85,8 @@ export class StatisticsComponent implements OnInit {
       topics: this.analyticsService.getTopics({ maxTopics: 20, maxWeakTopics: 5 }, includeExams),
       heatmap: this.analyticsService.getRetentionHeatmap({ maxTopics: 12 }, includeExams),
       decay: this.analyticsService.getDecayForecast({ maxTopics: 5, days: 14, stepDays: 2 }, includeExams),
-      mistakes: this.analyticsService.getMistakePatterns({ maxItems: 6, maxTopics: 3 }, includeExams)
+      mistakes: this.analyticsService.getMistakePatterns({ maxItems: 6, maxTopics: 3 }, includeExams),
+      categories: this.analyticsService.getCategoryBreakdown(includeExams)
     }).subscribe({
       next: (data) => {
         this.analyticsSummary.set(data.summary);
@@ -82,12 +95,14 @@ export class StatisticsComponent implements OnInit {
         this.retentionHeatmap.set(data.heatmap);
         this.decayForecast.set(data.decay);
         this.mistakePatterns.set(data.mistakes);
+        this.categoryBreakdown.set(data.categories.items || []);
 
         this.readinessOptions.set(this.buildReadinessGaugeOptions(data.summary));
         this.velocityOptions.set(this.buildVelocitySparklineOptions(data.trends));
         this.distributionOptions.set(this.buildTopicDistributionOptions(data.topics));
         this.heatmapOptions.set(this.buildHeatmapOptions(data.heatmap));
         this.decayOptions.set(this.buildDecayForecastOptions(data.decay));
+        this.categoryOptions.set(this.buildCategoryBreakdownOptions(data.categories.items || [], this.categoryMetric()));
 
         this.isAnalyticsLoading.set(false);
       },
@@ -99,9 +114,37 @@ export class StatisticsComponent implements OnInit {
         this.heatmapOptions.set({});
         this.decayOptions.set({});
         this.mistakePatterns.set([]);
+        this.categoryBreakdown.set([]);
+        this.categoryOptions.set({});
         this.isAnalyticsLoading.set(false);
       }
     });
+  }
+
+  private buildCategoryBreakdownOptions(items: CategoryBreakdownItemDto[], metric: 'attempts' | 'average') {
+    const labels = items.map(i => i.categoryLabel);
+    const values = items.map(i => metric === 'attempts'
+      ? i.practiceAttemptCount
+      : Math.round(i.practiceAverageScore));
+
+    return {
+      grid: { left: 140, right: 20, top: 10, bottom: 20 },
+      xAxis: { type: 'value', min: 0, max: metric === 'attempts' ? undefined : 100 },
+      yAxis: { type: 'category', data: labels },
+      tooltip: {
+        formatter: ({ name, value }: any) => metric === 'attempts'
+          ? `${name}: ${value} attempts`
+          : `${name}: ${value}% avg`
+      },
+      series: [
+        {
+          type: 'bar',
+          data: values,
+          itemStyle: { color: '#8f73ff' },
+          barWidth: 14
+        }
+      ]
+    };
   }
 
   private buildReadinessGaugeOptions(summary: LearningAnalyticsSummaryDto) {
