@@ -5,6 +5,38 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-30 12:00  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Added module stats and quiz stats endpoints
+- Implemented StatsService to compute module/quiz KPIs
+- Added module/quiz stats DTOs
+- Registered StatsService and wired controllers
+- Updated status board to mark stats endpoints complete
+
+**CHANGED FILES**
+- Cognify.Server/Dtos/Analytics/ModuleStatsDtos.cs
+- Cognify.Server/Dtos/Analytics/QuizStatsDtos.cs
+- Cognify.Server/Services/Interfaces/IStatsService.cs
+- Cognify.Server/Services/StatsService.cs
+- Cognify.Server/Controllers/ModulesController.cs
+- Cognify.Server/Controllers/QuestionSetsController.cs
+- Cognify.Server/Program.cs
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Module stats include practice + exam attempt summaries with weak-topic list from knowledge states
+- Quiz stats are practice-only (exam attempts have separate flow)
+
+**NEXT**
+- Implement attempt review endpoints with mistakes + AI explanation hooks
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-30 11:35  
 **Author:** GitHub Copilot  
 

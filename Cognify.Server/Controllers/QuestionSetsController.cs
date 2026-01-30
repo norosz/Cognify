@@ -8,7 +8,7 @@ namespace Cognify.Server.Controllers;
 [Authorize]
 [ApiController]
 [Route("api/quizzes")]
-public class QuizzesController(IQuizService quizService) : ControllerBase
+public class QuizzesController(IQuizService quizService, IStatsService statsService) : ControllerBase
 {
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateQuizDto dto)
@@ -32,6 +32,14 @@ public class QuizzesController(IQuizService quizService) : ControllerBase
             return NotFound();
 
         return Ok(result);
+    }
+
+    [HttpGet("{id}/stats")]
+    public async Task<IActionResult> GetStats(Guid id)
+    {
+        var stats = await statsService.GetQuizStatsAsync(id);
+        if (stats == null) return NotFound();
+        return Ok(stats);
     }
     
     [HttpGet]

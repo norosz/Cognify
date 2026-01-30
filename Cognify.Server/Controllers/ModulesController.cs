@@ -8,7 +8,7 @@ namespace Cognify.Server.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class ModulesController(IModuleService moduleService) : ControllerBase
+public class ModulesController(IModuleService moduleService, IStatsService statsService) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<List<ModuleDto>>> GetModules()
@@ -23,6 +23,14 @@ public class ModulesController(IModuleService moduleService) : ControllerBase
         var module = await moduleService.GetModuleAsync(id);
         if (module == null) return NotFound();
         return Ok(module);
+    }
+
+    [HttpGet("{id}/stats")]
+    public async Task<ActionResult> GetModuleStats(Guid id)
+    {
+        var stats = await statsService.GetModuleStatsAsync(id);
+        if (stats == null) return NotFound();
+        return Ok(stats);
     }
 
     [HttpPost]

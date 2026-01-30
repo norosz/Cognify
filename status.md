@@ -75,6 +75,7 @@ Authoritative implementation details live in [implementation.md](implementation.
 - **[Backend]** Add schema: `ExamAttempt`, `Module.CurrentFinalExamQuizId` + migration
 - **[Backend]** Implement exam endpoints + final exam regenerate/save pointer flow
 - **[Backend]** Add `includeExams` filtering to analytics + review queue
+- **[Backend]** Implement module stats and quiz stats endpoints
 
 ---
 
