@@ -9,132 +9,157 @@
     </div>
 </div>
 
-<div class="module-stats">
-    <div *ngIf="statsLoading()" class="loading">
-        <p>Loading statistics...</p>
-    </div>
+<div class="module-card-grid">
+    <mat-card class="module-card cognify-glass-card">
+        <mat-card-header>
+            <mat-card-title>Module Stats</mat-card-title>
+            <mat-card-subtitle>Overview of activity and mastery</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+            <div *ngIf="statsLoading()" class="loading">
+                <p>Loading statistics...</p>
+            </div>
 
-    <div *ngIf="statsError()" class="error-container">
-        <p class="error-text">{{ statsError() }}</p>
-    </div>
+            <div *ngIf="statsError()" class="error-container">
+                <p class="error-text">{{ statsError() }}</p>
+            </div>
 
-    <ng-container *ngIf="moduleStats() as stats">
-        <div class="stats-grid">
-            <div class="stat-card">
-                <span class="stat-label">Documents</span>
-                <span class="stat-value">{{ stats.totalDocuments }}</span>
-            </div>
-            <div class="stat-card">
-                <span class="stat-label">Notes</span>
-                <span class="stat-value">{{ stats.totalNotes }}</span>
-            </div>
-            <div class="stat-card">
-                <span class="stat-label">Quizzes</span>
-                <span class="stat-value">{{ stats.totalQuizzes }}</span>
-            </div>
-            <div class="stat-card">
-                <span class="stat-label">Practice Attempts</span>
-                <span class="stat-value">{{ stats.practiceAttemptCount }}</span>
-                <span class="stat-sub">Avg {{ stats.practiceAverageScore | number:'1.0-0' }}%</span>
-            </div>
-            <div class="stat-card">
-                <span class="stat-label">Exam Attempts</span>
-                <span class="stat-value">{{ stats.examAttemptCount }}</span>
-                <span class="stat-sub">Avg {{ stats.examAverageScore | number:'1.0-0' }}%</span>
-            </div>
-            <div class="stat-card">
-                <span class="stat-label">Average Mastery</span>
-                <span class="stat-value">{{ stats.averageMastery | percent:'1.0-0' }}</span>
-            </div>
-        </div>
+            <ng-container *ngIf="moduleStats() as stats">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-label">Documents</span>
+                        <span class="stat-value">{{ stats.totalDocuments }}</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Notes</span>
+                        <span class="stat-value">{{ stats.totalNotes }}</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Quizzes</span>
+                        <span class="stat-value">{{ stats.totalQuizzes }}</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Practice Attempts</span>
+                        <span class="stat-value">{{ stats.practiceAttemptCount }}</span>
+                        <span class="stat-sub">Avg {{ stats.practiceAverageScore | number:'1.0-0' }}%</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Exam Attempts</span>
+                        <span class="stat-value">{{ stats.examAttemptCount }}</span>
+                        <span class="stat-sub">Avg {{ stats.examAverageScore | number:'1.0-0' }}%</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Average Mastery</span>
+                        <span class="stat-value">{{ stats.averageMastery | percent:'1.0-0' }}</span>
+                    </div>
+                </div>
+            </ng-container>
+        </mat-card-content>
+    </mat-card>
 
-        <div class="weak-topics" *ngIf="stats.weakTopics.length > 0">
-            <h3>Weak Topics</h3>
-            <div class="weak-topic" *ngFor="let topic of stats.weakTopics">
-                <div class="weak-topic-title">{{ topic.topic }}</div>
-                <div class="weak-topic-meta">
-                    <span>Mastery: {{ topic.masteryScore | percent:'1.0-0' }}</span>
-                    <span>Risk: {{ topic.forgettingRisk | percent:'1.0-0' }}</span>
+    <mat-card class="module-card cognify-glass-card" *ngIf="moduleStats() as stats">
+        <mat-card-header>
+            <mat-card-title>Weak Topics</mat-card-title>
+            <mat-card-subtitle>Highest forgetting risk</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+            <div class="empty-inline" *ngIf="stats.weakTopics.length === 0">
+                <mat-icon>auto_awesome</mat-icon>
+                <p>No weak topics yet.</p>
+            </div>
+            <div class="weak-topics" *ngIf="stats.weakTopics.length > 0">
+                <div class="weak-topic" *ngFor="let topic of stats.weakTopics">
+                    <div class="weak-topic-title">{{ topic.topic }}</div>
+                    <div class="weak-topic-meta">
+                        <span>Mastery: {{ topic.masteryScore | percent:'1.0-0' }}</span>
+                        <span>Risk: {{ topic.forgettingRisk | percent:'1.0-0' }}</span>
+                    </div>
                 </div>
             </div>
-        </div>
-    </ng-container>
+        </mat-card-content>
+    </mat-card>
 </div>
 
-<div class="final-exam-section">
-    <div class="section-header">
-        <div>
-            <h2>Final Exam</h2>
-            <p class="text-secondary">Your module-level assessment. Regenerate to refresh questions.</p>
-        </div>
-        <button mat-stroked-button color="accent" (click)="regenerateFinalExam()" [disabled]="regeneratingFinalExam()">
-            {{ regeneratingFinalExam() ? 'Regenerating...' : 'Regenerate Exam' }}
-        </button>
-    </div>
-
-    <div *ngIf="finalExamLoading()" class="loading">
-        <p>Loading final exam...</p>
-    </div>
-
-    <div *ngIf="finalExamError()" class="error-container">
-        <p class="error-text">{{ finalExamError() }}</p>
-    </div>
-
-    <ng-container *ngIf="finalExam() as exam">
-        <div class="exam-card" [class.empty]="!exam.currentQuizId">
-            <div class="exam-info">
-                <h3>{{ exam.currentQuizTitle || 'Final Exam' }}</h3>
-                <p *ngIf="exam.currentQuizId">Created {{ exam.currentQuizCreatedAt | date:'medium' }}</p>
-                <p *ngIf="!exam.currentQuizId">No final exam yet. Regenerate to create one.</p>
+<mat-card class="final-exam-card cognify-glass-card">
+    <mat-card-header>
+        <mat-card-title>Final Exam</mat-card-title>
+        <mat-card-subtitle>Your module-level assessment</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+        <div class="final-exam-header">
+            <div>
+                <h3>Ready to assess your mastery?</h3>
+                <p class="text-secondary">Regenerate to refresh questions and keep the exam current.</p>
             </div>
-            <div class="exam-actions">
-                <button mat-raised-button color="primary" (click)="startFinalExam()" [disabled]="!exam.currentQuizId">
-                    Start Final Exam
+            <button mat-stroked-button color="accent" (click)="regenerateFinalExam()" [disabled]="regeneratingFinalExam()">
+                {{ regeneratingFinalExam() ? 'Regenerating...' : 'Regenerate Exam' }}
+            </button>
+        </div>
+
+        <div *ngIf="finalExamLoading()" class="loading">
+            <p>Loading final exam...</p>
+        </div>
+
+        <div *ngIf="finalExamError()" class="error-container">
+            <p class="error-text">{{ finalExamError() }}</p>
+        </div>
+
+        <ng-container *ngIf="finalExam() as exam">
+            <div class="exam-card" [class.empty]="!exam.currentQuizId">
+                <div class="exam-info">
+                    <h3>{{ exam.currentQuizTitle || 'Final Exam' }}</h3>
+                    <p *ngIf="exam.currentQuizId">Created {{ exam.currentQuizCreatedAt | date:'medium' }}</p>
+                    <p *ngIf="!exam.currentQuizId">No final exam yet. Regenerate to create one.</p>
+                </div>
+                <div class="exam-actions">
+                    <button mat-raised-button color="primary" (click)="startFinalExam()" [disabled]="!exam.currentQuizId">
+                        Start Final Exam
+                    </button>
+                </div>
+            </div>
+        </ng-container>
+
+        <div class="exam-pending" *ngIf="pendingFinalExam() as pending">
+            <div>
+                <h4>Final exam generation {{ pending.status }}</h4>
+                <p>{{ pending.title }} · {{ pending.questionCount }} questions</p>
+            </div>
+            <div class="pending-actions">
+                <button mat-stroked-button color="primary" [routerLink]="['/pending', { tab: 'quizzes' }]">
+                    View Pending
+                </button>
+                <button mat-flat-button color="accent" (click)="saveFinalExam()" [disabled]="!canSaveFinalExam() || savingFinalExam()">
+                    {{ savingFinalExam() ? 'Saving...' : 'Save as Final Exam' }}
                 </button>
             </div>
         </div>
-    </ng-container>
 
-    <div class="exam-pending" *ngIf="pendingFinalExam() as pending">
-        <div>
-            <h4>Final exam generation {{ pending.status }}</h4>
-            <p>{{ pending.title }} · {{ pending.questionCount }} questions</p>
-        </div>
-        <div class="pending-actions">
-            <button mat-stroked-button color="primary" [routerLink]="['/pending', { tab: 'quizzes' }]">
-                View Pending
-            </button>
-            <button mat-flat-button color="accent" (click)="saveFinalExam()" [disabled]="!canSaveFinalExam() || savingFinalExam()">
-                {{ savingFinalExam() ? 'Saving...' : 'Save as Final Exam' }}
-            </button>
-        </div>
-    </div>
+        <div class="exam-attempts">
+            <div class="section-header compact">
+                <h3>Exam Attempts</h3>
+                <span class="text-secondary" *ngIf="examAttemptsLoading()">Loading...</span>
+            </div>
 
-    <div class="exam-attempts">
-        <div class="section-header compact">
-            <h3>Exam Attempts</h3>
-            <span class="text-secondary" *ngIf="examAttemptsLoading()">Loading...</span>
-        </div>
+            <div *ngIf="!examAttemptsLoading() && examAttempts().length === 0" class="empty-inline">
+                <mat-icon>school</mat-icon>
+                <p>No exam attempts yet.</p>
+            </div>
 
-        <div *ngIf="!examAttemptsLoading() && examAttempts().length === 0" class="empty-inline">
-            <mat-icon>school</mat-icon>
-            <p>No exam attempts yet.</p>
-        </div>
-
-        <div class="attempt-list" *ngIf="examAttempts().length > 0">
-            <div class="attempt-row" *ngFor="let attempt of examAttempts()">
-                <div>
-                    <div class="attempt-score">{{ attempt.score | number:'1.0-0' }}%</div>
-                    <div class="attempt-date">{{ attempt.createdAt | date:'medium' }}</div>
-                </div>
-                <div class="attempt-actions">
-                    <button mat-button color="primary" [routerLink]="['/modules', attempt.moduleId, 'exams', attempt.id, 'results']">Results</button>
-                    <button mat-button color="accent" [routerLink]="['/modules', attempt.moduleId, 'exams', attempt.id, 'review']">Review</button>
+            <div class="attempt-list" *ngIf="examAttempts().length > 0">
+                <div class="attempt-row" *ngFor="let attempt of examAttempts()">
+                    <div>
+                        <div class="attempt-score">{{ attempt.score | number:'1.0-0' }}%</div>
+                        <div class="attempt-date">{{ attempt.createdAt | date:'medium' }}</div>
+                    </div>
+                    <div class="attempt-actions">
+                        <button mat-button color="primary" [routerLink]="['/modules', attempt.moduleId, 'exams', attempt.id, 'results']">Results</button>
+                        <button mat-button color="accent" [routerLink]="['/modules', attempt.moduleId, 'exams', attempt.id, 'review']">Review</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
+    </mat-card-content>
+</mat-card>
 
 <mat-tab-group [selectedIndex]="selectedTabIndex()" (selectedIndexChange)="selectedTabIndex.set($event)">
     <mat-tab label="Documents">
