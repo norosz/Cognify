@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ModuleDto, CreateModuleDto, UpdateModuleDto, ModuleStatsDto } from './module.models';
+import { CategoryHistoryResponseDto, CategorySuggestionResponseDto } from '../models/category.models';
 
 @Injectable({
     providedIn: 'root'
@@ -33,5 +34,19 @@ export class ModuleService {
 
     deleteModule(id: string): Observable<void> {
         return this.http.delete<void>(`${this.apiUrl}/${id}`);
+    }
+
+    suggestCategories(id: string, maxSuggestions = 5): Observable<CategorySuggestionResponseDto> {
+        return this.http.post<CategorySuggestionResponseDto>(`${this.apiUrl}/${id}/categories/suggest`, { maxSuggestions });
+    }
+
+    setCategory(id: string, categoryLabel: string): Observable<void> {
+        return this.http.put<void>(`${this.apiUrl}/${id}/category`, { categoryLabel });
+    }
+
+    getCategoryHistory(id: string, take = 10, cursor?: string): Observable<CategoryHistoryResponseDto> {
+        const params: any = { take };
+        if (cursor) params.cursor = cursor;
+        return this.http.get<CategoryHistoryResponseDto>(`${this.apiUrl}/${id}/categories/history`, { params });
     }
 }

@@ -24,6 +24,28 @@
   color: #b0b7c3;
 }
 
+.category-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.category-field {
+  min-width: 260px;
+  flex: 1 1 320px;
+}
+
+.option-count {
+  margin-left: 6px;
+  color: #9aa0a6;
+  font-size: 0.85rem;
+}
+
+.category-history-actions {
+  margin-top: -0.5rem;
+}
+
 .stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));

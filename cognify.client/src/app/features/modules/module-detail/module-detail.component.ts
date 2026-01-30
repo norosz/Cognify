@@ -6,6 +6,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { ModuleService } from '../../../core/modules/module.service';
 import { ModuleDto, ModuleStatsDto } from '../../../core/modules/module.models';
 import { FinalExamService } from '../../../core/services/final-exam.service';
@@ -19,6 +22,7 @@ import { UploadDocumentDialogComponent } from '../components/upload-document-dia
 import { DocumentsService } from '../services/documents.service';
 import { QuizListComponent } from '../components/quiz-list/quiz-list.component';
 import { ExamTakingComponent } from '../../exams/exam-taking/exam-taking.component';
+import { CategoryHistoryBatchDto } from '../../../core/models/category.models';
 
 @Component({
   selector: 'app-module-detail',
@@ -31,6 +35,9 @@ import { ExamTakingComponent } from '../../exams/exam-taking/exam-taking.compone
     MatCardModule,
     RouterLink,
     MatDialogModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatAutocompleteModule,
     DocumentListComponent,
     NotesListComponent,
     QuizListComponent
@@ -64,6 +71,12 @@ export class ModuleDetailComponent implements OnInit {
   regeneratingFinalExam = signal<boolean>(false);
   savingFinalExam = signal<boolean>(false);
   moduleId = signal<string | null>(null);
+  categoryInput = signal<string>('');
+  categoryOptions = signal<CategoryOption[]>([]);
+  categoryHistoryLoading = signal<boolean>(false);
+  categoryHistoryCursor = signal<string | null>(null);
+  categoryHistoryHasMore = signal<boolean>(false);
+  suggestingCategory = signal<boolean>(false);
 
   @ViewChild(DocumentListComponent) documentList!: DocumentListComponent;
   @ViewChild(NotesListComponent) notesList!: NotesListComponent;
@@ -74,7 +87,10 @@ export class ModuleDetailComponent implements OnInit {
     if (id) {
       this.moduleId.set(id);
       this.moduleService.getModule(id).subscribe({
-        next: (data) => this.module.set(data),
+        next: (data) => {
+          this.module.set(data);
+          this.categoryInput.set(data.categoryLabel ?? '');
+        },
         error: (err) => console.error('Failed to load module', err)
       });
 
@@ -254,6 +270,108 @@ export class ModuleDetailComponent implements OnInit {
     return (stats.totalDocuments + stats.totalNotes + stats.totalQuizzes) > 0;
   }
 
+  onCategoryFocus() {
+    this.loadCategoryHistory(true);
+  }
+
+  selectCategory(label: string) {
+    this.categoryInput.set(label);
+  }
+
+  canSuggestCategory(): boolean {
+    const stats = this.moduleStats();
+    if (!stats) return false;
+    return (stats.totalNotes + stats.totalQuizzes) >= 1;
+  }
+
+  suggestCategory() {
+    const moduleId = this.moduleId();
+    if (!moduleId || this.suggestingCategory() || !this.canSuggestCategory()) return;
+
+    this.suggestingCategory.set(true);
+    this.moduleService.suggestCategories(moduleId, 5).subscribe({
+      next: () => {
+        this.loadCategoryHistory(true);
+        this.suggestingCategory.set(false);
+      },
+      error: (err) => {
+        this.notificationService.error(err?.error?.detail || 'Category suggestion unavailable.');
+        this.suggestingCategory.set(false);
+      }
+    });
+  }
+
+  applyCategory() {
+    const moduleId = this.moduleId();
+    const label = this.categoryInput().trim();
+    if (!moduleId || !label) return;
+
+    this.moduleService.setCategory(moduleId, label).subscribe({
+      next: () => {
+        this.notificationService.success('Category updated.');
+        this.moduleService.getModule(moduleId).subscribe({
+          next: (data) => this.module.set(data)
+        });
+        this.loadCategoryHistory(true);
+      },
+      error: () => this.notificationService.error('Failed to update category.')
+    });
+  }
+
+  loadCategoryHistory(reset: boolean) {
+    const moduleId = this.moduleId();
+    if (!moduleId || this.categoryHistoryLoading()) return;
+
+    const cursor = reset ? null : this.categoryHistoryCursor();
+    if (!reset && !cursor) return;
+
+    this.categoryHistoryLoading.set(true);
+    this.moduleService.getCategoryHistory(moduleId, 10, cursor ?? undefined).subscribe({
+      next: (response) => {
+        const batches = reset ? response.items : [...this.categoryBatches(), ...response.items];
+        this.categoryBatches.set(batches);
+        this.categoryHistoryCursor.set(response.nextCursor ?? null);
+        this.categoryHistoryHasMore.set(!!response.nextCursor);
+        this.categoryOptions.set(this.buildCategoryOptions(batches));
+        this.categoryHistoryLoading.set(false);
+      },
+      error: () => {
+        this.categoryHistoryLoading.set(false);
+      }
+    });
+  }
+
+  private categoryBatches = signal<CategoryHistoryBatchDto[]>([]);
+
+  private buildCategoryOptions(batches: CategoryHistoryBatchDto[]): CategoryOption[] {
+    const map = new Map<string, CategoryOption>();
+
+    for (const batch of batches) {
+      for (const item of batch.items) {
+        const existing = map.get(item.label);
+        const createdAt = new Date(batch.createdAt).getTime();
+        if (!existing) {
+          map.set(item.label, {
+            label: item.label,
+            count: 1,
+            source: batch.source,
+            lastCreatedAt: createdAt
+          });
+        } else {
+          existing.count += 1;
+          if (createdAt >= existing.lastCreatedAt) {
+            existing.lastCreatedAt = createdAt;
+          }
+          if (batch.source === 'Applied') {
+            existing.source = 'Applied';
+          }
+        }
+      }
+    }
+
+    return Array.from(map.values()).sort((a, b) => b.lastCreatedAt - a.lastCreatedAt);
+  }
+
   private getPendingFinalExamKey(moduleId: string) {
     return `cognify.finalExam.pending.${moduleId}`;
   }
@@ -284,4 +402,11 @@ export class ModuleDetailComponent implements OnInit {
       }
     });
   }
+}
+
+interface CategoryOption {
+  label: string;
+  count: number;
+  source: 'AI' | 'Applied';
+  lastCreatedAt: number;
 }

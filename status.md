@@ -76,9 +76,9 @@ Before each commit/push:
 	- module: `noteCount + quizCount >= 1`
 	- quiz: `questionCount >= 3`
 - [x] Backend: expose `questionCount` on quiz detail DTO
-- [ ] Frontend: wire module/quiz category suggest/apply/history services
-- [ ] Frontend: category input opens scrollable history on focus (soft dedupe display)
-- [ ] Frontend: show/edit categories on module cards + module detail + quiz cards + quiz detail
+- [x] Frontend: wire module/quiz category suggest/apply/history services
+- [x] Frontend: category input opens scrollable history on focus (soft dedupe display)
+- [x] Frontend: show/edit categories on module cards + module detail + quiz cards + quiz detail
 
 ### Epic B — includeExams toggle
 

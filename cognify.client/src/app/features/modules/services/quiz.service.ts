@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { CreateQuizDto, QuizDto, AttemptDto, SubmitAttemptDto, QuizStatsDto, AttemptReviewDto } from '../../../core/models/quiz.models';
+import { CategoryHistoryResponseDto, CategorySuggestionResponseDto } from '../../../core/models/category.models';
 
 @Injectable({
     providedIn: 'root'
@@ -41,5 +42,19 @@ export class QuizService {
 
     getAttemptReview(quizId: string, attemptId: string): Observable<AttemptReviewDto> {
         return this.http.get<AttemptReviewDto>(`${this.apiUrl}/quizzes/${quizId}/attempts/${attemptId}/review`);
+    }
+
+    suggestCategories(quizId: string, maxSuggestions = 5): Observable<CategorySuggestionResponseDto> {
+        return this.http.post<CategorySuggestionResponseDto>(`${this.apiUrl}/quizzes/${quizId}/categories/suggest`, { maxSuggestions });
+    }
+
+    setCategory(quizId: string, categoryLabel: string): Observable<void> {
+        return this.http.put<void>(`${this.apiUrl}/quizzes/${quizId}/category`, { categoryLabel });
+    }
+
+    getCategoryHistory(quizId: string, take = 10, cursor?: string): Observable<CategoryHistoryResponseDto> {
+        const params: any = { take };
+        if (cursor) params.cursor = cursor;
+        return this.http.get<CategoryHistoryResponseDto>(`${this.apiUrl}/quizzes/${quizId}/categories/history`, { params });
     }
 }

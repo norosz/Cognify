@@ -5,10 +5,14 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { QuizService } from '../../modules/services/quiz.service';
 import { forkJoin } from 'rxjs';
 import { QuizDto, QuizStatsDto, AttemptDto } from '../../../core/models/quiz.models';
 import { QuizTakingComponent } from '../../modules/components/quiz-taking/quiz-taking.component';
+import { CategoryHistoryBatchDto } from '../../../core/models/category.models';
 
 @Component({
   selector: 'app-quiz-detail',
@@ -19,7 +23,10 @@ import { QuizTakingComponent } from '../../modules/components/quiz-taking/quiz-t
     MatCardModule,
     MatButtonModule,
     MatIconModule,
-    MatDialogModule
+    MatDialogModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatAutocompleteModule
   ],
   templateUrl: './quiz-detail.component.html',
   styleUrl: './quiz-detail.component.scss'
@@ -35,6 +42,13 @@ export class QuizDetailComponent implements OnInit {
   loading = signal<boolean>(false);
   error = signal<string | null>(null);
   returnTo = signal<string>('/dashboard');
+  categoryInput = signal<string>('');
+  categoryOptions = signal<CategoryOption[]>([]);
+  categoryHistoryLoading = signal<boolean>(false);
+  categoryHistoryCursor = signal<string | null>(null);
+  categoryHistoryHasMore = signal<boolean>(false);
+  suggestingCategory = signal<boolean>(false);
+  private categoryBatches = signal<CategoryHistoryBatchDto[]>([]);
 
   ngOnInit(): void {
     const quizId = this.route.snapshot.paramMap.get('quizId');
@@ -55,6 +69,7 @@ export class QuizDetailComponent implements OnInit {
     }).subscribe({
       next: ({ quiz, stats, attempts }) => {
         this.quiz.set(quiz);
+        this.categoryInput.set(quiz.categoryLabel ?? '');
         this.stats.set(stats);
         this.attempts.set(attempts);
         this.loading.set(false);
@@ -84,4 +99,110 @@ export class QuizDetailComponent implements OnInit {
       });
     });
   }
+
+  onCategoryFocus() {
+    this.loadCategoryHistory(true);
+  }
+
+  selectCategory(label: string) {
+    this.categoryInput.set(label);
+  }
+
+  canSuggestCategory(): boolean {
+    const quiz = this.quiz();
+    if (!quiz) return false;
+    return (quiz.questionCount ?? 0) >= 3;
+  }
+
+  suggestCategory() {
+    const quiz = this.quiz();
+    if (!quiz || this.suggestingCategory() || !this.canSuggestCategory()) return;
+
+    this.suggestingCategory.set(true);
+    this.quizService.suggestCategories(quiz.id, 5).subscribe({
+      next: () => {
+        this.loadCategoryHistory(true);
+        this.suggestingCategory.set(false);
+      },
+      error: (err) => {
+        console.error(err);
+        this.suggestingCategory.set(false);
+      }
+    });
+  }
+
+  applyCategory() {
+    const quiz = this.quiz();
+    const label = this.categoryInput().trim();
+    if (!quiz || !label) return;
+
+    this.quizService.setCategory(quiz.id, label).subscribe({
+      next: () => {
+        this.quizService.getQuiz(quiz.id).subscribe({
+          next: (data) => this.quiz.set(data)
+        });
+        this.loadCategoryHistory(true);
+      },
+      error: (err) => console.error(err)
+    });
+  }
+
+  loadCategoryHistory(reset: boolean) {
+    const quiz = this.quiz();
+    if (!quiz || this.categoryHistoryLoading()) return;
+
+    const cursor = reset ? null : this.categoryHistoryCursor();
+    if (!reset && !cursor) return;
+
+    this.categoryHistoryLoading.set(true);
+    this.quizService.getCategoryHistory(quiz.id, 10, cursor ?? undefined).subscribe({
+      next: (response) => {
+        const batches = reset ? response.items : [...this.categoryBatches(), ...response.items];
+        this.categoryBatches.set(batches);
+        this.categoryHistoryCursor.set(response.nextCursor ?? null);
+        this.categoryHistoryHasMore.set(!!response.nextCursor);
+        this.categoryOptions.set(this.buildCategoryOptions(batches));
+        this.categoryHistoryLoading.set(false);
+      },
+      error: () => {
+        this.categoryHistoryLoading.set(false);
+      }
+    });
+  }
+
+  private buildCategoryOptions(batches: CategoryHistoryBatchDto[]): CategoryOption[] {
+    const map = new Map<string, CategoryOption>();
+
+    for (const batch of batches) {
+      for (const item of batch.items) {
+        const existing = map.get(item.label);
+        const createdAt = new Date(batch.createdAt).getTime();
+        if (!existing) {
+          map.set(item.label, {
+            label: item.label,
+            count: 1,
+            source: batch.source,
+            lastCreatedAt: createdAt
+          });
+        } else {
+          existing.count += 1;
+          if (createdAt >= existing.lastCreatedAt) {
+            existing.lastCreatedAt = createdAt;
+          }
+          if (batch.source === 'Applied') {
+            existing.source = 'Applied';
+          }
+        }
+      }
+    }
+
+    return Array.from(map.values()).sort((a, b) => b.lastCreatedAt - a.lastCreatedAt);
+  }
+}
+
+interface CategoryOption {
+  label: string;
+  count: number;
+  source: 'AI' | 'Applied';
+  lastCreatedAt: number;
 }

@@ -5,6 +5,42 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-31 01:05  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Added frontend category history models and service methods
+- Added category input with history dropdown on module detail and quiz detail
+- Displayed categories on module cards and quiz cards
+
+**CHANGED FILES**
+- cognify.client/src/app/core/models/category.models.ts
+- cognify.client/src/app/core/modules/module.service.ts
+- cognify.client/src/app/features/modules/services/quiz.service.ts
+- cognify.client/src/app/features/modules/module-detail/module-detail.component.ts
+- cognify.client/src/app/features/modules/module-detail/module-detail.component.html
+- cognify.client/src/app/features/modules/module-detail/module-detail.component.scss
+- cognify.client/src/app/features/quizzes/quiz-detail/quiz-detail.component.ts
+- cognify.client/src/app/features/quizzes/quiz-detail/quiz-detail.component.html
+- cognify.client/src/app/features/quizzes/quiz-detail/quiz-detail.component.scss
+- cognify.client/src/app/features/modules/components/quiz-list/quiz-list.component.html
+- cognify.client/src/app/features/modules/components/quiz-list/quiz-list.component.scss
+- cognify.client/src/app/features/dashboard/dashboard.component.html
+- cognify.client/src/app/features/dashboard/dashboard.component.scss
+- cognify.client/src/app/core/models/quiz.models.ts
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Category history uses soft dedupe in dropdown (label with counts)
+
+**NEXT**
+- Implement category breakdown analytics (backend + statistics card)
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-31 00:40  
 **Author:** GitHub Copilot  
 

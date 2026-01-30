@@ -93,6 +93,10 @@
             <mat-card-content>
                 <p>{{ module.description || 'No description provided.' }}</p>
 
+                <p class="module-category" *ngIf="module.categoryLabel">
+                    Category: {{ module.categoryLabel }}
+                </p>
+
                 <div class="stats-row">
                     <div class="stat-item">
                         <mat-icon>description</mat-icon>

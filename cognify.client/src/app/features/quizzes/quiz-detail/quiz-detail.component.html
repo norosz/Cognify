@@ -17,6 +17,38 @@
       </button>
     </div>
 
+    <div class="category-bar">
+      <mat-form-field appearance="outline" class="category-field">
+        <mat-label>Category</mat-label>
+        <input matInput
+               [matAutocomplete]="categoryAuto"
+               [value]="categoryInput()"
+               (input)="categoryInput.set($any($event.target).value)"
+               (focus)="onCategoryFocus()" />
+        <mat-autocomplete #categoryAuto="matAutocomplete" (optionSelected)="selectCategory($event.option.value)">
+          <mat-option *ngFor="let option of categoryOptions()" [value]="option.label">
+            <mat-icon>{{ option.source === 'Applied' ? 'check_circle' : 'auto_awesome' }}</mat-icon>
+            <span>{{ option.label }}</span>
+            <span class="option-count" *ngIf="option.count > 1">({{ option.count }})</span>
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
+
+      <button mat-stroked-button color="primary" (click)="applyCategory()" [disabled]="!categoryInput().trim()">
+        Apply
+      </button>
+      <button mat-flat-button color="accent" (click)="suggestCategory()"
+              [disabled]="!canSuggestCategory() || suggestingCategory()">
+        {{ suggestingCategory() ? 'Suggesting...' : 'Suggest' }}
+      </button>
+    </div>
+
+    <div class="category-history-actions" *ngIf="categoryHistoryHasMore()">
+      <button mat-button (click)="loadCategoryHistory(false)" [disabled]="categoryHistoryLoading()">
+        Load more history
+      </button>
+    </div>
+
     <div class="stats" *ngIf="stats() as s">
       <mat-card class="stat-card">
         <span class="stat-label">Attempts</span>
