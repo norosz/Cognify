@@ -1,10 +1,11 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { QuizService } from '../../modules/services/quiz.service';
 import { AttemptReviewDto, QuizDto } from '../../../core/models/quiz.models';
 import { QuizTakingComponent } from '../../modules/components/quiz-taking/quiz-taking.component';
@@ -18,13 +19,15 @@ import { QuizTakingComponent } from '../../modules/components/quiz-taking/quiz-t
     MatCardModule,
     MatButtonModule,
     MatIconModule,
-    MatDialogModule
+    MatDialogModule,
+    MatExpansionModule
   ],
   templateUrl: './quiz-attempt-result.component.html',
   styleUrl: './quiz-attempt-result.component.scss'
 })
 export class QuizAttemptResultComponent implements OnInit {
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private quizService = inject(QuizService);
   private dialog = inject(MatDialog);
 
@@ -66,6 +69,14 @@ export class QuizAttemptResultComponent implements OnInit {
     this.dialog.open(QuizTakingComponent, {
       width: '600px',
       data: { quiz }
+    }).afterClosed().subscribe(() => {
+      this.router.navigate(['/quizzes', quiz.id]);
     });
+  }
+
+  getScoreClass(score: number) {
+    if (score < 50) return 'score-low';
+    if (score < 70) return 'score-mid';
+    return 'score-high';
   }
 }

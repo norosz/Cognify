@@ -5,6 +5,30 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-30 22:50  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Added score color thresholds and inline review accordion on quiz result page
+- Retake now returns to quiz detail after completion
+
+**CHANGED FILES**
+- cognify.client/src/app/features/quizzes/quiz-attempt-result/quiz-attempt-result.component.html
+- cognify.client/src/app/features/quizzes/quiz-attempt-result/quiz-attempt-result.component.ts
+- cognify.client/src/app/features/quizzes/quiz-attempt-result/quiz-attempt-result.component.scss
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Review is available inline under the score with an accordion, default collapsed
+
+**NEXT**
+- Continue notes UX fixes and pending label updates
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-30 22:32  
 **Author:** GitHub Copilot  
 

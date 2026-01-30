@@ -20,7 +20,34 @@
   </div>
 
   <mat-card class="score-card">
-    <div class="score-value">{{ r.score | number:'1.0-0' }}%</div>
+    <div class="score-value" [ngClass]="getScoreClass(r.score)">{{ r.score | number:'1.0-0' }}%</div>
     <div class="score-meta">Correct: {{ (r.score / 100) * r.items.length | number:'1.0-0' }} / {{ r.items.length }}</div>
   </mat-card>
+
+  <mat-accordion class="review-accordion">
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>Review</mat-panel-title>
+        <mat-panel-description>{{ r.items.length }} questions</mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="review-list">
+        <div class="review-item" *ngFor="let item of r.items">
+          <div class="review-item-header">
+            <span class="review-status" [class.good]="item.isCorrect" [class.bad]="item.isCorrect === false">
+              {{ item.isCorrect ? 'Correct' : 'Incorrect' }}
+            </span>
+            <span class="review-type">{{ item.questionType }}</span>
+          </div>
+          <div class="review-prompt">{{ item.prompt }}</div>
+        </div>
+      </div>
+
+      <div class="review-actions">
+        <button mat-stroked-button color="accent" routerLink="/quizzes/{{ r.quizId }}/attempts/{{ r.attemptId }}/review">
+          Open full review
+        </button>
+      </div>
+    </mat-expansion-panel>
+  </mat-accordion>
 </ng-container>

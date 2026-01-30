@@ -95,7 +95,7 @@ Before each commit/push:
 - [x] Move Quizzes section above Module Stats (module detail)
 - [x] Quiz cards: click card navigates to quiz detail; remove “View Details” button
 - [x] Quiz routing: back from quiz detail returns to the correct module
-- [ ] Result/review UX: score colors, review accordion hidden by default, retake redirects to quiz detail
+- [x] Result/review UX: score colors, review accordion hidden by default, retake redirects to quiz detail
 - [ ] Notes UX: scrollable content, image thumbnails + modal, correct “AI generated” labeling
 - [ ] Notes actions: generate quiz, delete documents, extract content
 - [ ] Rename “Extract text” → “Extract content”
