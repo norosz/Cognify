@@ -39,7 +39,19 @@ public class ExamAttemptService(
             .ThenInclude(n => n!.Module)
             .FirstOrDefaultAsync(q => q.Id == dto.QuizId);
 
-        if (quiz == null || quiz.Note?.Module?.Id != dto.ModuleId || quiz.Note.Module.OwnerUserId != userId)
+        if (quiz == null)
+        {
+            throw new KeyNotFoundException("Exam quiz not found for module.");
+        }
+
+        if (quiz.Note == null)
+        {
+            if (module.CurrentFinalExamQuizId != quiz.Id)
+            {
+                throw new KeyNotFoundException("Exam quiz not found for module.");
+            }
+        }
+        else if (quiz.Note.Module?.Id != dto.ModuleId || quiz.Note.Module.OwnerUserId != userId)
         {
             throw new KeyNotFoundException("Exam quiz not found for module.");
         }
@@ -48,11 +60,15 @@ public class ExamAttemptService(
         int totalQuestions = quiz.Questions.Count;
         var interactions = new List<KnowledgeInteractionInput>();
 
-        var knownMistakePatterns = await context.UserKnowledgeStates
-            .AsNoTracking()
-            .Where(s => s.UserId == userId && s.SourceNoteId == quiz.NoteId)
-            .Select(s => s.MistakePatternsJson)
-            .FirstOrDefaultAsync();
+        string? knownMistakePatterns = null;
+        if (quiz.NoteId.HasValue)
+        {
+            knownMistakePatterns = await context.UserKnowledgeStates
+                .AsNoTracking()
+                .Where(s => s.UserId == userId && s.SourceNoteId == quiz.NoteId)
+                .Select(s => s.MistakePatternsJson)
+                .FirstOrDefaultAsync();
+        }
 
         foreach (var question in quiz.Questions)
         {

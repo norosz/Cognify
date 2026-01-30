@@ -4,7 +4,7 @@ namespace Cognify.Server.Services.Interfaces;
 
 public interface IPendingQuizService
 {
-    Task<PendingQuiz> CreateAsync(Guid userId, Guid noteId, Guid moduleId, string title, QuizDifficulty difficulty, int questionType, int questionCount);
+    Task<PendingQuiz> CreateAsync(Guid userId, Guid? noteId, Guid moduleId, string title, QuizDifficulty difficulty, int questionType, int questionCount);
     Task<List<PendingQuiz>> GetByUserAsync(Guid userId);
     Task<PendingQuiz?> GetByIdAsync(Guid id);
     Task<Quiz> SaveAsQuizAsync(Guid pendingQuizId, Guid userId);

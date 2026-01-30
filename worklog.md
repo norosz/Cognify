@@ -5,6 +5,43 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-31 03:45  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Made quizzes/pending quizzes support note-less final exams
+- Final exam generation now uses selected module notes as the AI source
+- Allowed exam-taking flow to load note-less final exams
+
+**CHANGED FILES**
+- Cognify.Server/Models/QuestionSet.cs
+- Cognify.Server/Models/PendingQuiz.cs
+- Cognify.Server/Dtos/QuestionDTOs.cs
+- Cognify.Server/Dtos/PendingQuizDtos.cs
+- Cognify.Server/Services/Interfaces/IPendingQuizService.cs
+- Cognify.Server/Services/PendingQuizService.cs
+- Cognify.Server/Services/FinalExamService.cs
+- Cognify.Server/Services/AiBackgroundWorker.cs
+- Cognify.Server/Services/QuestionService.cs
+- Cognify.Server/Services/ExamAttemptService.cs
+- Cognify.Server/Controllers/PendingController.cs
+- Cognify.Server/Migrations/ApplicationDbContextModelSnapshot.cs
+- Cognify.Server/Migrations/20260131031000_MakeQuizNoteOptional.cs
+- cognify.client/src/app/core/models/quiz.models.ts
+- cognify.client/src/app/core/services/pending.service.ts
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Final exam pending quizzes are module-scoped (noteId null) and pull content from selected notes
+
+**NEXT**
+- Start Statistics tabs + practice-only filters
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-31 03:05  
 **Author:** GitHub Copilot  
 

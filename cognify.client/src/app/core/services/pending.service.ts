@@ -29,7 +29,7 @@ export interface ExtractedImageMetadataDto {
 
 export interface PendingQuizDto {
     id: string;
-    noteId: string;
+    noteId?: string | null;
     moduleId: string;
     title: string;
     noteName: string;

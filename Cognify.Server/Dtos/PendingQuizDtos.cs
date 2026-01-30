@@ -4,7 +4,7 @@ namespace Cognify.Server.Dtos;
 
 public record PendingQuizDto(
     Guid Id,
-    Guid NoteId,
+    Guid? NoteId,
     Guid ModuleId,
     string Title,
     string NoteName,

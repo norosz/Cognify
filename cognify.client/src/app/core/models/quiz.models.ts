@@ -10,7 +10,7 @@ export interface QuizQuestionDto {
 
 export interface QuizDto {
     id: string;
-    noteId: string;
+    noteId?: string | null;
     title: string;
     questions: QuizQuestionDto[];
     questionCount: number;

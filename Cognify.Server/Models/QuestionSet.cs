@@ -6,7 +6,7 @@ public class Quiz
 {
     public Guid Id { get; set; } = Guid.NewGuid();
 
-    public Guid NoteId { get; set; }
+    public Guid? NoteId { get; set; }
 
     [Required]
     [MaxLength(200)]

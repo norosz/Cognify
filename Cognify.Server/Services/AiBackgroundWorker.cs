@@ -219,19 +219,49 @@ public class AiBackgroundWorker(
                     await agentRunService.MarkRunningAsync(quiz.AgentRunId.Value, modelName);
                 }
 
-                var note = await db.Notes.AsNoTracking().FirstOrDefaultAsync(n => n.Id == quiz.NoteId, stoppingToken);
-                var noteContent = GetNoteContent(note);
-                if (note == null || string.IsNullOrWhiteSpace(noteContent))
-                {
-                    await pendingService.UpdateStatusAsync(quiz.Id, PendingQuizStatus.Failed, errorMessage: "Note content not found.");
-                    if (quiz.AgentRunId.HasValue)
-                    {
-                        await agentRunService.MarkFailedAsync(quiz.AgentRunId.Value, "Note content not found.");
-                    }
-                    continue;
-                }
+                string? noteContent;
+                string? adaptiveContext = null;
 
-                var adaptiveContext = await LoadAdaptiveContextAsync(db, quiz.UserId, quiz.NoteId, stoppingToken);
+                if (quiz.NoteId.HasValue)
+                {
+                    var note = await db.Notes.AsNoTracking().FirstOrDefaultAsync(n => n.Id == quiz.NoteId, stoppingToken);
+                    noteContent = GetNoteContent(note);
+                    if (note == null || string.IsNullOrWhiteSpace(noteContent))
+                    {
+                        await pendingService.UpdateStatusAsync(quiz.Id, PendingQuizStatus.Failed, errorMessage: "Note content not found.");
+                        if (quiz.AgentRunId.HasValue)
+                        {
+                            await agentRunService.MarkFailedAsync(quiz.AgentRunId.Value, "Note content not found.");
+                        }
+                        continue;
+                    }
+
+                    adaptiveContext = await LoadAdaptiveContextAsync(db, quiz.UserId, quiz.NoteId, stoppingToken);
+                }
+                else
+                {
+                    var selectedNotes = await db.Notes
+                        .AsNoTracking()
+                        .Where(n => n.ModuleId == quiz.ModuleId && n.IncludeInFinalExam)
+                        .OrderByDescending(n => n.CreatedAt)
+                        .ToListAsync(stoppingToken);
+
+                    selectedNotes = selectedNotes
+                        .Where(n => !IsFinalExamMarkerNote(n))
+                        .ToList();
+
+                    noteContent = BuildFinalExamContent(selectedNotes);
+
+                    if (string.IsNullOrWhiteSpace(noteContent))
+                    {
+                        await pendingService.UpdateStatusAsync(quiz.Id, PendingQuizStatus.Failed, errorMessage: "Selected notes are empty.");
+                        if (quiz.AgentRunId.HasValue)
+                        {
+                            await agentRunService.MarkFailedAsync(quiz.AgentRunId.Value, "Selected notes are empty.");
+                        }
+                        continue;
+                    }
+                }
                 var request = new QuizGenerationContractRequest(
                     AgentContractVersions.V2,
                     BuildAdaptiveContent(noteContent, adaptiveContext),
@@ -503,9 +533,14 @@ public class AiBackgroundWorker(
     private static async Task<string?> LoadAdaptiveContextAsync(
         ApplicationDbContext db,
         Guid userId,
-        Guid noteId,
+        Guid? noteId,
         CancellationToken stoppingToken)
     {
+        if (!noteId.HasValue)
+        {
+            return null;
+        }
+
         var state = await db.UserKnowledgeStates
             .AsNoTracking()
             .FirstOrDefaultAsync(s => s.UserId == userId && s.SourceNoteId == noteId, stoppingToken);
@@ -532,6 +567,39 @@ public class AiBackgroundWorker(
         ConfidenceScore: {{state.ConfidenceScore:0.00}}
         MistakePatterns: {{mistakeSummary}}
         """.Trim();
+    }
+
+    private static string BuildFinalExamContent(IReadOnlyList<Note> notes)
+    {
+        if (notes.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        var sections = new List<string>();
+
+        foreach (var note in notes)
+        {
+            var content = GetNoteContent(note);
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                continue;
+            }
+
+            sections.Add($"## {note.Title}\n\n{content}");
+        }
+
+        return string.Join("\n\n---\n\n", sections);
+    }
+
+    private const string FinalExamNoteTitle = "Final Exam";
+    private const string FinalExamNoteMarker = "<!-- cognify:final-exam -->";
+
+    private static bool IsFinalExamMarkerNote(Note note)
+    {
+        return note.Title == FinalExamNoteTitle &&
+               !string.IsNullOrWhiteSpace(note.Content) &&
+               note.Content.Contains(FinalExamNoteMarker);
     }
 
     private static Dictionary<string, int> ParseMistakePatterns(string? json)

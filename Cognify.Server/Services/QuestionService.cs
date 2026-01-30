@@ -58,9 +58,30 @@ public class QuizService(ApplicationDbContext context, IUserContextService userC
             .Include(q => q.Note)
             .ThenInclude(n => n!.Module)
             .FirstOrDefaultAsync(q => q.Id == id);
-            
-        if (quiz == null || quiz.Note == null || quiz.Note.Module == null || quiz.Note.Module.OwnerUserId != userId)
+
+        if (quiz == null)
+        {
             return null;
+        }
+
+        if (quiz.Note == null)
+        {
+            var ownsFinalExam = await context.Modules
+                .AsNoTracking()
+                .AnyAsync(m => m.OwnerUserId == userId && m.CurrentFinalExamQuizId == quiz.Id);
+
+            if (!ownsFinalExam)
+            {
+                return null;
+            }
+
+            return MapToDto(quiz);
+        }
+
+        if (quiz.Note.Module == null || quiz.Note.Module.OwnerUserId != userId)
+        {
+            return null;
+        }
 
         return MapToDto(quiz);
     }

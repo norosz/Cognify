@@ -635,7 +635,7 @@ namespace Cognify.Server.Migrations
                     b.Property<Guid>("ModuleId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("NoteId")
+                    b.Property<Guid?>("NoteId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("QuestionCount")
@@ -692,7 +692,7 @@ namespace Cognify.Server.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("NoteId")
+                    b.Property<Guid?>("NoteId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("RubricJson")

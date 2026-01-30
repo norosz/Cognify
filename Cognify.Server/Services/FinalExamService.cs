@@ -60,9 +60,7 @@ public class FinalExamService(
             throw new InvalidOperationException("No notes are selected for the final exam.");
         }
 
-        var note = await GetOrCreateFinalExamNoteAsync(module.Id);
-
-        await ClearExistingPendingQuizzesAsync(note.Id);
+        await ClearExistingPendingQuizzesAsync(module.Id);
 
         if (!Enum.TryParse<QuizDifficulty>(request.Difficulty, true, out var difficulty))
         {
@@ -73,7 +71,7 @@ public class FinalExamService(
 
         return await pendingQuizService.CreateAsync(
             userContext.GetCurrentUserId(),
-            note.Id,
+            noteId: null,
             module.Id,
             request.Title,
             difficulty,
@@ -139,41 +137,11 @@ public class FinalExamService(
         return await context.Modules.FirstOrDefaultAsync(m => m.Id == moduleId && m.OwnerUserId == userId);
     }
 
-    private async Task<Note> GetOrCreateFinalExamNoteAsync(Guid moduleId)
-    {
-        var note = await context.Notes.FirstOrDefaultAsync(n =>
-            n.ModuleId == moduleId &&
-            n.Title == FinalExamNoteTitle &&
-            (n.Content == null || n.Content.Contains(FinalExamNoteMarker)));
-
-        if (note != null)
-        {
-            if (note.Content == null || !note.Content.Contains(FinalExamNoteMarker))
-            {
-                note.Content = FinalExamNoteMarker;
-                await context.SaveChangesAsync();
-            }
-            return note;
-        }
-
-        var created = new Note
-        {
-            ModuleId = moduleId,
-            Title = FinalExamNoteTitle,
-            Content = FinalExamNoteMarker,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        context.Notes.Add(created);
-        await context.SaveChangesAsync();
-        return created;
-    }
-
-    private async Task ClearExistingPendingQuizzesAsync(Guid noteId)
+    private async Task ClearExistingPendingQuizzesAsync(Guid moduleId)
     {
         var userId = userContext.GetCurrentUserId();
         var pending = await context.PendingQuizzes
-            .Where(p => p.UserId == userId && p.NoteId == noteId && p.Status != PendingQuizStatus.Failed)
+            .Where(p => p.UserId == userId && p.ModuleId == moduleId && p.NoteId == null && p.Status != PendingQuizStatus.Failed)
             .ToListAsync();
 
         if (pending.Count == 0)

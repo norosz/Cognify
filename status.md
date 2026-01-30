@@ -122,8 +122,9 @@ Before each commit/push:
 ### Epic E — Final Exam v2 (module-scoped, note-less, selected notes)
 
 - [x] Backend: add `IncludeInFinalExam` on Note (default false)
-- [ ] Backend: allow final exam quizzes/pending quizzes to be note-less (exams only)
+- [x] Backend: allow final exam quizzes/pending quizzes to be note-less (exams only)
 - [ ] Backend: final exam generation uses selected module notes as the source
+- [x] Backend: final exam generation uses selected module notes as the source
 - [x] Backend: regenerate returns `FinalExam.NoNotesSelected` when zero notes selected
 - [x] Backend: add bulk “Include all notes for exam” endpoint
 - [x] Frontend: add “Include in Final Exam” toggle to module notes list

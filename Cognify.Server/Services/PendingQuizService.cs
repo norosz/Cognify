@@ -12,32 +12,51 @@ namespace Cognify.Server.Services;
 public class PendingQuizService(ApplicationDbContext db, IAgentRunService agentRunService) : IPendingQuizService
 {
     public async Task<PendingQuiz> CreateAsync(
-        Guid userId, Guid noteId, Guid moduleId, string title,
+        Guid userId, Guid? noteId, Guid moduleId, string title,
         QuizDifficulty difficulty, int questionType, int questionCount)
     {
-        var existing = await db.PendingQuizzes
+        var existingQuery = db.PendingQuizzes
             .AsNoTracking()
-            .FirstOrDefaultAsync(p =>
+            .Where(p =>
                 p.UserId == userId &&
-                p.NoteId == noteId &&
                 p.QuestionType == questionType &&
                 p.QuestionCount == questionCount &&
                 p.Difficulty == difficulty &&
                 p.Status != PendingQuizStatus.Failed);
+
+        if (noteId.HasValue)
+        {
+            existingQuery = existingQuery.Where(p => p.NoteId == noteId);
+        }
+        else
+        {
+            existingQuery = existingQuery.Where(p => p.NoteId == null && p.ModuleId == moduleId);
+        }
+
+        var existing = await existingQuery.FirstOrDefaultAsync();
 
         if (existing != null)
         {
             return existing;
         }
 
-        var inputHash = AgentRunService.ComputeHash($"quiz:{AgentContractVersions.V2}:{userId}:{noteId}:{questionType}:{questionCount}:{difficulty}");
+        var noteKey = noteId?.ToString() ?? $"module:{moduleId}";
+        var inputHash = AgentRunService.ComputeHash($"quiz:{AgentContractVersions.V2}:{userId}:{noteKey}:{questionType}:{questionCount}:{difficulty}");
         var run = await agentRunService.CreateAsync(userId, AgentRunType.QuizGeneration, inputHash, promptVersion: "quizgen-v2");
 
         // Resolve ModuleId from Note if not provided
         if (moduleId == Guid.Empty)
         {
-            var note = await db.Notes.AsNoTracking().FirstOrDefaultAsync(n => n.Id == noteId);
-            moduleId = note?.ModuleId ?? Guid.Empty;
+            if (noteId.HasValue)
+            {
+                var note = await db.Notes.AsNoTracking().FirstOrDefaultAsync(n => n.Id == noteId);
+                moduleId = note?.ModuleId ?? Guid.Empty;
+            }
+        }
+
+        if (moduleId == Guid.Empty)
+        {
+            throw new InvalidOperationException("ModuleId is required for pending quizzes without a note.");
         }
 
         var quiz = new PendingQuiz

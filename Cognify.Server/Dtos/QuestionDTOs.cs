@@ -15,7 +15,7 @@ public record QuizQuestionDto
 public record QuizDto
 {
     public Guid Id { get; init; }
-    public Guid NoteId { get; init; }
+    public Guid? NoteId { get; init; }
     public string Title { get; init; } = string.Empty;
     public List<QuizQuestionDto> Questions { get; init; } = [];
     public int QuestionCount { get; init; }

@@ -26,7 +26,7 @@ public class PendingQuiz
 
     public Guid UserId { get; set; }
 
-    public Guid NoteId { get; set; }
+    public Guid? NoteId { get; set; }
 
     public Guid ModuleId { get; set; }
 
