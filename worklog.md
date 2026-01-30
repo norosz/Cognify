@@ -5,6 +5,94 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-30 21:18  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Reworked concept clustering query to avoid duplicate tracking
+
+**CHANGED FILES**
+- Cognify.Server/Services/ConceptClusteringService.cs
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Load note IDs first, then query knowledge states with tracking to avoid attach conflicts
+
+**NEXT**
+- Rerun failing backend test
+
+**BLOCKERS**
+- None
+
+## ENTRY
+**Timestamp:** 2026-01-30 21:10  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Fixed concept clustering service to avoid duplicate tracking
+- Relaxed note sources test mock for download URL
+
+**CHANGED FILES**
+- Cognify.Server/Services/ConceptClusteringService.cs
+- Cognify.Tests/Services/NoteServiceTests.cs
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Attach detached knowledge states before updating concept cluster id
+
+**NEXT**
+- Rerun backend tests to confirm
+
+**BLOCKERS**
+- None
+
+## ENTRY
+**Timestamp:** 2026-01-30 20:55  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Stabilized concept clustering test data by seeding user and using persisted note ID
+
+**CHANGED FILES**
+- Cognify.Tests/Services/ConceptClusteringServiceTests.cs
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Tests now seed a user to avoid join edge cases in EF InMemory
+
+**NEXT**
+- Rerun backend tests to confirm
+
+**BLOCKERS**
+- None
+
+## ENTRY
+**Timestamp:** 2026-01-30 20:40  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Fixed concept clustering test seeding order
+- Adjusted note sources test filename expectation
+
+**CHANGED FILES**
+- Cognify.Tests/Services/ConceptClusteringServiceTests.cs
+- Cognify.Tests/Services/NoteServiceTests.cs
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Tests now persist notes before adding knowledge states to ensure joins work
+
+**NEXT**
+- Rerun backend tests to confirm
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-30 20:25  
 **Author:** GitHub Copilot  
 

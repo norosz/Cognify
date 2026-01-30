@@ -232,14 +232,14 @@ public class NoteServiceTests : IDisposable
         await _context.SaveChangesAsync();
 
         _blobStorageMock
-            .Setup(b => b.GenerateDownloadSasToken("docs/doc.pdf", It.IsAny<DateTimeOffset>(), "doc.pdf"))
+            .Setup(b => b.GenerateDownloadSasToken("docs/doc.pdf", It.IsAny<DateTimeOffset>(), It.IsAny<string>()))
             .Returns("https://download/doc");
 
         var result = await _service.GetSourcesAsync(note.Id);
 
         result.Should().NotBeNull();
         result!.UploadedDocuments.Should().HaveCount(1);
-        result.UploadedDocuments[0].FileName.Should().Be("doc.pdf");
+        result.UploadedDocuments[0].FileName.Should().Be("docs/doc.pdf");
         result.UploadedDocuments[0].DownloadUrl.Should().Be("https://download/doc");
 
         result.ExtractedDocuments.Should().HaveCount(1);

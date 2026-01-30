@@ -79,6 +79,10 @@ Authoritative implementation details live in [implementation.md](implementation.
 - **[Tests]** Fix backend test build errors after constructor/signature changes
 - **[Backend]** Fix duplicate CreateNoteDto properties build error
 - **[Tests]** Add backend tests for concept clustering and note sources
+- **[Tests]** Fix concept clustering and note source tests
+- **[Backend/Tests]** Fix concept clustering tracking and note sources download URL
+- **[Tests]** Stabilize concept clustering test seed data
+- **[Backend]** Fix concept clustering tracking query for tests
 
 ---
 

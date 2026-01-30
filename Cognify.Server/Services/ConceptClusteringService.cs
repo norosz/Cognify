@@ -57,14 +57,17 @@ public class ConceptClusteringService(ApplicationDbContext context, IUserContext
             }
         }
 
+        var noteIds = await context.Notes
+            .AsNoTracking()
+            .Where(n => n.ModuleId == moduleId)
+            .Select(n => n.Id)
+            .ToListAsync();
+
         var knowledgeStates = await context.UserKnowledgeStates
             .Include(s => s.User)
             .Where(s => s.UserId == userContext.GetCurrentUserId())
-            .Join(context.Notes.AsNoTracking(),
-                state => state.SourceNoteId,
-                note => note.Id,
-                (state, note) => new { state, note })
-            .Where(x => x.note.ModuleId == moduleId)
+            .Where(s => s.SourceNoteId.HasValue && noteIds.Contains(s.SourceNoteId.Value))
+            .Select(s => new { state = s })
             .ToListAsync();
 
         var topicItems = knowledgeStates
@@ -111,7 +114,6 @@ public class ConceptClusteringService(ApplicationDbContext context, IUserContext
             foreach (var state in knowledgeStates.Where(s => topicSet.Contains(s.state.Topic)))
             {
                 state.state.ConceptClusterId = cluster.Id;
-                context.UserKnowledgeStates.Update(state.state);
             }
         }
 

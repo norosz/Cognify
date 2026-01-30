@@ -33,17 +33,22 @@ public class ConceptClusteringServiceTests : IDisposable
     [Fact]
     public async Task RefreshConceptClustersAsync_CreatesClusters_AndUpdatesKnowledgeStates()
     {
+        var user = new User { Id = _userId, Email = "user@example.com", PasswordHash = "hash" };
         var module = new Module { Id = Guid.NewGuid(), OwnerUserId = _userId, Title = "Module" };
         var note = new Note { Id = Guid.NewGuid(), ModuleId = module.Id, Title = "Note", Content = "Content" };
 
+        _context.Users.Add(user);
         _context.Modules.Add(module);
         _context.Notes.Add(note);
+        await _context.SaveChangesAsync();
+
+        var noteId = note.Id;
         _context.UserKnowledgeStates.AddRange(
             new UserKnowledgeState
             {
                 UserId = _userId,
                 Topic = "Linear Algebra",
-                SourceNoteId = note.Id,
+                SourceNoteId = noteId,
                 MasteryScore = 0.4,
                 ConfidenceScore = 0.4,
                 ForgettingRisk = 0.6,
@@ -53,7 +58,7 @@ public class ConceptClusteringServiceTests : IDisposable
             {
                 UserId = _userId,
                 Topic = "Algebra Basics",
-                SourceNoteId = note.Id,
+                SourceNoteId = noteId,
                 MasteryScore = 0.5,
                 ConfidenceScore = 0.5,
                 ForgettingRisk = 0.5,
@@ -63,7 +68,7 @@ public class ConceptClusteringServiceTests : IDisposable
             {
                 UserId = _userId,
                 Topic = "Cell Biology",
-                SourceNoteId = note.Id,
+                SourceNoteId = noteId,
                 MasteryScore = 0.6,
                 ConfidenceScore = 0.6,
                 ForgettingRisk = 0.3,
