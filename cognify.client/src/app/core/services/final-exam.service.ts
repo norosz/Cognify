@@ -20,4 +20,8 @@ export class FinalExamService {
     saveFinalExam(moduleId: string, pendingQuizId: string): Observable<FinalExamSaveResultDto> {
         return this.http.post<FinalExamSaveResultDto>(`/api/modules/${moduleId}/final-exam/pending/${pendingQuizId}/save`, {});
     }
+
+    includeAllNotes(moduleId: string): Observable<{ updatedCount: number }> {
+        return this.http.post<{ updatedCount: number }>(`/api/modules/${moduleId}/final-exam/include-all-notes`, {});
+    }
 }

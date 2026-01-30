@@ -1,0 +1,9 @@
+<h2 mat-dialog-title>No notes selected</h2>
+<mat-dialog-content>
+    <p>Select at least one note to generate your final exam.</p>
+    <p>You can include all notes now and regenerate automatically.</p>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+    <button mat-stroked-button (click)="cancel()">Cancel</button>
+    <button mat-flat-button color="primary" (click)="includeAllNotes()">Include all notes</button>
+</mat-dialog-actions>

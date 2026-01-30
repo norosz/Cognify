@@ -26,6 +26,31 @@ public class ModuleFinalExamController(IFinalExamService finalExamService) : Con
             var pending = await finalExamService.RegenerateFinalExamAsync(moduleId, request);
             return Ok(new { pendingQuizId = pending.Id });
         }
+        catch (InvalidOperationException ex)
+        {
+            var problem = new ProblemDetails
+            {
+                Title = "Final exam requires selected notes",
+                Detail = ex.Message,
+                Status = StatusCodes.Status400BadRequest
+            };
+            problem.Extensions["code"] = "FinalExam.NoNotesSelected";
+            return BadRequest(problem);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+    }
+
+    [HttpPost("include-all-notes")]
+    public async Task<ActionResult> IncludeAllNotes(Guid moduleId)
+    {
+        try
+        {
+            var updatedCount = await finalExamService.IncludeAllNotesForFinalExamAsync(moduleId);
+            return Ok(new { updatedCount });
+        }
         catch (UnauthorizedAccessException)
         {
             return Forbid();

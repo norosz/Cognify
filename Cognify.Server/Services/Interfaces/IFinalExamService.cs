@@ -8,4 +8,5 @@ public interface IFinalExamService
     Task<FinalExamDto?> GetFinalExamAsync(Guid moduleId);
     Task<PendingQuiz> RegenerateFinalExamAsync(Guid moduleId, RegenerateFinalExamRequest request);
     Task<FinalExamSaveResultDto> SaveFinalExamAsync(Guid moduleId, Guid pendingQuizId);
+    Task<int> IncludeAllNotesForFinalExamAsync(Guid moduleId);
 }

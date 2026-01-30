@@ -23,6 +23,7 @@ import { DocumentsService } from '../services/documents.service';
 import { QuizListComponent } from '../components/quiz-list/quiz-list.component';
 import { ExamTakingComponent } from '../../exams/exam-taking/exam-taking.component';
 import { CategoryHistoryBatchDto } from '../../../core/models/category.models';
+import { FinalExamNoteDialogComponent } from '../components/final-exam-note-dialog/final-exam-note-dialog.component';
 
 @Component({
   selector: 'app-module-detail',
@@ -228,10 +229,36 @@ export class ModuleDetailComponent implements OnInit {
         this.loadPendingFinalExam(moduleId);
         this.regeneratingFinalExam.set(false);
       },
-      error: () => {
-        this.notificationService.error('Failed to regenerate final exam.');
+      error: (err) => {
         this.regeneratingFinalExam.set(false);
+
+        if (this.isNoNotesSelectedError(err)) {
+          this.openNoNotesDialog(moduleId);
+          return;
+        }
+
+        this.notificationService.error('Failed to regenerate final exam.');
       }
+    });
+  }
+
+  private isNoNotesSelectedError(err: any): boolean {
+    const code = err?.error?.code ?? err?.error?.extensions?.code;
+    return code === 'FinalExam.NoNotesSelected';
+  }
+
+  private openNoNotesDialog(moduleId: string) {
+    const dialogRef = this.dialog.open(FinalExamNoteDialogComponent, {
+      width: '420px'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (!result) return;
+
+      this.finalExamService.includeAllNotes(moduleId).subscribe({
+        next: () => this.regenerateFinalExam(),
+        error: () => this.notificationService.error('Failed to include notes for final exam.')
+      });
     });
   }
 

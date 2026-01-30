@@ -54,6 +54,12 @@ public class FinalExamService(
             throw new UnauthorizedAccessException("Module not found or not owned by user.");
         }
 
+        var selectedNotesCount = await GetSelectedNotesCountAsync(module.Id);
+        if (selectedNotesCount == 0)
+        {
+            throw new InvalidOperationException("No notes are selected for the final exam.");
+        }
+
         var note = await GetOrCreateFinalExamNoteAsync(module.Id);
 
         await ClearExistingPendingQuizzesAsync(note.Id);
@@ -73,6 +79,42 @@ public class FinalExamService(
             difficulty,
             questionType,
             request.QuestionCount);
+    }
+
+    public async Task<int> IncludeAllNotesForFinalExamAsync(Guid moduleId)
+    {
+        var module = await GetOwnedModuleAsync(moduleId);
+        if (module == null)
+        {
+            throw new UnauthorizedAccessException("Module not found or not owned by user.");
+        }
+
+        var notes = await context.Notes
+            .Where(n => n.ModuleId == module.Id)
+            .ToListAsync();
+
+        var updatedCount = 0;
+
+        foreach (var note in notes)
+        {
+            if (IsFinalExamMarkerNote(note))
+            {
+                continue;
+            }
+
+            if (!note.IncludeInFinalExam)
+            {
+                note.IncludeInFinalExam = true;
+                updatedCount++;
+            }
+        }
+
+        if (updatedCount > 0)
+        {
+            await context.SaveChangesAsync();
+        }
+
+        return updatedCount;
     }
 
     public async Task<FinalExamSaveResultDto> SaveFinalExamAsync(Guid moduleId, Guid pendingQuizId)
@@ -141,6 +183,20 @@ public class FinalExamService(
 
         context.PendingQuizzes.RemoveRange(pending);
         await context.SaveChangesAsync();
+    }
+
+    private async Task<int> GetSelectedNotesCountAsync(Guid moduleId)
+    {
+        return await context.Notes
+            .Where(n => n.ModuleId == moduleId && n.IncludeInFinalExam)
+            .CountAsync(n => !IsFinalExamMarkerNote(n));
+    }
+
+    private static bool IsFinalExamMarkerNote(Note note)
+    {
+        return note.Title == FinalExamNoteTitle &&
+               !string.IsNullOrWhiteSpace(note.Content) &&
+               note.Content.Contains(FinalExamNoteMarker);
     }
 
     private static int MapQuestionType(string questionType)

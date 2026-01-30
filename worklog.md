@@ -5,6 +5,36 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-31 03:05  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Added final exam gating error for zero selected notes with ProblemDetails code
+- Added bulk include-all notes endpoint for final exams
+- Added frontend dialog to include all notes and retry regenerate
+
+**CHANGED FILES**
+- Cognify.Server/Services/Interfaces/IFinalExamService.cs
+- Cognify.Server/Services/FinalExamService.cs
+- Cognify.Server/Controllers/ModuleFinalExamController.cs
+- cognify.client/src/app/core/services/final-exam.service.ts
+- cognify.client/src/app/features/modules/module-detail/module-detail.component.ts
+- cognify.client/src/app/features/modules/components/final-exam-note-dialog/final-exam-note-dialog.component.ts
+- cognify.client/src/app/features/modules/components/final-exam-note-dialog/final-exam-note-dialog.component.html
+- cognify.client/src/app/features/modules/components/final-exam-note-dialog/final-exam-note-dialog.component.scss
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Regenerate returns `FinalExam.NoNotesSelected` when no notes are selected
+
+**NEXT**
+- Implement final exam source from selected notes (note-less exam flow)
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-31 02:30  
 **Author:** GitHub Copilot  
 

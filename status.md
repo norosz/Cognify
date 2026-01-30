@@ -124,11 +124,11 @@ Before each commit/push:
 - [x] Backend: add `IncludeInFinalExam` on Note (default false)
 - [ ] Backend: allow final exam quizzes/pending quizzes to be note-less (exams only)
 - [ ] Backend: final exam generation uses selected module notes as the source
-- [ ] Backend: regenerate returns `FinalExam.NoNotesSelected` when zero notes selected
-- [ ] Backend: add bulk “Include all notes for exam” endpoint
+- [x] Backend: regenerate returns `FinalExam.NoNotesSelected` when zero notes selected
+- [x] Backend: add bulk “Include all notes for exam” endpoint
 - [x] Frontend: add “Include in Final Exam” toggle to module notes list
 - [x] Frontend: add “Include in Final Exam” toggle to note detail page
-- [ ] Frontend: show friendly dialog on `FinalExam.NoNotesSelected` with “Include all notes” + retry
+- [x] Frontend: show friendly dialog on `FinalExam.NoNotesSelected` with “Include all notes” + retry
 
 ### Epic F — Statistics v2 (tabs + filters)
 
