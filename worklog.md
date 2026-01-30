@@ -5,6 +5,34 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-30 23:10  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Added note detail actions for quiz generation, document deletion, and content extraction
+- Made note content scrollable and added thumbnail image previews with modal
+- Labeled extracted notes as AI notes when user content is missing
+
+**CHANGED FILES**
+- cognify.client/src/app/features/notes/note-detail/note-detail.component.html
+- cognify.client/src/app/features/notes/note-detail/note-detail.component.scss
+- cognify.client/src/app/features/notes/note-detail/note-detail.component.ts
+- cognify.client/src/app/features/notes/components/note-image-preview-dialog/note-image-preview-dialog.component.ts
+- cognify.client/src/app/features/notes/components/note-image-preview-dialog/note-image-preview-dialog.component.html
+- cognify.client/src/app/features/notes/components/note-image-preview-dialog/note-image-preview-dialog.component.scss
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Embedded images display as thumbnails with modal preview instead of inline full-size render
+
+**NEXT**
+- Rename “Extract text” to “Extract content” and handle pending label updates
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-30 22:50  
 **Author:** GitHub Copilot  
 

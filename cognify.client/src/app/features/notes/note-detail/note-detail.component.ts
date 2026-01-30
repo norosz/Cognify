@@ -7,9 +7,15 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { NoteService } from '../../../core/services/note.service';
-import { Note, NoteEmbeddedImage, NoteSourcesDto } from '../../../core/models/note.model';
+import { Note, NoteEmbeddedImage, NoteSourceDocumentDto, NoteSourcesDto } from '../../../core/models/note.model';
 import { MarkdownLatexPipe } from '../../../shared/pipes/markdown-latex.pipe';
 import { NoteEditorDialogComponent } from '../components/note-editor-dialog/note-editor-dialog.component';
+import { QuizGenerationDialogComponent } from '../../modules/components/quiz-generation-dialog/quiz-generation-dialog.component';
+import { PendingService } from '../../../core/services/pending.service';
+import { NotificationService } from '../../../core/services/notification.service';
+import { AiService } from '../../../core/services/ai.service';
+import { DocumentsService } from '../../modules/services/documents.service';
+import { NoteImagePreviewDialogComponent } from '../components/note-image-preview-dialog/note-image-preview-dialog.component';
 
 @Component({
   selector: 'app-note-detail',
@@ -31,12 +37,17 @@ export class NoteDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private noteService = inject(NoteService);
   private dialog = inject(MatDialog);
+  private pendingService = inject(PendingService);
+  private notification = inject(NotificationService);
+  private aiService = inject(AiService);
+  private documentsService = inject(DocumentsService);
 
   note = signal<Note | null>(null);
   sources = signal<NoteSourcesDto | null>(null);
   loading = signal<boolean>(false);
   sourcesLoading = signal<boolean>(false);
   error = signal<string | null>(null);
+  extractingDocIds = signal<Set<string>>(new Set());
 
   ngOnInit(): void {
     const noteId = this.route.snapshot.paramMap.get('noteId');
@@ -94,22 +105,106 @@ export class NoteDetailComponent implements OnInit {
     });
   }
 
+  generateQuiz() {
+    const current = this.note();
+    if (!current) return;
+
+    const dialogRef = this.dialog.open(QuizGenerationDialogComponent, {
+      width: '550px',
+      data: { noteId: current.id, noteTitle: current.title }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.pendingService.initiateQuiz({
+          noteId: current.id,
+          title: result.title,
+          difficulty: result.difficulty,
+          questionType: result.questionType,
+          questionCount: result.questionCount
+        }).subscribe({
+          next: () => {
+            this.notification.success(
+              'Quiz generation started.',
+              ['/pending', { tab: 'quizzes' }],
+              'View Pending Quizzes'
+            );
+            this.pendingService.refreshPendingCount();
+          },
+          error: () => this.notification.error('Failed to start quiz generation.')
+        });
+      }
+    });
+  }
+
+  deleteDocument(doc: NoteSourceDocumentDto) {
+    if (confirm(`Delete ${doc.fileName}?`)) {
+      this.documentsService.deleteDocument(doc.documentId).subscribe({
+        next: () => {
+          this.notification.success('Document deleted');
+          const noteId = this.note()?.id;
+          if (noteId) {
+            this.loadSources(noteId);
+          }
+        },
+        error: () => this.notification.error('Failed to delete document')
+      });
+    }
+  }
+
+  isExtracting(docId: string): boolean {
+    return this.extractingDocIds().has(docId);
+  }
+
+  extractContent(doc: NoteSourceDocumentDto) {
+    if (this.isExtracting(doc.documentId)) return;
+
+    const updated = new Set(this.extractingDocIds());
+    updated.add(doc.documentId);
+    this.extractingDocIds.set(updated);
+
+    this.aiService.extractText(doc.documentId).subscribe({
+      next: () => {
+        const after = new Set(this.extractingDocIds());
+        after.delete(doc.documentId);
+        this.extractingDocIds.set(after);
+
+        this.notification.info(
+          `Extraction processing started for ${doc.fileName}. Check Pending tab.`,
+          ['/pending', { tab: 'extractions' }],
+          'View Pending Note'
+        );
+        this.pendingService.refreshPendingCount();
+      },
+      error: () => {
+        const after = new Set(this.extractingDocIds());
+        after.delete(doc.documentId);
+        this.extractingDocIds.set(after);
+        this.notification.error('Failed to extract content. Ensure it is a valid image or PDF.');
+      }
+    });
+  }
+
+  openImagePreview(image: NoteEmbeddedImage) {
+    if (!image.downloadUrl) return;
+    this.dialog.open(NoteImagePreviewDialogComponent, {
+      width: '900px',
+      maxWidth: '95vw',
+      data: { url: image.downloadUrl, title: image.fileName }
+    });
+  }
+
   getCombinedContent(note: Note): string {
     const segments: string[] = [];
 
     if (note.userContent && note.userContent.trim()) {
       segments.push(`## Your Notes\n${note.userContent.trim()}`);
     } else if (note.content && note.content.trim()) {
-      segments.push(note.content.trim());
+      segments.push(`## AI Notes\n${note.content.trim()}`);
     }
 
     if (note.aiContent && note.aiContent.trim()) {
       segments.push(`## AI Notes\n${note.aiContent.trim()}`);
-    }
-
-    const embedded = this.buildEmbeddedImagesMarkdown(note.embeddedImages);
-    if (embedded) {
-      segments.push(embedded);
     }
 
     return segments.join('\n\n');

@@ -1,0 +1,10 @@
+<h2 mat-dialog-title>{{ data.title || 'Image Preview' }}</h2>
+<mat-dialog-content class="image-preview-content">
+  <img [src]="data.url" alt="Embedded image" />
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Close</button>
+  <a mat-flat-button color="primary" [href]="data.url" target="_blank" rel="noopener">
+    Open Original
+  </a>
+</mat-dialog-actions>

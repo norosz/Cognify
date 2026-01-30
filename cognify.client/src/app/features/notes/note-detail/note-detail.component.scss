@@ -5,6 +5,12 @@
   margin-bottom: 24px;
 }
 
+.note-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 12px;
+}
+
 .note-title h1 {
   margin: 0;
   font-size: 28px;
@@ -23,6 +29,12 @@
 }
 
 .note-content-card {
+  .note-content-body {
+    max-height: 420px;
+    overflow-y: auto;
+    padding-right: 8px;
+  }
+
   .markdown-body {
     line-height: 1.6;
     color: var(--text-primary);
@@ -45,6 +57,44 @@
       margin: 1rem 0;
     }
   }
+}
+
+.embedded-images {
+  margin-top: 16px;
+}
+
+.embedded-images h3 {
+  margin: 0 0 8px;
+  color: var(--text-primary);
+}
+
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.image-thumb {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 8px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.image-thumb img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.image-caption {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
 }
 
 .sources-card {
@@ -79,6 +129,12 @@
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.source-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .source-title {

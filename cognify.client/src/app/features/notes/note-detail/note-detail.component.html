@@ -13,10 +13,16 @@
       <h1>{{ note.title }}</h1>
       <p>Created {{ note.createdAt | date:'medium' }}</p>
     </div>
-    <button mat-stroked-button color="primary" (click)="editNote()">
-      <mat-icon>edit</mat-icon>
-      Edit
-    </button>
+    <div class="note-actions">
+      <button mat-stroked-button color="primary" (click)="generateQuiz()">
+        <mat-icon>auto_awesome</mat-icon>
+        Generate Quiz
+      </button>
+      <button mat-stroked-button color="primary" (click)="editNote()">
+        <mat-icon>edit</mat-icon>
+        Edit
+      </button>
+    </div>
   </div>
 
   <div class="note-grid">
@@ -26,7 +32,20 @@
         <mat-card-subtitle>User + AI notes</mat-card-subtitle>
       </mat-card-header>
       <mat-card-content>
-        <div class="markdown-body" [innerHTML]="getCombinedContent(note) | markdownLatex"></div>
+        <div class="note-content-body">
+          <div class="markdown-body" [innerHTML]="getCombinedContent(note) | markdownLatex"></div>
+        </div>
+
+        <div class="embedded-images" *ngIf="note.embeddedImages?.length">
+          <h3>Embedded Images</h3>
+          <div class="image-grid">
+            <button class="image-thumb" *ngFor="let image of note.embeddedImages" (click)="openImagePreview(image)"
+              [disabled]="!image.downloadUrl">
+              <img [src]="image.downloadUrl" [alt]="image.fileName" />
+              <span class="image-caption">Page {{ image.pageNumber }}</span>
+            </button>
+          </div>
+        </div>
       </mat-card-content>
     </mat-card>
 
@@ -53,9 +72,20 @@
                   <div class="source-title">{{ doc.fileName }}</div>
                   <div class="source-meta">{{ doc.status }} · {{ doc.createdAt | date:'MMM d, y' }}</div>
                 </div>
-                <a mat-stroked-button color="primary" *ngIf="doc.downloadUrl" [href]="doc.downloadUrl" target="_blank">
-                  Download
-                </a>
+                <div class="source-actions">
+                  <button mat-stroked-button color="primary" (click)="extractContent(doc)"
+                    [disabled]="doc.status !== 'Uploaded' || isExtracting(doc.documentId)">
+                    <mat-icon *ngIf="!isExtracting(doc.documentId)">auto_fix_high</mat-icon>
+                    <mat-progress-spinner *ngIf="isExtracting(doc.documentId)" diameter="18"></mat-progress-spinner>
+                    Extract Content
+                  </button>
+                  <a mat-stroked-button color="primary" *ngIf="doc.downloadUrl" [href]="doc.downloadUrl" target="_blank">
+                    Download
+                  </a>
+                  <button mat-icon-button color="warn" (click)="deleteDocument(doc)">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
