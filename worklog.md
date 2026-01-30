@@ -5,6 +5,33 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-30 13:45  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Added note sources DTOs for uploaded and extracted documents
+- Implemented note sources retrieval in NoteService
+- Added /api/notes/{id}/sources endpoint
+- Updated status board to mark note sources complete
+
+**CHANGED FILES**
+- Cognify.Server/Dtos/Notes/NoteSourcesDto.cs
+- Cognify.Server/Services/Interfaces/INoteService.cs
+- Cognify.Server/Services/NoteService.cs
+- Cognify.Server/Controllers/NotesController.cs
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Note sources list includes all module documents and extracted contents with SAS download URLs
+
+**NEXT**
+- Implement quiz submit loading + difficulty badges and quiz cards (frontend)
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-30 13:25  
 **Author:** GitHub Copilot  
 

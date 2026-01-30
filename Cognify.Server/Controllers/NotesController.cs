@@ -28,6 +28,18 @@ public class NotesController(INoteService noteService) : ControllerBase
         return Ok(note);
     }
 
+    [HttpGet("{id}/sources")]
+    public async Task<ActionResult<NoteSourcesDto>> GetSources(Guid id)
+    {
+        var sources = await noteService.GetSourcesAsync(id);
+        if (sources == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(sources);
+    }
+
     [HttpPost]
     public async Task<ActionResult<NoteDto>> Create(CreateNoteDto dto)
     {

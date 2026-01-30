@@ -46,6 +46,65 @@ public class NoteService(ApplicationDbContext context, IUserContextService userC
         return MapToDto(note);
     }
 
+    public async Task<NoteSourcesDto?> GetSourcesAsync(Guid id)
+    {
+        var userId = userContext.GetCurrentUserId();
+
+        var note = await context.Notes.AsNoTracking()
+            .Include(n => n.Module)
+            .FirstOrDefaultAsync(n => n.Id == id);
+
+        if (note == null || note.Module == null || note.Module.OwnerUserId != userId)
+        {
+            return null;
+        }
+
+        var documents = await context.Documents.AsNoTracking()
+            .Where(d => d.ModuleId == note.ModuleId)
+            .OrderByDescending(d => d.CreatedAt)
+            .ToListAsync();
+
+        var uploadedDocs = documents.Select(doc => new NoteSourceDocumentDto(
+            doc.Id,
+            ExtractFileName(doc.BlobPath),
+            doc.Status.ToString(),
+            doc.CreatedAt,
+            doc.FileSize,
+            doc.Status == Models.DocumentStatus.Uploaded
+                ? blobStorageService.GenerateDownloadSasToken(doc.BlobPath, DateTimeOffset.UtcNow.AddHours(1), ExtractFileName(doc.BlobPath))
+                : null
+        )).ToList();
+
+        var extracted = await context.ExtractedContents.AsNoTracking()
+            .Include(e => e.Document)
+            .Where(e => e.ModuleId == note.ModuleId && e.UserId == userId)
+            .OrderByDescending(e => e.ExtractedAt)
+            .ToListAsync();
+
+        var extractedDocs = extracted.Select(extract => new NoteSourceExtractionDto(
+            extract.Id,
+            extract.DocumentId,
+            extract.Document?.FileName ?? "Unknown",
+            extract.ExtractedAt,
+            extract.Status.ToString(),
+            extract.IsSaved,
+            extract.Document?.Status == Models.DocumentStatus.Uploaded && !string.IsNullOrWhiteSpace(extract.Document.BlobPath)
+                ? blobStorageService.GenerateDownloadSasToken(
+                    extract.Document.BlobPath,
+                    DateTimeOffset.UtcNow.AddHours(1),
+                    ExtractFileName(extract.Document.BlobPath))
+                : null
+        )).ToList();
+
+        return new NoteSourcesDto
+        {
+            NoteId = note.Id,
+            ModuleId = note.ModuleId,
+            UploadedDocuments = uploadedDocs,
+            ExtractedDocuments = extractedDocs
+        };
+    }
+
     public async Task<NoteDto> CreateAsync(CreateNoteDto dto)
     {
         var userId = userContext.GetCurrentUserId();
@@ -163,4 +222,10 @@ public class NoteService(ApplicationDbContext context, IUserContextService userC
         string? FileName,
         int PageNumber
     );
+
+    private static string ExtractFileName(string blobPath)
+    {
+        var index = blobPath.IndexOf('_');
+        return index >= 0 ? blobPath[(index + 1)..] : blobPath;
+    }
 }
