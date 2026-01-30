@@ -120,8 +120,11 @@ public class NoteService(ApplicationDbContext context, IUserContextService userC
         {
             ModuleId = dto.ModuleId,
             Title = dto.Title,
-            Content = dto.Content
+            UserContent = dto.UserContent ?? dto.Content,
+            AiContent = dto.AiContent
         };
+
+        note.Content = BuildLegacyContent(note.UserContent, note.AiContent, dto.Content);
 
         context.Notes.Add(note);
         await context.SaveChangesAsync();
@@ -143,7 +146,18 @@ public class NoteService(ApplicationDbContext context, IUserContextService userC
         }
 
         note.Title = dto.Title;
-        note.Content = dto.Content;
+
+        if (dto.UserContent != null || dto.Content != null)
+        {
+            note.UserContent = dto.UserContent ?? dto.Content;
+        }
+
+        if (dto.AiContent != null)
+        {
+            note.AiContent = dto.AiContent;
+        }
+
+        note.Content = BuildLegacyContent(note.UserContent, note.AiContent, dto.Content);
 
         await context.SaveChangesAsync();
 
@@ -179,9 +193,33 @@ public class NoteService(ApplicationDbContext context, IUserContextService userC
             SourceMaterialId = note.SourceMaterialId,
             Title = note.Title,
             Content = note.Content,
+            UserContent = note.UserContent,
+            AiContent = note.AiContent,
             CreatedAt = note.CreatedAt,
             EmbeddedImages = embeddedImages
         };
+    }
+
+    private static string? BuildLegacyContent(string? userContent, string? aiContent, string? fallback)
+    {
+        var segments = new List<string>();
+
+        if (!string.IsNullOrWhiteSpace(userContent))
+        {
+            segments.Add(userContent);
+        }
+
+        if (!string.IsNullOrWhiteSpace(aiContent))
+        {
+            segments.Add(aiContent);
+        }
+
+        if (segments.Count == 0)
+        {
+            return fallback;
+        }
+
+        return string.Join("\n\n", segments);
     }
 
     private IReadOnlyList<NoteEmbeddedImageDto>? ParseEmbeddedImages(string? imagesJson, string title)

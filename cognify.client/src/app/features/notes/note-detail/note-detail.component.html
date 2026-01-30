@@ -1,0 +1,85 @@
+<div *ngIf="loading()" class="loading">Loading note...</div>
+
+<div *ngIf="error()" class="error-container">
+  <p class="error-text">{{ error() }}</p>
+</div>
+
+<ng-container *ngIf="note() as note">
+  <div class="note-header">
+    <button mat-icon-button [routerLink]="['/modules', note.moduleId, { tab: 'notes' }]" class="back-button">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <div class="note-title">
+      <h1>{{ note.title }}</h1>
+      <p>Created {{ note.createdAt | date:'medium' }}</p>
+    </div>
+    <button mat-stroked-button color="primary" (click)="editNote()">
+      <mat-icon>edit</mat-icon>
+      Edit
+    </button>
+  </div>
+
+  <div class="note-grid">
+    <mat-card class="note-content-card cognify-glass-card">
+      <mat-card-header>
+        <mat-card-title>Note Content</mat-card-title>
+        <mat-card-subtitle>User + AI notes</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="markdown-body" [innerHTML]="getCombinedContent(note) | markdownLatex"></div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="sources-card cognify-glass-card">
+      <mat-card-header>
+        <mat-card-title>Sources</mat-card-title>
+        <mat-card-subtitle>Uploaded & extracted documents</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div *ngIf="sourcesLoading()" class="loading-inline">
+          <mat-progress-spinner diameter="24"></mat-progress-spinner>
+        </div>
+
+        <ng-container *ngIf="sources() as sources">
+          <div class="source-section">
+            <h3>Uploaded Documents</h3>
+            <div *ngIf="sources.uploadedDocuments.length === 0" class="empty-inline">
+              <mat-icon>description</mat-icon>
+              <p>No uploaded documents.</p>
+            </div>
+            <div class="source-list" *ngIf="sources.uploadedDocuments.length">
+              <div class="source-row" *ngFor="let doc of sources.uploadedDocuments">
+                <div>
+                  <div class="source-title">{{ doc.fileName }}</div>
+                  <div class="source-meta">{{ doc.status }} · {{ doc.createdAt | date:'MMM d, y' }}</div>
+                </div>
+                <a mat-stroked-button color="primary" *ngIf="doc.downloadUrl" [href]="doc.downloadUrl" target="_blank">
+                  Download
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div class="source-section">
+            <h3>Extracted Documents</h3>
+            <div *ngIf="sources.extractedDocuments.length === 0" class="empty-inline">
+              <mat-icon>history_edu</mat-icon>
+              <p>No extracted documents.</p>
+            </div>
+            <div class="source-list" *ngIf="sources.extractedDocuments.length">
+              <div class="source-row" *ngFor="let extract of sources.extractedDocuments">
+                <div>
+                  <div class="source-title">{{ extract.fileName }}</div>
+                  <div class="source-meta">{{ extract.status }} · {{ extract.extractedAt | date:'MMM d, y' }}</div>
+                </div>
+                <a mat-stroked-button color="primary" *ngIf="extract.downloadUrl" [href]="extract.downloadUrl" target="_blank">
+                  Download
+                </a>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</ng-container>

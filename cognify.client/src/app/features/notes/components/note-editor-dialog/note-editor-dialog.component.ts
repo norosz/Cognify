@@ -61,7 +61,8 @@ export class NoteEditorDialogComponent implements OnInit {
 
         this.form = this.fb.group({
             title: [data.note?.title || '', [Validators.required, Validators.maxLength(200)]],
-            content: [data.note?.content || '']
+            userContent: [data.note?.userContent ?? data.note?.content ?? ''],
+            aiContent: [data.note?.aiContent ?? '']
         });
     }
 
@@ -78,12 +79,16 @@ export class NoteEditorDialogComponent implements OnInit {
         localStorage.setItem(PREVIEW_VISIBLE_KEY, String(this.showPreview));
     }
 
-    get contentValue(): string {
-        return this.form.get('content')?.value || '';
+    get userContentValue(): string {
+        return this.form.get('userContent')?.value || '';
+    }
+
+    get aiContentValue(): string {
+        return this.form.get('aiContent')?.value || '';
     }
 
     get previewHtml(): string {
-        const baseContent = this.contentValue;
+        const baseContent = this.buildCombinedContent(this.userContentValue, this.aiContentValue);
         const embeddedMarkdown = this.buildEmbeddedImagesMarkdown(this.data.note?.embeddedImages);
         if (!embeddedMarkdown) {
             return baseContent;
@@ -173,7 +178,11 @@ export class NoteEditorDialogComponent implements OnInit {
         const formValue = this.form.value;
 
         if (this.isEditMode && this.data.note) {
-            this.noteService.updateNote(this.data.note.id, formValue).subscribe({
+            this.noteService.updateNote(this.data.note.id, {
+                title: formValue.title,
+                userContent: formValue.userContent,
+                aiContent: formValue.aiContent
+            }).subscribe({
                 next: (note) => {
                     this.isSaving = false;
                     this.dialogRef.close(note);
@@ -187,7 +196,8 @@ export class NoteEditorDialogComponent implements OnInit {
             this.noteService.createNote({
                 moduleId: this.data.moduleId,
                 title: formValue.title,
-                content: formValue.content
+                userContent: formValue.userContent,
+                aiContent: formValue.aiContent
             }).subscribe({
                 next: (note) => {
                     this.isSaving = false;
@@ -212,5 +222,19 @@ export class NoteEditorDialogComponent implements OnInit {
             .join('\n\n');
 
         return `## Embedded Images\n${markdownImages}`;
+    }
+
+    private buildCombinedContent(userContent: string, aiContent: string): string {
+        const sections: string[] = [];
+
+        if (userContent.trim()) {
+            sections.push(`## Your Notes\n${userContent.trim()}`);
+        }
+
+        if (aiContent.trim()) {
+            sections.push(`## AI Notes\n${aiContent.trim()}`);
+        }
+
+        return sections.join('\n\n');
     }
 }

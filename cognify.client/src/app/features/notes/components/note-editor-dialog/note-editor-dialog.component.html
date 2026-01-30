@@ -24,10 +24,16 @@
                     <span>Markdown + LaTeX</span>
                 </div>
                 <mat-form-field appearance="outline" class="content-field">
-                    <mat-label>Content</mat-label>
-                    <textarea #editorTextarea matInput formControlName="content" rows="15"
-                        placeholder="Write your note here...&#10;&#10;Supports **Markdown** and $LaTeX$ math!"
+                    <mat-label>Your Notes</mat-label>
+                    <textarea #editorTextarea matInput formControlName="userContent" rows="10"
+                        placeholder="Write your notes here...&#10;&#10;Supports **Markdown** and $LaTeX$ math!"
                         (scroll)="onEditorScroll($event)"></textarea>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="content-field">
+                    <mat-label>AI Notes</mat-label>
+                    <textarea matInput formControlName="aiContent" rows="8"
+                        placeholder="Add AI-generated insights or summaries here..."></textarea>
                 </mat-form-field>
             </div>
 

@@ -51,7 +51,7 @@ form {
 .editor-container {
     display: flex;
     gap: 16px;
-    height: 400px; // Fixed height for both panes
+    height: 520px; // Fixed height for both panes
 
     &.with-preview {
         .editor-pane {
@@ -70,6 +70,8 @@ form {
         display: flex;
         flex-direction: column;
         height: 100%;
+        gap: 12px;
+        overflow: hidden;
     }
 
     .preview-pane {
@@ -101,27 +103,12 @@ form {
 
 // Content textarea field
 .content-field {
-    flex: 1;
     width: 100%;
     margin-bottom: 0 !important;
-    height: calc(100% - 40px); // Subtract header height
-
-    ::ng-deep .mat-mdc-text-field-wrapper {
-        height: 100%;
-    }
-
-    ::ng-deep .mat-mdc-form-field-flex {
-        height: 100%;
-    }
-
-    ::ng-deep .mat-mdc-form-field-infix {
-        height: 100%;
-    }
 
     textarea {
         resize: none;
-        height: 100% !important;
-        min-height: 320px;
+        min-height: 160px;
         font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
         font-size: 0.9rem;
         line-height: 1.5;

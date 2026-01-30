@@ -462,6 +462,9 @@ namespace Cognify.Server.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("AiContent")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Content")
                         .HasColumnType("nvarchar(max)");
 
@@ -481,6 +484,9 @@ namespace Cognify.Server.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("UserContent")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 

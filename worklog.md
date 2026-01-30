@@ -5,6 +5,50 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-30 18:25  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Added note detail page with sources list and downloads
+- Split note content into user vs AI sections across editor and views
+- Added note sources API usage and inline embedded images rendering
+- Added backend split content fields with migration and updates
+- Updated status board for notes detail completion
+
+**CHANGED FILES**
+- Cognify.Server/Models/Note.cs
+- Cognify.Server/Dtos/Notes/NoteDto.cs
+- Cognify.Server/Dtos/Notes/CreateNoteDto.cs
+- Cognify.Server/Dtos/Notes/UpdateNoteDto.cs
+- Cognify.Server/Services/NoteService.cs
+- Cognify.Server/Services/ExtractedContentService.cs
+- Cognify.Server/Services/AiBackgroundWorker.cs
+- Cognify.Server/Migrations/ApplicationDbContextModelSnapshot.cs
+- Cognify.Server/Migrations/20260130180000_AddNoteContentSplit.cs
+- cognify.client/src/app/core/models/note.model.ts
+- cognify.client/src/app/core/services/note.service.ts
+- cognify.client/src/app/features/notes/components/note-editor-dialog/note-editor-dialog.component.ts
+- cognify.client/src/app/features/notes/components/note-editor-dialog/note-editor-dialog.component.html
+- cognify.client/src/app/features/notes/components/note-editor-dialog/note-editor-dialog.component.scss
+- cognify.client/src/app/features/notes/components/notes-list/notes-list.component.ts
+- cognify.client/src/app/features/notes/components/notes-list/notes-list.component.html
+- cognify.client/src/app/features/notes/note-detail/note-detail.component.ts
+- cognify.client/src/app/features/notes/note-detail/note-detail.component.html
+- cognify.client/src/app/features/notes/note-detail/note-detail.component.scss
+- cognify.client/src/app/app.routes.ts
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Legacy note content is preserved by combining user/AI content into `Content`
+
+**NEXT**
+- Refactor module page to card layout
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-30 17:55  
 **Author:** GitHub Copilot  
 

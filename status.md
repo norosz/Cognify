@@ -45,8 +45,7 @@ Authoritative implementation details live in [implementation.md](implementation.
 ## ⏭️ Next (ordered)
 
 1) **[Frontend]** Refactor module page to card layout
-2) **[Frontend]** Notes detail page: sources list + downloads + inline images + split inputs
-3) **[Backend]** Concept clustering pipeline (per module) + concept IDs stored
+2) **[Backend]** Concept clustering pipeline (per module) + concept IDs stored
 
 ---
 
@@ -74,6 +73,7 @@ Authoritative implementation details live in [implementation.md](implementation.
 - **[Frontend]** Add attempt result and review pages with AI explanations
 - **[Frontend]** Add statistics page and move analytics off dashboard
 - **[Frontend]** Add final exam UI and exam attempt flows
+- **[Frontend]** Notes detail page with sources, downloads, inline images, and split inputs
 
 ---
 

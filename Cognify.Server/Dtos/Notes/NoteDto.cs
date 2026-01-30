@@ -7,6 +7,8 @@ public class NoteDto
     public Guid? SourceMaterialId { get; set; }
     public required string Title { get; set; }
     public string? Content { get; set; }
+    public string? UserContent { get; set; }
+    public string? AiContent { get; set; }
     public DateTime CreatedAt { get; set; }
     public IReadOnlyList<NoteEmbeddedImageDto>? EmbeddedImages { get; set; }
 }

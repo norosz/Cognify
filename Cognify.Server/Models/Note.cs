@@ -14,6 +14,10 @@ public class Note
 
     public string? Content { get; set; }
 
+    public string? UserContent { get; set; }
+
+    public string? AiContent { get; set; }
+
     public Guid? SourceMaterialId { get; set; }
 
     public string? EmbeddedImagesJson { get; set; }

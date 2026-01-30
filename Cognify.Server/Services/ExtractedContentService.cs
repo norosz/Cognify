@@ -105,6 +105,7 @@ public class ExtractedContentService(ApplicationDbContext db, IAgentRunService a
             ModuleId = content.ModuleId,
             Title = title,
             Content = content.Text,
+            UserContent = content.Text,
             SourceMaterialId = material?.Id,
             EmbeddedImagesJson = imagesJson
         };

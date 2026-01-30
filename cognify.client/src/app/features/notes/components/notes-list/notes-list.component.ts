@@ -125,8 +125,12 @@ export class NotesListComponent implements OnInit {
         }
     }
 
+    openNoteDetail(note: Note): void {
+        this.router.navigate(['/notes', note.id]);
+    }
+
     getNoteContent(note: Note): string {
-        const baseContent = note.content ?? '';
+        const baseContent = this.buildCombinedContent(note);
         const embeddedMarkdown = this.buildEmbeddedImagesMarkdown(note.embeddedImages);
         if (!embeddedMarkdown) {
             return baseContent;
@@ -156,5 +160,21 @@ export class NotesListComponent implements OnInit {
             .join('\n\n');
 
         return `## Embedded Images\n${markdownImages}`;
+    }
+
+    private buildCombinedContent(note: Note): string {
+        const segments: string[] = [];
+
+        if (note.userContent && note.userContent.trim()) {
+            segments.push(`## Your Notes\n${note.userContent.trim()}`);
+        } else if (note.content && note.content.trim()) {
+            segments.push(note.content.trim());
+        }
+
+        if (note.aiContent && note.aiContent.trim()) {
+            segments.push(`## AI Notes\n${note.aiContent.trim()}`);
+        }
+
+        return segments.join('\n\n');
     }
 }

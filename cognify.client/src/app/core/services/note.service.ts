@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Note, CreateNoteRequest, UpdateNoteRequest } from '../models/note.model';
+import { Note, CreateNoteRequest, UpdateNoteRequest, NoteSourcesDto } from '../models/note.model';
 
 @Injectable({
     providedIn: 'root'
@@ -17,6 +17,10 @@ export class NoteService {
 
     getNoteById(id: string): Observable<Note> {
         return this.http.get<Note>(`${this.apiUrl}/${id}`);
+    }
+
+    getNoteSources(id: string): Observable<NoteSourcesDto> {
+        return this.http.get<NoteSourcesDto>(`${this.apiUrl}/${id}/sources`);
     }
 
     createNote(request: CreateNoteRequest): Observable<Note> {

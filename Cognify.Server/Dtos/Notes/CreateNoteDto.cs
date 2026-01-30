@@ -12,4 +12,8 @@ public class CreateNoteDto
     public required string Title { get; set; }
 
     public string? Content { get; set; }
+
+    public string? UserContent { get; set; }
+
+    public string? AiContent { get; set; }
 }

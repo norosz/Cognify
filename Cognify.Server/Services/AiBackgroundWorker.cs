@@ -220,7 +220,8 @@ public class AiBackgroundWorker(
                 }
 
                 var note = await db.Notes.AsNoTracking().FirstOrDefaultAsync(n => n.Id == quiz.NoteId, stoppingToken);
-                if (note == null || string.IsNullOrWhiteSpace(note.Content))
+                var noteContent = GetNoteContent(note);
+                if (note == null || string.IsNullOrWhiteSpace(noteContent))
                 {
                     await pendingService.UpdateStatusAsync(quiz.Id, PendingQuizStatus.Failed, errorMessage: "Note content not found.");
                     if (quiz.AgentRunId.HasValue)
@@ -233,7 +234,7 @@ public class AiBackgroundWorker(
                 var adaptiveContext = await LoadAdaptiveContextAsync(db, quiz.UserId, quiz.NoteId, stoppingToken);
                 var request = new QuizGenerationContractRequest(
                     AgentContractVersions.V2,
-                    BuildAdaptiveContent(note.Content, adaptiveContext),
+                    BuildAdaptiveContent(noteContent, adaptiveContext),
                     (QuestionType)quiz.QuestionType,
                     (int)quiz.Difficulty,
                     quiz.QuestionCount,
@@ -309,6 +310,33 @@ public class AiBackgroundWorker(
             or "application/vnd.openxmlformats-officedocument.presentationml.presentation"
             or "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             or "application/epub+zip";
+    }
+
+    private static string? GetNoteContent(Note? note)
+    {
+        if (note == null)
+        {
+            return null;
+        }
+
+        if (!string.IsNullOrWhiteSpace(note.UserContent) || !string.IsNullOrWhiteSpace(note.AiContent))
+        {
+            var segments = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(note.UserContent))
+            {
+                segments.Add(note.UserContent);
+            }
+
+            if (!string.IsNullOrWhiteSpace(note.AiContent))
+            {
+                segments.Add(note.AiContent);
+            }
+
+            return string.Join("\n\n", segments);
+        }
+
+        return note.Content;
     }
 
     private static async Task<string> ReadTextAsync(string contentType, Stream stream, CancellationToken cancellationToken)
