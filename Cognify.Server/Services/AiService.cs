@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using Azure.AI.OpenAI;
+using Cognify.Server.Dtos.Ai;
 using Cognify.Server.Dtos.Ai.Contracts;
 using Cognify.Server.Models;
 using Cognify.Server.Models.Ai;
@@ -412,6 +413,75 @@ public class AiService : IAiService
         catch
         {
             return ([], null);
+        }
+    }
+
+    public async Task<ExplainMistakeResponse> ExplainMistakeAsync(ExplainMistakeRequest request)
+    {
+        var model = _configuration["OpenAI:Model"] ?? "gpt-4o";
+        var chatClient = _client.GetChatClient(model);
+
+        var mistakeList = request.DetectedMistakes.Count > 0
+            ? string.Join(", ", request.DetectedMistakes)
+            : "(none provided)";
+
+        var prompt = $$"""
+        You are a helpful tutor. Provide a clear explanation for the student's mistake.
+        Return JSON only with these fields:
+        - explanationMarkdown (string)
+        - keyTakeaways (array of short strings)
+        - nextSteps (array of short strings)
+
+        Question: {{request.QuestionPrompt}}
+        Student Answer: {{request.UserAnswer}}
+        Correct Answer: {{request.CorrectAnswer}}
+        Detected Mistakes: {{mistakeList}}
+        Concept Label: {{request.ConceptLabel ?? "(none)"}}
+        Module Context: {{request.ModuleContext ?? "(none)"}}
+        Note Context: {{request.NoteContext ?? "(none)"}}
+
+        Rules:
+        - Use Markdown in explanationMarkdown.
+        - Use KaTeX for formulas ($...$).
+        - Keep explanation concise and constructive.
+        """;
+
+        try
+        {
+            var completion = await chatClient.CompleteChatAsync(
+                [
+                    new SystemChatMessage("Return a strict JSON object with explanationMarkdown, keyTakeaways, nextSteps."),
+                    new UserChatMessage(prompt)
+                ],
+                new ChatCompletionOptions
+                {
+                    ResponseFormat = ChatResponseFormat.CreateJsonObjectFormat()
+                });
+
+            var json = completion.Value.Content[0].Text;
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var parsed = JsonSerializer.Deserialize<ExplainMistakeResponse>(json, options);
+            if (parsed == null)
+            {
+                return new ExplainMistakeResponse
+                {
+                    ExplanationMarkdown = "No explanation available.",
+                    KeyTakeaways = [],
+                    NextSteps = []
+                };
+            }
+
+            return parsed;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to generate mistake explanation");
+            return new ExplainMistakeResponse
+            {
+                ExplanationMarkdown = "We could not generate an explanation at this time.",
+                KeyTakeaways = [],
+                NextSteps = []
+            };
         }
     }
 }

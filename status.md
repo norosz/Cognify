@@ -77,6 +77,7 @@ Authoritative implementation details live in [implementation.md](implementation.
 - **[Backend]** Add `includeExams` filtering to analytics + review queue
 - **[Backend]** Implement module stats and quiz stats endpoints
 - **[Backend]** Implement attempt review endpoints with mistake details
+- **[Backend]** Implement AI explanation endpoint for mistakes
 
 ---
 

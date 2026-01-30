@@ -1,3 +1,4 @@
+using Cognify.Server.Dtos.Ai;
 using Cognify.Server.Dtos.Ai.Contracts;
 using Cognify.Server.Models;
 using Cognify.Server.Models.Ai;
@@ -42,5 +43,15 @@ public class NullAiService : IAiService
             DetectedMistakes: null,
             ConfidenceEstimate: 0,
             RawAnalysis: null));
+    }
+
+    public Task<ExplainMistakeResponse> ExplainMistakeAsync(ExplainMistakeRequest request)
+    {
+        return Task.FromResult(new ExplainMistakeResponse
+        {
+            ExplanationMarkdown = "AI explanations are disabled.",
+            KeyTakeaways = [],
+            NextSteps = []
+        });
     }
 }

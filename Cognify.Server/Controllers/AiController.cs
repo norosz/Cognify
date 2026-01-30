@@ -147,4 +147,19 @@ public class AiController : ControllerBase
             return Problem("Grading failed.");
         }
     }
+
+    [HttpPost("explain-mistake")]
+    public async Task<IActionResult> ExplainMistake([FromBody] ExplainMistakeRequest request)
+    {
+        try
+        {
+            var response = await _aiService.ExplainMistakeAsync(request);
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to explain mistake");
+            return Problem("Mistake explanation failed.");
+        }
+    }
 }
