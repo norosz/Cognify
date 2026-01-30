@@ -16,6 +16,8 @@ export interface QuizDto {
     type: string;
     difficulty?: string;
     quizRubric?: string | null;
+    categoryLabel?: string;
+    categorySource?: string;
     createdAt: string;
 }
 
@@ -43,4 +45,14 @@ export interface AttemptDto {
     timeSpentSeconds?: number;
     difficulty?: string;
     createdAt: string;
+}
+
+export interface QuizStatsDto {
+    quizId: string;
+    questionCount: number;
+    attemptCount: number;
+    averageScore: number;
+    bestScore: number;
+    lastAttemptAt?: string;
+    accuracyRate: number;
 }

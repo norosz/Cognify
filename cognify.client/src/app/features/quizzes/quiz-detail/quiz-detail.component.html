@@ -1,0 +1,59 @@
+<div class="quiz-detail" *ngIf="!loading()">
+  <div *ngIf="error()" class="error-container">
+    <p class="error-text">{{ error() }}</p>
+  </div>
+
+  <ng-container *ngIf="quiz() as q">
+    <div class="header">
+      <button mat-icon-button routerLink="/dashboard" class="back-button">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="title">
+        <h1>{{ q.title }}</h1>
+        <p class="meta">Difficulty: {{ q.difficulty || 'Intermediate' }} · Type: {{ q.type }}</p>
+      </div>
+      <button mat-flat-button color="primary" (click)="takeQuiz()">
+        Take Quiz
+      </button>
+    </div>
+
+    <div class="stats" *ngIf="stats() as s">
+      <mat-card class="stat-card">
+        <span class="stat-label">Attempts</span>
+        <span class="stat-value">{{ s.attemptCount }}</span>
+      </mat-card>
+      <mat-card class="stat-card">
+        <span class="stat-label">Average Score</span>
+        <span class="stat-value">{{ s.averageScore | number:'1.0-0' }}%</span>
+      </mat-card>
+      <mat-card class="stat-card">
+        <span class="stat-label">Best Score</span>
+        <span class="stat-value">{{ s.bestScore | number:'1.0-0' }}%</span>
+      </mat-card>
+      <mat-card class="stat-card">
+        <span class="stat-label">Accuracy</span>
+        <span class="stat-value">{{ s.accuracyRate | percent:'1.0-0' }}</span>
+      </mat-card>
+    </div>
+
+    <mat-card class="attempts-card">
+      <mat-card-title>Attempt History</mat-card-title>
+      <mat-card-content>
+        <div *ngIf="attempts().length === 0" class="empty-state">No attempts yet.</div>
+        <div *ngFor="let attempt of attempts()" class="attempt-row">
+          <div>
+            <div class="attempt-score">{{ attempt.score | number:'1.0-0' }}%</div>
+            <div class="attempt-meta">{{ attempt.createdAt | date:'medium' }}</div>
+          </div>
+          <button mat-button color="primary" routerLink="/quizzes/{{ q.id }}/attempts/{{ attempt.id }}/results">
+            View Result
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </ng-container>
+</div>
+
+<div *ngIf="loading()" class="loading">
+  <p>Loading quiz...</p>
+</div>

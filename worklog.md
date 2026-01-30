@@ -5,6 +5,37 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-30 15:35  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Added quiz detail page (stats + attempt history) and route
+- Added quiz stats model and service method
+- Linked quiz cards to the new quiz detail page
+- Updated status board to mark quiz detail page complete
+
+**CHANGED FILES**
+- cognify.client/src/app/core/models/quiz.models.ts
+- cognify.client/src/app/features/modules/services/quiz.service.ts
+- cognify.client/src/app/features/quizzes/quiz-detail/quiz-detail.component.ts
+- cognify.client/src/app/features/quizzes/quiz-detail/quiz-detail.component.html
+- cognify.client/src/app/features/quizzes/quiz-detail/quiz-detail.component.scss
+- cognify.client/src/app/app.routes.ts
+- cognify.client/src/app/features/modules/components/quiz-list/quiz-list.component.ts
+- cognify.client/src/app/features/modules/components/quiz-list/quiz-list.component.html
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Quiz detail page uses dialog-based quiz taking and refreshes stats after close
+
+**NEXT**
+- Implement results and review pages for attempts
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-30 15:05  
 **Author:** GitHub Copilot  
 
