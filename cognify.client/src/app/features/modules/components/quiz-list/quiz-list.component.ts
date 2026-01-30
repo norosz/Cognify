@@ -102,4 +102,19 @@ export class QuizListComponent implements OnInit {
       default: return { label: type, icon: 'quiz' };
     }
   }
+
+  getDifficultyClass(difficulty?: string) {
+    const value = (difficulty || 'Intermediate').toLowerCase();
+    switch (value) {
+      case 'beginner':
+        return 'difficulty-beginner';
+      case 'advanced':
+        return 'difficulty-advanced';
+      case 'professional':
+        return 'difficulty-professional';
+      case 'intermediate':
+      default:
+        return 'difficulty-intermediate';
+    }
+  }
 }

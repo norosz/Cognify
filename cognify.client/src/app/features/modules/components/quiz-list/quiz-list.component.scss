@@ -106,3 +106,45 @@ mat-card-title.accent-text {
         color: #90caf9;
     }
 }
+
+.type-badge-container {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+
+.difficulty-badge {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 1px solid transparent;
+    text-transform: capitalize;
+    white-space: nowrap;
+}
+
+.difficulty-beginner {
+    background: rgba(46, 204, 113, 0.12);
+    color: #2ecc71;
+    border-color: rgba(46, 204, 113, 0.4);
+}
+
+.difficulty-intermediate {
+    background: rgba(241, 196, 15, 0.12);
+    color: #f1c40f;
+    border-color: rgba(241, 196, 15, 0.35);
+}
+
+.difficulty-advanced {
+    background: rgba(230, 126, 34, 0.12);
+    color: #e67e22;
+    border-color: rgba(230, 126, 34, 0.35);
+}
+
+.difficulty-professional {
+    background: rgba(231, 76, 60, 0.12);
+    color: #e74c3c;
+    border-color: rgba(231, 76, 60, 0.35);
+}

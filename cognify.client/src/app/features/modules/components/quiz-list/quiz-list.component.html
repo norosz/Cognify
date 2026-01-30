@@ -31,6 +31,9 @@
                         <span class="type-badge">
                             {{ getQuizTypeInfo(item.quiz.type).label }}
                         </span>
+                        <span class="difficulty-badge" [ngClass]="getDifficultyClass(item.quiz.difficulty)">
+                            {{ item.quiz.difficulty || 'Intermediate' }}
+                        </span>
                     </div>
                     <p class="question-count">
                         <mat-icon>format_list_numbered</mat-icon>
