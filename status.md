@@ -50,7 +50,7 @@ Authoritative implementation details live in [implementation.md](implementation.
 
 ## 📋 To Do (V2 Alpha)
 
-- [ ] **[Docs/Quality]** Add `ng build` quality gate
+- (none)
 
 ---
 
@@ -75,6 +75,7 @@ Authoritative implementation details live in [implementation.md](implementation.
 - **[Frontend]** Notes detail page with sources, downloads, inline images, and split inputs
 - **[Frontend]** Refactor module page to card layout
 - **[Backend]** Concept clustering pipeline (per module) + concept IDs stored
+- **[Docs/Quality]** Add `ng build` quality gate
 
 ---
 

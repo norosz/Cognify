@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  frontend-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: cognify.client/package-lock.json
+
+      - name: Install dependencies
+        working-directory: cognify.client
+        run: npm ci
+
+      - name: Build
+        working-directory: cognify.client
+        run: npm run build
