@@ -30,11 +30,11 @@
                     <mat-icon>more_vert</mat-icon>
                 </button>
                 <mat-menu #menu="matMenu">
-                    <button mat-menu-item (click)="extractText(doc)"
+                    <button mat-menu-item (click)="extractContent(doc)"
                         [disabled]="doc.status !== 'Uploaded' || isExtracting(doc.id)">
                         <mat-icon *ngIf="!isExtracting(doc.id)">auto_fix_high</mat-icon>
                         <mat-spinner *ngIf="isExtracting(doc.id)" diameter="20"></mat-spinner>
-                        <span>Extract Text</span>
+                        <span>Extract Content</span>
                     </button>
                     <a mat-menu-item *ngIf="doc.downloadUrl" [href]="doc.downloadUrl" target="_blank"
                         (click)="$event.stopPropagation()">

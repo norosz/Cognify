@@ -98,7 +98,7 @@ Before each commit/push:
 - [x] Result/review UX: score colors, review accordion hidden by default, retake redirects to quiz detail
 - [x] Notes UX: scrollable content, image thumbnails + modal, correct “AI generated” labeling
 - [x] Notes actions: generate quiz, delete documents, extract content
-- [ ] Rename “Extract text” → “Extract content”
+- [x] Rename “Extract text” → “Extract content”
 - [ ] Rename Pending to “Quizzes & Exams”
 
 ---

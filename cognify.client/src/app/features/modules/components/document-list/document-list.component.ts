@@ -84,7 +84,7 @@ export class DocumentListComponent implements OnInit {
     return this.extractingDocIds().has(docId);
   }
 
-  extractText(doc: DocumentDto): void {
+  extractContent(doc: DocumentDto): void {
     if (doc.status !== 'Uploaded') return;
     if (this.isExtracting(doc.id)) return;
 
@@ -115,7 +115,7 @@ export class DocumentListComponent implements OnInit {
       },
       error: (err) => {
         console.error(err);
-        this.notification.error('Failed to extract text. Ensure it is a valid image or PDF.');
+        this.notification.error('Failed to extract content. Ensure it is a valid image or PDF.');
 
         const updated = new Set(this.extractingDocIds());
         updated.delete(doc.id);

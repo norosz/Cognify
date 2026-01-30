@@ -5,6 +5,28 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-30 23:22  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Renamed document action from “Extract Text” to “Extract Content”
+
+**CHANGED FILES**
+- cognify.client/src/app/features/modules/components/document-list/document-list.component.html
+- cognify.client/src/app/features/modules/components/document-list/document-list.component.ts
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Use “Extract Content” consistently in UI and error messaging
+
+**NEXT**
+- Rename Pending to “Quizzes & Exams”
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-30 23:10  
 **Author:** GitHub Copilot  
 
