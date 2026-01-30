@@ -78,6 +78,7 @@ Authoritative implementation details live in [implementation.md](implementation.
 - **[Backend]** Implement module stats and quiz stats endpoints
 - **[Backend]** Implement attempt review endpoints with mistake details
 - **[Backend]** Implement AI explanation endpoint for mistakes
+- **[Backend]** Implement category suggestion + override endpoints
 
 ---
 

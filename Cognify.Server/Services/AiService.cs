@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using Azure.AI.OpenAI;
 using Cognify.Server.Dtos.Ai;
 using Cognify.Server.Dtos.Ai.Contracts;
+using Cognify.Server.Dtos.Categories;
 using Cognify.Server.Models;
 using Cognify.Server.Models.Ai;
 using Cognify.Server.Services.Interfaces;
@@ -482,6 +483,49 @@ public class AiService : IAiService
                 KeyTakeaways = [],
                 NextSteps = []
             };
+        }
+    }
+
+    public async Task<CategorySuggestionResponse> SuggestCategoriesAsync(string context, int maxSuggestions)
+    {
+        var model = _configuration["OpenAI:Model"] ?? "gpt-4o";
+        var chatClient = _client.GetChatClient(model);
+        var prompt = $$"""
+        You are an expert taxonomy assistant. Suggest concise category labels.
+        Return JSON only with this shape:
+        { "suggestions": [ { "label": "...", "confidence": 0.0, "rationale": "..." } ] }
+
+        Context:
+        {{context}}
+
+        Rules:
+        - Provide {{maxSuggestions}} suggestions.
+        - Labels should be 2-5 words.
+        - Confidence is 0-1.
+        - Keep rationale short.
+        """;
+
+        try
+        {
+            var completion = await chatClient.CompleteChatAsync(
+                [
+                    new SystemChatMessage("Return a strict JSON object with a 'suggestions' array."),
+                    new UserChatMessage(prompt)
+                ],
+                new ChatCompletionOptions
+                {
+                    ResponseFormat = ChatResponseFormat.CreateJsonObjectFormat()
+                });
+
+            var json = completion.Value.Content[0].Text;
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var parsed = JsonSerializer.Deserialize<CategorySuggestionResponse>(json, options);
+            return parsed ?? new CategorySuggestionResponse();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to suggest categories");
+            return new CategorySuggestionResponse();
         }
     }
 }

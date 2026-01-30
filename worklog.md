@@ -5,6 +5,48 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-30 13:25  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Added category fields to Module and Quiz models + DTOs
+- Implemented category suggestion and override endpoints for modules and quizzes
+- Implemented CategoryService backed by AI category suggestions
+- Added migration `AddCategoryFieldsToModuleAndQuiz`
+- Updated status board to mark category endpoints complete
+
+**CHANGED FILES**
+- Cognify.Server/Models/Module.cs
+- Cognify.Server/Models/QuestionSet.cs
+- Cognify.Server/Dtos/Module/ModuleDtos.cs
+- Cognify.Server/Dtos/QuestionDTOs.cs
+- Cognify.Server/Dtos/Categories/CategoryDtos.cs
+- Cognify.Server/Services/Interfaces/ICategoryService.cs
+- Cognify.Server/Services/CategoryService.cs
+- Cognify.Server/Services/Interfaces/IAiService.cs
+- Cognify.Server/Services/AiService.cs
+- Cognify.Server/Services/NullAiService.cs
+- Cognify.Server/Services/ModuleService.cs
+- Cognify.Server/Services/QuestionService.cs
+- Cognify.Server/Controllers/ModulesController.cs
+- Cognify.Server/Controllers/QuestionSetsController.cs
+- Cognify.Server/Program.cs
+- Cognify.Server/Migrations/20260130132230_AddCategoryFieldsToModuleAndQuiz.cs
+- Cognify.Server/Migrations/20260130132230_AddCategoryFieldsToModuleAndQuiz.Designer.cs
+- Cognify.Server/Migrations/ApplicationDbContextModelSnapshot.cs
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Category overrides are stored with CategorySource = "User"; AI suggestions do not persist until user sets one
+
+**NEXT**
+- Implement note sources endpoint (related uploaded + extracted documents)
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-30 12:50  
 **Author:** GitHub Copilot  
 

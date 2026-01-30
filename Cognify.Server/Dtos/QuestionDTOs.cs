@@ -21,6 +21,8 @@ public record QuizDto
     public string Type { get; init; } = "MultipleChoice";
     public string Difficulty { get; init; } = "Intermediate";
     public string? QuizRubric { get; init; }
+    public string? CategoryLabel { get; init; }
+    public string? CategorySource { get; init; }
     public DateTime CreatedAt { get; init; }
 }
 

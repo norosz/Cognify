@@ -18,6 +18,12 @@ public class Quiz
 
     public string? RubricJson { get; set; }
 
+    [MaxLength(200)]
+    public string? CategoryLabel { get; set; }
+
+    [MaxLength(50)]
+    public string? CategorySource { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     // Navigation properties

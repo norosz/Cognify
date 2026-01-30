@@ -1,3 +1,4 @@
+using Cognify.Server.Dtos.Categories;
 using Cognify.Server.Dtos.Modules;
 using Cognify.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -8,7 +9,7 @@ namespace Cognify.Server.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class ModulesController(IModuleService moduleService, IStatsService statsService) : ControllerBase
+public class ModulesController(IModuleService moduleService, IStatsService statsService, ICategoryService categoryService) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<List<ModuleDto>>> GetModules()
@@ -31,6 +32,22 @@ public class ModulesController(IModuleService moduleService, IStatsService stats
         var stats = await statsService.GetModuleStatsAsync(id);
         if (stats == null) return NotFound();
         return Ok(stats);
+    }
+
+    [HttpPost("{id}/categories/suggest")]
+    public async Task<ActionResult> SuggestCategories(Guid id, [FromBody] CategorySuggestionRequest request)
+    {
+        var suggestions = await categoryService.SuggestModuleCategoriesAsync(id, request.MaxSuggestions);
+        if (suggestions == null) return NotFound();
+        return Ok(suggestions);
+    }
+
+    [HttpPut("{id}/category")]
+    public async Task<ActionResult> SetCategory(Guid id, [FromBody] SetCategoryRequest request)
+    {
+        var success = await categoryService.SetModuleCategoryAsync(id, request.CategoryLabel);
+        if (!success) return NotFound();
+        return Ok();
     }
 
     [HttpPost]

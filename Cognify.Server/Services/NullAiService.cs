@@ -1,5 +1,6 @@
 using Cognify.Server.Dtos.Ai;
 using Cognify.Server.Dtos.Ai.Contracts;
+using Cognify.Server.Dtos.Categories;
 using Cognify.Server.Models;
 using Cognify.Server.Models.Ai;
 using Cognify.Server.Services.Interfaces;
@@ -53,5 +54,10 @@ public class NullAiService : IAiService
             KeyTakeaways = [],
             NextSteps = []
         });
+    }
+
+    public Task<CategorySuggestionResponse> SuggestCategoriesAsync(string context, int maxSuggestions)
+    {
+        return Task.FromResult(new CategorySuggestionResponse());
     }
 }

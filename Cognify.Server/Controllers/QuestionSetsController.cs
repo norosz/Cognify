@@ -1,4 +1,5 @@
 using Cognify.Server.DTOs;
+using Cognify.Server.Dtos.Categories;
 using Cognify.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,7 +9,7 @@ namespace Cognify.Server.Controllers;
 [Authorize]
 [ApiController]
 [Route("api/quizzes")]
-public class QuizzesController(IQuizService quizService, IStatsService statsService) : ControllerBase
+public class QuizzesController(IQuizService quizService, IStatsService statsService, ICategoryService categoryService) : ControllerBase
 {
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateQuizDto dto)
@@ -40,6 +41,22 @@ public class QuizzesController(IQuizService quizService, IStatsService statsServ
         var stats = await statsService.GetQuizStatsAsync(id);
         if (stats == null) return NotFound();
         return Ok(stats);
+    }
+
+    [HttpPost("{id}/categories/suggest")]
+    public async Task<IActionResult> SuggestCategories(Guid id, [FromBody] CategorySuggestionRequest request)
+    {
+        var suggestions = await categoryService.SuggestQuizCategoriesAsync(id, request.MaxSuggestions);
+        if (suggestions == null) return NotFound();
+        return Ok(suggestions);
+    }
+
+    [HttpPut("{id}/category")]
+    public async Task<IActionResult> SetCategory(Guid id, [FromBody] SetCategoryRequest request)
+    {
+        var success = await categoryService.SetQuizCategoryAsync(id, request.CategoryLabel);
+        if (!success) return NotFound();
+        return Ok();
     }
     
     [HttpGet]

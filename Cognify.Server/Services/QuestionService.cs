@@ -110,6 +110,8 @@ public class QuizService(ApplicationDbContext context, IUserContextService userC
             Type = quiz.Type.ToString(),
             Difficulty = quiz.Difficulty.ToString(),
             QuizRubric = quiz.RubricJson,
+            CategoryLabel = quiz.CategoryLabel,
+            CategorySource = quiz.CategorySource,
             CreatedAt = quiz.CreatedAt,
             Questions = quiz.Questions?.Select(q => new QuizQuestionDto
             {

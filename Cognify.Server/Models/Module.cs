@@ -19,6 +19,12 @@ public class Module
 
     public Guid? CurrentFinalExamQuizId { get; set; }
 
+    [MaxLength(200)]
+    public string? CategoryLabel { get; set; }
+
+    [MaxLength(50)]
+    public string? CategorySource { get; set; }
+
     // Navigation properties
     public User? OwnerUser { get; set; }
     public ICollection<Document> Documents { get; set; } = [];

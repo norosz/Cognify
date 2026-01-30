@@ -1,4 +1,5 @@
 using Cognify.Server.Dtos.Ai.Contracts;
+using Cognify.Server.Dtos.Categories;
 using Cognify.Server.Dtos.Ai;
 using Cognify.Server.Models;
 using Cognify.Server.Models.Ai;
@@ -14,4 +15,5 @@ public interface IAiService
     Task<string> GradeAnswerAsync(string question, string answer, string context);
     Task<GradingContractResponse> GradeAnswerAsync(GradingContractRequest request);
     Task<ExplainMistakeResponse> ExplainMistakeAsync(ExplainMistakeRequest request);
+    Task<CategorySuggestionResponse> SuggestCategoriesAsync(string context, int maxSuggestions);
 }

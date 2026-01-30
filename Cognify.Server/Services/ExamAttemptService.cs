@@ -350,4 +350,11 @@ public class ExamAttemptService(
 
         return ["NeedsMoreDetail"];
     }
+
+    private readonly record struct QuestionEvaluation(
+        double Score,
+        bool IsCorrect,
+        string? Feedback,
+        IReadOnlyList<string>? DetectedMistakes,
+        double? ConfidenceEstimate);
 }

@@ -11,6 +11,8 @@ public class ModuleDto
     public int DocumentsCount { get; set; }
     public int NotesCount { get; set; }
     public int QuizzesCount { get; set; }
+    public string? CategoryLabel { get; set; }
+    public string? CategorySource { get; set; }
 }
 
 public class CreateModuleDto
