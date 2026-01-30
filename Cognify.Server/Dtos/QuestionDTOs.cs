@@ -18,6 +18,7 @@ public record QuizDto
     public Guid NoteId { get; init; }
     public string Title { get; init; } = string.Empty;
     public List<QuizQuestionDto> Questions { get; init; } = [];
+    public int QuestionCount { get; init; }
     public string Type { get; init; } = "MultipleChoice";
     public string Difficulty { get; init; } = "Intermediate";
     public string? QuizRubric { get; init; }

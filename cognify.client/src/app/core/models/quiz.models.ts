@@ -13,6 +13,7 @@ export interface QuizDto {
     noteId: string;
     title: string;
     questions: QuizQuestionDto[];
+    questionCount: number;
     type: string;
     difficulty?: string;
     quizRubric?: string | null;

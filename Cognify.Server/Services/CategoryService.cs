@@ -21,6 +21,22 @@ public class CategoryService(ApplicationDbContext context, IUserContextService u
             return null;
         }
 
+        var noteCount = await context.Notes
+            .AsNoTracking()
+            .Where(n => n.ModuleId == moduleId)
+            .CountAsync();
+
+        var quizCount = await context.Quizzes
+            .AsNoTracking()
+            .Join(context.Notes.AsNoTracking(), q => q.NoteId, n => n.Id, (q, n) => new { q, n })
+            .Where(x => x.n.ModuleId == moduleId)
+            .CountAsync();
+
+        if (noteCount + quizCount < 1)
+        {
+            throw new InvalidOperationException("Category suggestions are available after adding at least one note or quiz.");
+        }
+
         var noteTitles = await context.Notes
             .AsNoTracking()
             .Where(n => n.ModuleId == moduleId)
@@ -37,7 +53,9 @@ public class CategoryService(ApplicationDbContext context, IUserContextService u
             .ToListAsync();
 
         var contextText = BuildModuleContext(module.Title, module.Description, noteTitles, quizTitles);
-        return await aiService.SuggestCategoriesAsync(contextText, maxSuggestions);
+        var suggestions = await aiService.SuggestCategoriesAsync(contextText, maxSuggestions);
+        await PersistHistoryBatchAsync(userId, moduleId, null, "AI", suggestions.Suggestions);
+        return suggestions;
     }
 
     public async Task<CategorySuggestionResponse?> SuggestQuizCategoriesAsync(Guid quizId, int maxSuggestions)
@@ -56,13 +74,20 @@ public class CategoryService(ApplicationDbContext context, IUserContextService u
             return null;
         }
 
+        if (quiz.Questions.Count < 3)
+        {
+            throw new InvalidOperationException("Category suggestions are available after the quiz has at least 3 questions.");
+        }
+
         var contextText = BuildQuizContext(
             quiz.Title,
             quiz.Difficulty.ToString(),
             quiz.Type.ToString(),
             quiz.Questions.Select(q => q.Prompt).Take(3).ToList());
 
-        return await aiService.SuggestCategoriesAsync(contextText, maxSuggestions);
+        var suggestions = await aiService.SuggestCategoriesAsync(contextText, maxSuggestions);
+        await PersistHistoryBatchAsync(userId, null, quizId, "AI", suggestions.Suggestions);
+        return suggestions;
     }
 
     public async Task<bool> SetModuleCategoryAsync(Guid moduleId, string categoryLabel)
@@ -77,6 +102,7 @@ public class CategoryService(ApplicationDbContext context, IUserContextService u
         module.CategoryLabel = categoryLabel;
         module.CategorySource = "User";
         await context.SaveChangesAsync();
+        await PersistHistoryBatchAsync(userId, moduleId, null, "Applied", [new CategorySuggestionItemDto { Label = categoryLabel }]);
         return true;
     }
 
@@ -96,7 +122,113 @@ public class CategoryService(ApplicationDbContext context, IUserContextService u
         quiz.CategoryLabel = categoryLabel;
         quiz.CategorySource = "User";
         await context.SaveChangesAsync();
+        await PersistHistoryBatchAsync(userId, null, quizId, "Applied", [new CategorySuggestionItemDto { Label = categoryLabel }]);
         return true;
+    }
+
+    public async Task<CategoryHistoryResponseDto?> GetModuleCategoryHistoryAsync(Guid moduleId, int take, Guid? cursor)
+    {
+        var userId = userContext.GetCurrentUserId();
+
+        var module = await context.Modules
+            .AsNoTracking()
+            .FirstOrDefaultAsync(m => m.Id == moduleId && m.OwnerUserId == userId);
+
+        if (module == null)
+        {
+            return null;
+        }
+
+        return await GetHistoryAsync(userId, moduleId, null, take, cursor);
+    }
+
+    public async Task<CategoryHistoryResponseDto?> GetQuizCategoryHistoryAsync(Guid quizId, int take, Guid? cursor)
+    {
+        var userId = userContext.GetCurrentUserId();
+
+        var quiz = await context.Quizzes
+            .AsNoTracking()
+            .Include(q => q.Note)
+            .ThenInclude(n => n!.Module)
+            .FirstOrDefaultAsync(q => q.Id == quizId);
+
+        if (quiz == null || quiz.Note?.Module?.OwnerUserId != userId)
+        {
+            return null;
+        }
+
+        return await GetHistoryAsync(userId, null, quizId, take, cursor);
+    }
+
+    private async Task PersistHistoryBatchAsync(Guid userId, Guid? moduleId, Guid? quizId, string source, IEnumerable<CategorySuggestionItemDto> items)
+    {
+        var batch = new Models.CategorySuggestionBatch
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            ModuleId = moduleId,
+            QuizId = quizId,
+            Source = source,
+            CreatedAt = DateTime.UtcNow,
+            Items = items.Select(i => new Models.CategorySuggestionItem
+            {
+                Id = Guid.NewGuid(),
+                Label = i.Label,
+                Confidence = i.Confidence,
+                Rationale = i.Rationale
+            }).ToList()
+        };
+
+        context.CategorySuggestionBatches.Add(batch);
+        await context.SaveChangesAsync();
+    }
+
+    private async Task<CategoryHistoryResponseDto> GetHistoryAsync(Guid userId, Guid? moduleId, Guid? quizId, int take, Guid? cursor)
+    {
+        var batches = context.CategorySuggestionBatches
+            .AsNoTracking()
+            .Include(b => b.Items)
+            .Where(b => b.UserId == userId && b.ModuleId == moduleId && b.QuizId == quizId);
+
+        if (cursor.HasValue)
+        {
+            var cursorBatch = await context.CategorySuggestionBatches
+                .AsNoTracking()
+                .FirstOrDefaultAsync(b => b.Id == cursor.Value && b.UserId == userId);
+
+            if (cursorBatch == null)
+            {
+                throw new ArgumentException("Invalid cursor.");
+            }
+
+            batches = batches.Where(b => b.CreatedAt < cursorBatch.CreatedAt
+                                         || (b.CreatedAt == cursorBatch.CreatedAt && b.Id.CompareTo(cursorBatch.Id) < 0));
+        }
+
+        var results = await batches
+            .OrderByDescending(b => b.CreatedAt)
+            .ThenByDescending(b => b.Id)
+            .Take(take)
+            .ToListAsync();
+
+        var response = new CategoryHistoryResponseDto
+        {
+            Items = results.Select(b => new CategoryHistoryBatchDto
+            {
+                BatchId = b.Id,
+                CreatedAt = b.CreatedAt,
+                Source = b.Source,
+                Items = b.Items.Select(i => new CategoryHistoryItemDto
+                {
+                    Label = i.Label,
+                    Confidence = i.Confidence,
+                    Rationale = i.Rationale
+                }).ToList()
+            }).ToList(),
+            NextCursor = results.Count == take ? results.Last().Id : null
+        };
+
+        return response;
     }
 
     private static string BuildModuleContext(string title, string? description, List<string> noteTitles, List<string> quizTitles)

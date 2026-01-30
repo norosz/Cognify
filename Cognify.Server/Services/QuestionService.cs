@@ -107,6 +107,7 @@ public class QuizService(ApplicationDbContext context, IUserContextService userC
             Id = quiz.Id,
             NoteId = quiz.NoteId,
             Title = quiz.Title,
+            QuestionCount = quiz.Questions?.Count ?? 0,
             Type = quiz.Type.ToString(),
             Difficulty = quiz.Difficulty.ToString(),
             QuizRubric = quiz.RubricJson,

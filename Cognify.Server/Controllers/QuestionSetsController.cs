@@ -2,6 +2,7 @@ using Cognify.Server.DTOs;
 using Cognify.Server.Dtos.Categories;
 using Cognify.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Cognify.Server.Controllers;
@@ -46,9 +47,51 @@ public class QuizzesController(IQuizService quizService, IStatsService statsServ
     [HttpPost("{id}/categories/suggest")]
     public async Task<IActionResult> SuggestCategories(Guid id, [FromBody] CategorySuggestionRequest request)
     {
-        var suggestions = await categoryService.SuggestQuizCategoriesAsync(id, request.MaxSuggestions);
-        if (suggestions == null) return NotFound();
-        return Ok(suggestions);
+        try
+        {
+            var suggestions = await categoryService.SuggestQuizCategoriesAsync(id, request.MaxSuggestions);
+            if (suggestions == null) return NotFound();
+            return Ok(suggestions);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new ProblemDetails
+            {
+                Title = "Category suggestion unavailable",
+                Detail = ex.Message,
+                Status = StatusCodes.Status400BadRequest
+            });
+        }
+    }
+
+    [HttpGet("{id}/categories/history")]
+    public async Task<IActionResult> GetCategoryHistory(Guid id, [FromQuery] int take = 10, [FromQuery] Guid? cursor = null)
+    {
+        if (take < 1 || take > 50)
+        {
+            return BadRequest(new ProblemDetails
+            {
+                Title = "Invalid take",
+                Detail = "Take must be between 1 and 50.",
+                Status = StatusCodes.Status400BadRequest
+            });
+        }
+
+        try
+        {
+            var history = await categoryService.GetQuizCategoryHistoryAsync(id, take, cursor);
+            if (history == null) return NotFound();
+            return Ok(history);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new ProblemDetails
+            {
+                Title = "Invalid cursor",
+                Detail = ex.Message,
+                Status = StatusCodes.Status400BadRequest
+            });
+        }
     }
 
     [HttpPut("{id}/category")]

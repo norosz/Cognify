@@ -5,6 +5,41 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-31 00:40  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Added backend category suggestion history tables and DTOs
+- Persisted AI and Applied category history batches
+- Added category history endpoints with cursor pagination
+- Enforced eligibility gating and exposed quiz questionCount
+
+**CHANGED FILES**
+- Cognify.Server/Models/CategorySuggestionBatch.cs
+- Cognify.Server/Models/CategorySuggestionItem.cs
+- Cognify.Server/Data/ApplicationDbContext.cs
+- Cognify.Server/Dtos/Categories/CategoryDtos.cs
+- Cognify.Server/Services/Interfaces/ICategoryService.cs
+- Cognify.Server/Services/CategoryService.cs
+- Cognify.Server/Controllers/ModulesController.cs
+- Cognify.Server/Controllers/QuestionSetsController.cs
+- Cognify.Server/Dtos/QuestionDTOs.cs
+- Cognify.Server/Services/QuestionService.cs
+- Cognify.Server/Migrations/*AddCategorySuggestionHistory*
+- cognify.client/src/app/core/models/quiz.models.ts
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Cursor-based pagination uses batchId and newest-first ordering
+
+**NEXT**
+- Wire category history UX and suggest/apply flows in the frontend
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-31 00:12  
 **Author:** GitHub Copilot  
 

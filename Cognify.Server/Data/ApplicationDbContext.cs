@@ -24,6 +24,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<AgentRun> AgentRuns => Set<AgentRun>();
     public DbSet<Material> Materials => Set<Material>();
     public DbSet<MaterialExtraction> MaterialExtractions => Set<MaterialExtraction>();
+    public DbSet<CategorySuggestionBatch> CategorySuggestionBatches => Set<CategorySuggestionBatch>();
+    public DbSet<CategorySuggestionItem> CategorySuggestionItems => Set<CategorySuggestionItem>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -187,6 +189,25 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         modelBuilder.Entity<UserMistakePattern>()
             .HasIndex(p => new { p.UserId, p.Topic, p.Category })
             .IsUnique();
+
+        // Category suggestion history
+        modelBuilder.Entity<CategorySuggestionBatch>()
+            .HasMany(b => b.Items)
+            .WithOne(i => i.Batch)
+            .HasForeignKey(i => i.BatchId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<CategorySuggestionBatch>()
+            .HasOne<Module>()
+            .WithMany()
+            .HasForeignKey(b => b.ModuleId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<CategorySuggestionBatch>()
+            .HasOne<Quiz>()
+            .WithMany()
+            .HasForeignKey(b => b.QuizId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         // ExtractedContent Relationships
         modelBuilder.Entity<ExtractedContent>()

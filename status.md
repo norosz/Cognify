@@ -68,14 +68,14 @@ Before each commit/push:
 
 ### Epic A — Categories (modules + quizzes)
 
-- [ ] Backend: add category history tables (batches + items)
-- [ ] Backend: persist `AI` history batch on `POST .../categories/suggest`
-- [ ] Backend: persist `Applied` history batch on `PUT .../category`
-- [ ] Backend: add history endpoints (cursor=batchId, take=10)
-- [ ] Backend: enforce eligibility gating
+- [x] Backend: add category history tables (batches + items)
+- [x] Backend: persist `AI` history batch on `POST .../categories/suggest`
+- [x] Backend: persist `Applied` history batch on `PUT .../category`
+- [x] Backend: add history endpoints (cursor=batchId, take=10)
+- [x] Backend: enforce eligibility gating
 	- module: `noteCount + quizCount >= 1`
 	- quiz: `questionCount >= 3`
-- [ ] Backend: expose `questionCount` on quiz detail DTO
+- [x] Backend: expose `questionCount` on quiz detail DTO
 - [ ] Frontend: wire module/quiz category suggest/apply/history services
 - [ ] Frontend: category input opens scrollable history on focus (soft dedupe display)
 - [ ] Frontend: show/edit categories on module cards + module detail + quiz cards + quiz detail
