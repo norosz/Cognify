@@ -185,6 +185,7 @@ Before each commit/push:
 - **[Frontend]** Add final exam selected-notes confirmation dialog
 - **[Backend]** Fix final exam selected-notes query translation
 - **[Backend]** Add AI quiz repair agent before saving pending quizzes
+- **[Backend]** Run quiz repair during generation to normalize Markdown/LaTeX
 - **[Frontend]** Disable review quiz button when queue is empty and improve module/quiz/note card click affordances
 - **[Frontend]** Normalize mistake labels in reviews and statistics
 

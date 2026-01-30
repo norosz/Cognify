@@ -288,8 +288,20 @@ public class AiBackgroundWorker(
                 {
                     Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
                 };
-                var questionsJson = System.Text.Json.JsonSerializer.Serialize(quizResponse, options);
-                await pendingService.UpdateStatusAsync(quiz.Id, PendingQuizStatus.Ready, questionsJson: questionsJson, actualQuestionCount: questions.Count);
+                var repairResponse = await aiService.RepairQuizAsync(new QuizRepairContractRequest(
+                    AgentContractVersions.V2,
+                    quizResponse.Questions,
+                    quizResponse.QuizRubric));
+
+                var repairedQuestions = repairResponse.Questions.Count > 0 ? repairResponse.Questions : quizResponse.Questions;
+                var repairedRubric = repairResponse.QuizRubric ?? quizResponse.QuizRubric;
+
+                var questionsJson = System.Text.Json.JsonSerializer.Serialize(new QuizGenerationContractResponse(
+                    quizResponse.ContractVersion,
+                    repairedQuestions,
+                    repairedRubric), options);
+
+                await pendingService.UpdateStatusAsync(quiz.Id, PendingQuizStatus.Ready, questionsJson: questionsJson, actualQuestionCount: repairedQuestions.Count);
                 if (quiz.AgentRunId.HasValue)
                 {
                     await agentRunService.MarkCompletedAsync(quiz.AgentRunId.Value, questionsJson);

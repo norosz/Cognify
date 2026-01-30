@@ -5,6 +5,28 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-31 11:35  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Extended quiz repair prompt to fix inline math formatting like O(n)
+- Applied quiz repair during generation for all pending/exam quizzes
+
+**CHANGED FILES**
+- Cognify.Server/Services/AiBackgroundWorker.cs
+- Cognify.Server/Services/AiPrompts.cs
+- worklog.md
+
+**DECISIONS**
+- Run repair agent before save and during generation to normalize Markdown/LaTeX
+
+**NEXT**
+- None
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-31 11:10  
 **Author:** GitHub Copilot  
 

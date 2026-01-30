@@ -196,7 +196,7 @@ public static class AiPrompts
     public static string BuildQuizRepairPrompt(string quizJson)
     {
         return $$"""
-        You are a JSON repair tool. Fix malformed inline LaTeX in the quiz content.
+        You are a JSON repair tool. Fix malformed inline LaTeX and Markdown formatting issues in the quiz content.
 
         Input JSON (do not add fields, keep structure):
         {{quizJson}}
@@ -204,8 +204,10 @@ public static class AiPrompts
         Requirements:
         1. Return a SINGLE JSON object with the same structure (questions + optional quizRubric).
         2. Do NOT change the meaning, order, or correctness of any question or answer.
-        3. Only fix malformed inline LaTeX such as unmatched $ delimiters.
-        4. Preserve existing Markdown and backticks. Do not add commentary.
+        3. Fix malformed inline LaTeX such as unmatched $ delimiters and any math expressions missing $...$.
+        4. Ensure inline math like O(n), O(\log n), n^2, 2^n is wrapped as $O(n)$, $O(\log n)$, $n^2$, $2^n$.
+        5. Ensure spacing around punctuation is readable (e.g., "Label: $O(n)$").
+        6. Preserve existing Markdown and backticks. Do not add commentary.
 
         Output format:
         {
