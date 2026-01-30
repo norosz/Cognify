@@ -34,9 +34,14 @@ export class QuizDetailComponent implements OnInit {
   attempts = signal<AttemptDto[]>([]);
   loading = signal<boolean>(false);
   error = signal<string | null>(null);
+  returnTo = signal<string>('/dashboard');
 
   ngOnInit(): void {
     const quizId = this.route.snapshot.paramMap.get('quizId');
+    const returnTo = this.route.snapshot.queryParamMap.get('returnTo');
+    if (returnTo) {
+      this.returnTo.set(returnTo);
+    }
     if (!quizId) {
       this.error.set('Quiz not found.');
       return;

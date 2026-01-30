@@ -12,7 +12,11 @@
         </mat-card>
 
         <div class="grid">
-            <mat-card *ngFor="let item of quizzes()" class="quiz-card cognify-glass-card">
+            <mat-card
+                *ngFor="let item of quizzes()"
+                class="quiz-card cognify-glass-card"
+                [routerLink]="['/quizzes', item.quiz.id]"
+                [queryParams]="{ returnTo: '/modules/' + moduleId }">
                 <mat-card-header>
                     <div mat-card-avatar>
                         <mat-icon>{{ getQuizTypeInfo(item.quiz.type).icon }}</mat-icon>
@@ -43,13 +47,10 @@
                     <p class="date">Created: {{ item.quiz.createdAt | date }}</p>
                 </mat-card-content>
                 <mat-card-actions align="end">
-                    <button mat-icon-button color="warn" (click)="deleteQuiz(item.quiz)">
+                    <button mat-icon-button color="warn" (click)="$event.stopPropagation(); deleteQuiz(item.quiz)">
                         <mat-icon>delete</mat-icon>
                     </button>
-                    <button mat-button color="primary" routerLink="/quizzes/{{ item.quiz.id }}">
-                        View Details
-                    </button>
-                    <button mat-flat-button color="primary" (click)="takeQuiz(item.quiz)">
+                    <button mat-flat-button color="primary" (click)="$event.stopPropagation(); takeQuiz(item.quiz)">
                         Take Quiz
                     </button>
                 </mat-card-actions>

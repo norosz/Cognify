@@ -5,6 +5,30 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-30 22:32  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Made quiz cards clickable and removed the View Details button
+- Preserved quiz detail back navigation to the originating module via returnTo
+
+**CHANGED FILES**
+- cognify.client/src/app/features/modules/components/quiz-list/quiz-list.component.html
+- cognify.client/src/app/features/quizzes/quiz-detail/quiz-detail.component.html
+- cognify.client/src/app/features/quizzes/quiz-detail/quiz-detail.component.ts
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Quiz cards navigate to detail with returnTo query param for correct back navigation
+
+**NEXT**
+- Continue bugfix sprint (result/review UX and notes UX)
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-30 22:15  
 **Author:** GitHub Copilot  
 

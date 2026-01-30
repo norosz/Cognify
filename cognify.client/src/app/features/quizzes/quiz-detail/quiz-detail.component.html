@@ -5,7 +5,7 @@
 
   <ng-container *ngIf="quiz() as q">
     <div class="header">
-      <button mat-icon-button routerLink="/dashboard" class="back-button">
+      <button mat-icon-button [routerLink]="returnTo()" class="back-button">
         <mat-icon>arrow_back</mat-icon>
       </button>
       <div class="title">
