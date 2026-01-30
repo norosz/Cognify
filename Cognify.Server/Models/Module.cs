@@ -17,9 +17,12 @@ public class Module
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+    public Guid? CurrentFinalExamQuizId { get; set; }
+
     // Navigation properties
     public User? OwnerUser { get; set; }
     public ICollection<Document> Documents { get; set; } = [];
     public ICollection<Note> Notes { get; set; } = [];
     public ICollection<Material> Materials { get; set; } = [];
+    public Quiz? CurrentFinalExamQuiz { get; set; }
 }

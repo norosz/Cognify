@@ -12,6 +12,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Quiz> Quizzes => Set<Quiz>();
     public DbSet<QuizQuestion> QuizQuestions => Set<QuizQuestion>();
     public DbSet<Attempt> Attempts => Set<Attempt>();
+    public DbSet<ExamAttempt> ExamAttempts => Set<ExamAttempt>();
     public DbSet<UserKnowledgeState> UserKnowledgeStates => Set<UserKnowledgeState>();
     public DbSet<LearningInteraction> LearningInteractions => Set<LearningInteraction>();
     public DbSet<AnswerEvaluation> AnswerEvaluations => Set<AnswerEvaluation>();
@@ -46,6 +47,12 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .WithOne(n => n.Module)
             .HasForeignKey(n => n.ModuleId)
             .OnDelete(DeleteBehavior.NoAction); // Avoid multiple cascade paths (Modules -> Notes and Modules -> Materials -> Notes)
+
+        modelBuilder.Entity<Module>()
+            .HasOne(m => m.CurrentFinalExamQuiz)
+            .WithMany()
+            .HasForeignKey(m => m.CurrentFinalExamQuizId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         // Module - Material (One-to-Many)
         modelBuilder.Entity<Module>()
@@ -91,6 +98,24 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasForeignKey(a => a.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        modelBuilder.Entity<ExamAttempt>()
+            .HasOne(e => e.Module)
+            .WithMany()
+            .HasForeignKey(e => e.ModuleId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        modelBuilder.Entity<ExamAttempt>()
+            .HasOne(e => e.Quiz)
+            .WithMany()
+            .HasForeignKey(e => e.QuizId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ExamAttempt>()
+            .HasOne(e => e.User)
+            .WithMany()
+            .HasForeignKey(e => e.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         // Knowledge Model Relationships
         modelBuilder.Entity<UserKnowledgeState>()
             .HasOne(s => s.User)
@@ -112,6 +137,12 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasOne(i => i.Attempt)
             .WithMany()
             .HasForeignKey(i => i.AttemptId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<LearningInteraction>()
+            .HasOne(i => i.ExamAttempt)
+            .WithMany()
+            .HasForeignKey(i => i.ExamAttemptId)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<LearningInteraction>()

@@ -16,6 +16,8 @@ public class LearningInteraction
 
     public Guid? AttemptId { get; set; }
 
+    public Guid? ExamAttemptId { get; set; }
+
     public Guid? QuestionId { get; set; }
 
     public string? UserAnswer { get; set; }
@@ -27,6 +29,7 @@ public class LearningInteraction
     // Navigation properties
     public User? User { get; set; }
     public Attempt? Attempt { get; set; }
+    public ExamAttempt? ExamAttempt { get; set; }
 }
 
 public enum LearningInteractionType

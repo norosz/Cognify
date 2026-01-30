@@ -5,6 +5,38 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-30 10:45  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Added `ExamAttempt` entity and EF relationships
+- Added `Module.CurrentFinalExamQuizId` pointer to track current module final exam
+- Extended `LearningInteraction` to link exam attempts
+- Created migration `AddExamAttemptsAndModuleFinalExamPointer`
+- Updated status board to mark schema work complete
+
+**CHANGED FILES**
+- Cognify.Server/Models/ExamAttempt.cs
+- Cognify.Server/Models/Module.cs
+- Cognify.Server/Models/LearningInteraction.cs
+- Cognify.Server/Data/ApplicationDbContext.cs
+- Cognify.Server/Migrations/20260130101820_AddExamAttemptsAndModuleFinalExamPointer.cs
+- Cognify.Server/Migrations/20260130101820_AddExamAttemptsAndModuleFinalExamPointer.Designer.cs
+- Cognify.Server/Migrations/ApplicationDbContextModelSnapshot.cs
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Exam attempts are stored separately from practice attempts
+- Module points to the current final exam quiz via `CurrentFinalExamQuizId`
+
+**NEXT**
+- Implement exam endpoints and final exam regenerate/save pointer flow
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-30 10:30  
 **Author:** GitHub Copilot  
 

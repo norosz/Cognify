@@ -38,8 +38,7 @@ Authoritative implementation details live in [implementation.md](implementation.
 
 ## 🏗️ In Progress
 
-- **[Docs]** Replace audit-style docs with V2 Alpha plan (routes/endpoints/checklists)
-- **[Backend]** Add schema: `ExamAttempt`, `Module.CurrentFinalExamQuizId` (awaiting migration approval)
+- (none)
 
 ---
 
@@ -72,7 +71,8 @@ Authoritative implementation details live in [implementation.md](implementation.
 
 ## ✅ Done (since V2 Alpha declaration)
 
-- (none yet)
+- **[Docs]** Replace audit-style docs with V2 Alpha plan (routes/endpoints/checklists)
+- **[Backend]** Add schema: `ExamAttempt`, `Module.CurrentFinalExamQuizId` + migration
 
 ---
 
