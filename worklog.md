@@ -5,6 +5,31 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-31 02:05  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Overwrote implementation plan to lock next-scope decisions (Final Exam v2, Statistics tabs/filters, module-create category defaults)
+- Updated status board with new epics/checklists for the next work chunk
+
+**CHANGED FILES**
+- implementation.md
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Final exams are module-scoped and can be note-less (exams only); questions come from user-selected notes
+- If no notes are selected, regenerate blocks with a dialog offering “Include all notes”
+- Statistics stays on one page with tabs (Practice/Exams); quiz-category filters apply to practice only
+- Module category is optional on create; if omitted, backend generates an AI default category
+
+**NEXT**
+- Implement Final Exam v2: note selection flag + note-less exam flow + gating dialog
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-31 01:30  
 **Author:** GitHub Copilot  
 

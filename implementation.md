@@ -66,6 +66,36 @@ For every feature/bugfix PR chunk:
 
 - Quiz timer and timer analytics (items 17–18 in the bug list) are deferred.
 
+### 1.6 Final Exam v2 (module-scoped, note-less)
+
+- Final exams are **module-scoped** and can be **note-less** (unlike practice quizzes).
+	- Only final exams are allowed to have `NoteId = null`.
+- Final exam questions must be generated from **user-selected module notes**.
+	- A note is eligible for selection if it is a real user note (not a synthetic/system marker note).
+	- New notes default to `IncludeInFinalExam = false`.
+- If a user tries to regenerate/start a final exam with **zero selected notes**:
+	- backend returns `400 ProblemDetails` with a stable code: `FinalExam.NoNotesSelected`
+	- UI blocks with a friendly dialog offering:
+		- “Include all notes” (bulk-select) + auto-retry regenerate
+		- “Cancel”
+
+### 1.7 Statistics v2 (single page with tabs)
+
+- Statistics remains a single route/page with tabs:
+	- **Practice** tab: learning/practice analytics
+	- **Exams** tab: exam-only analytics
+- Category breakdown v2 defaults to **group by Module Category**.
+- Quiz-category filtering is supported via **multi-select**, but applies to **Practice only**.
+- Exams inherit the module category and do not expose quiz-category filters.
+
+### 1.8 Module creation category UX
+
+- When creating a module, the user can optionally provide a category.
+- UI must communicate:
+	- Category is **optional**.
+	- AI can generate a category.
+- If the user does not provide a category, backend will generate a default category on create (from module title/description) so “Uncategorized” is not shown in normal flow.
+
 ---
 
 ## 2) Current Code Inventory (what exists today)
@@ -194,6 +224,59 @@ Acceptance criteria:
 
 ---
 
+### Epic E) Final Exam v2 (module-scoped, note-less, selected notes)
+
+User stories:
+- As a user, I can mark which notes are included in my final exam.
+- As a user, I can regenerate the final exam and it uses only my selected notes.
+- As a user, if I forgot to select notes, the app guides me to fix it quickly.
+
+Acceptance criteria:
+- Notes:
+	- `IncludeInFinalExam` flag exists and defaults to `false`.
+	- User can toggle it in:
+		- module notes list
+		- note detail page
+- Final exam regeneration:
+	- final exam quizzes can be created without a note (`NoteId = null`) and are module-owned.
+	- question generation source is the set of selected notes for the module.
+	- if no notes are selected, regenerate returns `400 ProblemDetails` with code `FinalExam.NoNotesSelected`.
+	- UI shows a dialog with “Include all notes” (bulk select) and retries regenerate.
+
+---
+
+### Epic F) Statistics v2 (Practice/Exams tabs + category filters)
+
+User stories:
+- As a user, I can switch between practice analytics and exam analytics.
+- As a user, I can see category breakdown grouped by module category.
+- As a user, I can filter practice analytics by one or more quiz categories.
+
+Acceptance criteria:
+- Statistics page uses tabs:
+	- Practice tab shows existing practice analytics surfaces.
+	- Exams tab shows exam attempt analytics only.
+- Category breakdown v2:
+	- defaults to grouping by module category.
+	- supports multi-select quiz-category filters (practice only).
+	- exams ignore quiz-category filters and inherit module category.
+
+---
+
+### Epic G) Module creation category defaults
+
+User stories:
+- As a user, I can optionally provide a category when I create a module.
+- As a user, if I skip category, the app still assigns a sensible category.
+
+Acceptance criteria:
+- Create module dialog includes an optional category input with helper text that it’s not mandatory.
+- Backend creates modules with a populated category:
+	- user-provided category wins
+	- otherwise AI generates a default category from title/description
+
+---
+
 ## 4) UI/UX Bugfix Sprint (P0/P1)
 
 These items are treated as bugfixes/UX corrections.
@@ -227,6 +310,11 @@ These items are treated as bugfixes/UX corrections.
 		- 70%+ green
 12) Review UI is under the score and hidden by default (accordion/collapsible).
 13) After retake, redirect user to quiz detail page.
+
+### Additional UX polish (new)
+19) Quiz detail Back returns to Module Detail → “Quizzes & Exams” tab.
+20) Remove quiz accordions/collapsibles that hide key content (prefer flat sections).
+21) Module detail quiz tab label is “Quizzes & Exams”.
 
 ### Deferred
 17) Optional quiz timer.

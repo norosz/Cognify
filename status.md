@@ -28,6 +28,16 @@ Authoritative implementation details live in [implementation.md](implementation.
 	- AI suggest never overwrites current category; user applies via `PUT .../category`
 	- AI suggestions + applied categories are stored as history batches (scrollable dropdown on focus)
 - Category breakdown analytics (combined modules + quizzes) added to Statistics page
+- Final Exam v2:
+	- module-scoped and note-less (exams only)
+	- questions generated from user-selected module notes
+	- friendly “no notes selected” gating with “Include all notes” fix
+- Statistics v2:
+	- single page with tabs (Practice / Exams)
+	- category breakdown defaults to module category
+	- quiz-category filters apply to practice only
+- Module creation category UX:
+	- category is optional; if omitted, AI generates a default category (avoid “Uncategorized”)
 
 ---
 
@@ -39,6 +49,12 @@ Authoritative implementation details live in [implementation.md](implementation.
 - Concept identification via embeddings + topic clustering per module; clusters labeled by AI.
 - Module detail layout: Quizzes section appears above Module Stats.
 - Category history pagination is cursor-based (cursor = batchId), take default = 10.
+- Final exams are module-scoped and can be note-less; only exams can be note-less.
+- Final exam questions are generated from user-selected module notes; new notes default to not included.
+- If no notes are selected for exam, UI blocks with a dialog offering “Include all notes”.
+- Statistics stays on one route with tabs (Practice / Exams).
+- Category breakdown defaults to module category; quiz-category filters apply to practice only.
+- Module creation category is optional; if omitted, backend generates a default AI category.
 
 ---
 
@@ -57,10 +73,10 @@ Before each commit/push:
 
 ## ⏭️ Next (ordered)
 
-1) Categories history + gating (backend + frontend)
-2) Persisted includeExams toggle wiring (analytics + review queue)
-3) Combined category breakdown analytics (endpoint + Statistics card)
-4) Bugfix sweep (module layout, quiz routing/UX, notes UX)
+1) Final Exam v2: selected-notes source + note-less exams + gating dialog
+2) Statistics v2: Practice/Exams tabs + module-category breakdown + quiz-category filters (practice only)
+3) Module create category: optional input + AI default category on create
+4) UX polish: quiz back-routing to module “Quizzes & Exams” tab + remove quiz accordions + rename module tab label
 
 ---
 
@@ -102,6 +118,36 @@ Before each commit/push:
 - [x] Notes actions: generate quiz, delete documents, extract content
 - [x] Rename “Extract text” → “Extract content”
 - [x] Rename Pending to “Quizzes & Exams”
+
+### Epic E — Final Exam v2 (module-scoped, note-less, selected notes)
+
+- [ ] Backend: add `IncludeInFinalExam` on Note (default false)
+- [ ] Backend: allow final exam quizzes/pending quizzes to be note-less (exams only)
+- [ ] Backend: final exam generation uses selected module notes as the source
+- [ ] Backend: regenerate returns `FinalExam.NoNotesSelected` when zero notes selected
+- [ ] Backend: add bulk “Include all notes for exam” endpoint
+- [ ] Frontend: add “Include in Final Exam” toggle to module notes list
+- [ ] Frontend: add “Include in Final Exam” toggle to note detail page
+- [ ] Frontend: show friendly dialog on `FinalExam.NoNotesSelected` with “Include all notes” + retry
+
+### Epic F — Statistics v2 (tabs + filters)
+
+- [ ] Frontend: split Statistics into tabs (Practice / Exams)
+- [ ] Backend: extend category breakdown to default group by module category
+- [ ] Frontend: add multi-select quiz-category filters (Practice only)
+- [ ] Backend: add exam-only analytics endpoint(s) for Exams tab (grouped by module category)
+
+### Epic G — Module create category defaults
+
+- [ ] Frontend: module create dialog includes optional category input + helper text
+- [ ] Backend: module create accepts category; if omitted, AI generates default category
+- [ ] Backend/UX: avoid “Uncategorized” in normal create flow
+
+### Epic H — UX polish
+
+- [ ] Frontend: module detail quiz tab label is “Quizzes & Exams”
+- [ ] Frontend: quiz detail Back navigates to module detail “Quizzes & Exams” tab
+- [ ] Frontend: remove quiz accordions/collapsibles (prefer flat sections)
 
 ---
 
