@@ -5,6 +5,71 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-30 20:40  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Auto-suggested AI category for quizzes generated from pending AI flow
+- Persisted AI category history batch when quizzes are saved
+
+**CHANGED FILES**
+- Cognify.Server/Services/PendingQuizService.cs
+- Cognify.Tests/Services/PendingQuizServiceTests.cs
+- worklog.md
+
+**DECISIONS**
+- Quiz AI categories prefer suggestions different from module category when available
+
+**NEXT**
+- None
+
+**BLOCKERS**
+- None
+
+## ENTRY
+**Timestamp:** 2026-01-30 20:25  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Fixed dashboard template binding by moving note check into component method
+
+**CHANGED FILES**
+- cognify.client/src/app/features/dashboard/dashboard.component.ts
+- cognify.client/src/app/features/dashboard/dashboard.component.html
+- worklog.md
+
+**DECISIONS**
+- None
+
+**NEXT**
+- None
+
+**BLOCKERS**
+- None
+
+## ENTRY
+**Timestamp:** 2026-01-30 20:15  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Blocked review/weakness quiz generation unless at least one note exists
+- Disabled adaptive quiz buttons when no notes are available
+
+**CHANGED FILES**
+- cognify.client/src/app/features/dashboard/dashboard.component.ts
+- cognify.client/src/app/features/dashboard/dashboard.component.html
+- worklog.md
+
+**DECISIONS**
+- Adaptive quizzes require notes (not just modules)
+
+**NEXT**
+- None
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-30 20:00  
 **Author:** GitHub Copilot  
 

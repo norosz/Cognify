@@ -40,7 +40,7 @@
         </mat-card-content>
         <mat-card-actions align="end">
             <button mat-stroked-button color="primary" (click)="generateReviewQuiz()"
-                [disabled]="isGenerating()">
+                [disabled]="isGenerating() || !hasNotesForAdaptiveQuizzes()">
                 Generate Review Quiz
             </button>
         </mat-card-actions>
@@ -76,7 +76,7 @@
         </mat-card-content>
         <mat-card-actions align="end">
             <button mat-stroked-button color="primary" (click)="generateWeaknessQuiz()"
-                [disabled]="isGenerating() || weakTopics().length === 0">
+                [disabled]="isGenerating() || weakTopics().length === 0 || !hasNotesForAdaptiveQuizzes()">
                 Generate Weakness Quiz
             </button>
         </mat-card-actions>

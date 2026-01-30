@@ -25,7 +25,7 @@ public class PendingQuizServiceTests : IDisposable
         _userId = Guid.NewGuid();
 
         var agentRunService = new AgentRunService(_context);
-        _service = new PendingQuizService(_context, agentRunService);
+        _service = new PendingQuizService(_context, agentRunService, new NullAiService());
     }
 
     [Fact]

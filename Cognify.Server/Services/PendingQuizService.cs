@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Cognify.Server.Services;
 
-public class PendingQuizService(ApplicationDbContext db, IAgentRunService agentRunService) : IPendingQuizService
+public class PendingQuizService(ApplicationDbContext db, IAgentRunService agentRunService, IAiService aiService) : IPendingQuizService
 {
     public async Task<PendingQuiz> CreateAsync(
         Guid userId, Guid? noteId, Guid moduleId, string title,
@@ -149,6 +149,8 @@ public class PendingQuizService(ApplicationDbContext db, IAgentRunService agentR
             await db.SaveChangesAsync();
         }
 
+        await ApplyAiCategorySuggestionAsync(quiz, pending.ModuleId, userId, generatedQuestions ?? []);
+
         // Delete pending quiz
         db.PendingQuizzes.Remove(pending);
         await db.SaveChangesAsync();
@@ -218,6 +220,90 @@ public class PendingQuizService(ApplicationDbContext db, IAgentRunService agentR
         }
 
         return null;
+    }
+
+    private async Task ApplyAiCategorySuggestionAsync(Quiz quiz, Guid moduleId, Guid userId, List<GeneratedQuestion> questions)
+    {
+        if (!string.IsNullOrWhiteSpace(quiz.CategoryLabel))
+        {
+            return;
+        }
+
+        var module = await db.Modules.AsNoTracking().FirstOrDefaultAsync(m => m.Id == moduleId);
+        var contextText = BuildQuizCategoryContext(quiz, module, questions);
+        var suggestions = await aiService.SuggestCategoriesAsync(contextText, 3);
+        if (suggestions.Suggestions.Count == 0)
+        {
+            return;
+        }
+
+        var moduleCategory = module?.CategoryLabel?.Trim();
+        var selected = suggestions.Suggestions
+            .Select(s => s.Label?.Trim())
+            .FirstOrDefault(label => !string.IsNullOrWhiteSpace(label)
+                && (string.IsNullOrWhiteSpace(moduleCategory)
+                    || !string.Equals(label, moduleCategory, StringComparison.OrdinalIgnoreCase)));
+
+        selected ??= suggestions.Suggestions.FirstOrDefault()?.Label?.Trim();
+        if (string.IsNullOrWhiteSpace(selected))
+        {
+            return;
+        }
+
+        quiz.CategoryLabel = selected;
+        quiz.CategorySource = "AI";
+
+        db.CategorySuggestionBatches.Add(new CategorySuggestionBatch
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            QuizId = quiz.Id,
+            Source = "AI",
+            CreatedAt = DateTime.UtcNow,
+            Items = suggestions.Suggestions.Select(item => new CategorySuggestionItem
+            {
+                Id = Guid.NewGuid(),
+                Label = item.Label,
+                Confidence = item.Confidence,
+                Rationale = item.Rationale
+            }).ToList()
+        });
+
+        await db.SaveChangesAsync();
+    }
+
+    private static string BuildQuizCategoryContext(Quiz quiz, Module? module, List<GeneratedQuestion> questions)
+    {
+        var builder = new List<string>
+        {
+            $"Quiz title: {quiz.Title}",
+            $"Difficulty: {quiz.Difficulty}",
+            $"Type: {quiz.Type}"
+        };
+
+        if (module != null)
+        {
+            builder.Add($"Module title: {module.Title}");
+            if (!string.IsNullOrWhiteSpace(module.CategoryLabel))
+            {
+                builder.Add($"Module category: {module.CategoryLabel}");
+            }
+        }
+
+        var prompts = questions
+            .Select(q => q.Text)
+            .Where(text => !string.IsNullOrWhiteSpace(text))
+            .Take(3)
+            .ToList();
+
+        if (prompts.Count > 0)
+        {
+            builder.Add("Sample questions:");
+            builder.AddRange(prompts.Select(prompt => $"- {prompt}"));
+        }
+
+        builder.Add("Suggest a concise academic category for this quiz.");
+        return string.Join("\n", builder);
     }
 
     private static string? FlattenCorrectAnswer(object? obj)

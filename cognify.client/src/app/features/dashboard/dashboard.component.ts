@@ -89,6 +89,10 @@ export class DashboardComponent implements OnInit {
 
   generateReviewQuiz() {
     if (this.isGenerating()) return;
+    if (!this.hasNotesForAdaptiveQuizzes()) {
+      this.notificationService.error('Add at least one note before generating review quizzes.');
+      return;
+    }
 
     const loadingId = this.notificationService.loading('Creating review quiz...');
     this.isGenerating.set(true);
@@ -124,6 +128,10 @@ export class DashboardComponent implements OnInit {
 
   generateWeaknessQuiz() {
     if (this.isGenerating()) return;
+    if (!this.hasNotesForAdaptiveQuizzes()) {
+      this.notificationService.error('Add at least one note before generating weakness quizzes.');
+      return;
+    }
 
     const loadingId = this.notificationService.loading('Creating weakness quiz...');
     this.isGenerating.set(true);
@@ -195,6 +203,10 @@ export class DashboardComponent implements OnInit {
         error: (err) => console.error('Failed to delete module', err)
       });
     }
+  }
+
+  hasNotesForAdaptiveQuizzes(): boolean {
+    return this.modules().some(module => (module.notesCount ?? 0) > 0);
   }
 
 }
