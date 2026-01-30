@@ -168,6 +168,63 @@ public class AiService : IAiService
         }
     }
 
+    public async Task<QuizGenerationContractResponse> RepairQuizAsync(QuizRepairContractRequest request)
+    {
+        if (request.Questions.Count == 0)
+        {
+            return new QuizGenerationContractResponse(request.ContractVersion, request.Questions, request.QuizRubric);
+        }
+
+        var model = _configuration["OpenAI:Model"] ?? "gpt-4o";
+        var chatClient = _client.GetChatClient(model);
+
+        var jsonOptions = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            Converters = { new JsonStringEnumConverter() }
+        };
+
+        var payload = JsonSerializer.Serialize(new
+        {
+            questions = request.Questions,
+            quizRubric = request.QuizRubric
+        }, jsonOptions);
+
+        var prompt = AiPrompts.BuildQuizRepairPrompt(payload);
+
+        try
+        {
+            var completion = await chatClient.CompleteChatAsync(
+                [
+                    new SystemChatMessage("You are a strict JSON repair tool. Return only the corrected JSON object."),
+                    new UserChatMessage(prompt)
+                ],
+                new ChatCompletionOptions
+                {
+                    ResponseFormat = ChatResponseFormat.CreateJsonObjectFormat()
+                }
+            );
+
+            var json = completion.Value.Content[0].Text;
+            _logger.LogInformation("AI repair response received: {Json}", json);
+
+            var parsed = ParseQuizGenerationResponse(json);
+            if (parsed.Questions.Count == 0)
+            {
+                _logger.LogWarning("AI repair returned no questions; using original questions.");
+                return new QuizGenerationContractResponse(request.ContractVersion, request.Questions, request.QuizRubric);
+            }
+
+            return new QuizGenerationContractResponse(request.ContractVersion, parsed.Questions, parsed.QuizRubric ?? request.QuizRubric);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to repair quiz questions. Using original questions.");
+            return new QuizGenerationContractResponse(request.ContractVersion, request.Questions, request.QuizRubric);
+        }
+    }
+
     public async Task<string> ParseHandwritingAsync(Stream imageStream, string contentType)
     {
         var model = _configuration["OpenAI:Model"] ?? "gpt-4o";

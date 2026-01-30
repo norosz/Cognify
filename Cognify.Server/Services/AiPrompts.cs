@@ -192,4 +192,26 @@ public static class AiPrompts
         3. Use LaTeX for math expressions ($...$). Use Markdown for emphasis where helpful.
         """;
     }
+
+    public static string BuildQuizRepairPrompt(string quizJson)
+    {
+        return $$"""
+        You are a JSON repair tool. Fix malformed inline LaTeX in the quiz content.
+
+        Input JSON (do not add fields, keep structure):
+        {{quizJson}}
+
+        Requirements:
+        1. Return a SINGLE JSON object with the same structure (questions + optional quizRubric).
+        2. Do NOT change the meaning, order, or correctness of any question or answer.
+        3. Only fix malformed inline LaTeX such as unmatched $ delimiters.
+        4. Preserve existing Markdown and backticks. Do not add commentary.
+
+        Output format:
+        {
+          "questions": [ ... ],
+          "quizRubric": "..." (optional)
+        }
+        """;
+    }
 }

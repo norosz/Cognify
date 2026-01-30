@@ -19,6 +19,11 @@ public class NullAiService : IAiService
         return Task.FromResult(new QuizGenerationContractResponse(request.ContractVersion, [], QuizRubric: null));
     }
 
+    public Task<QuizGenerationContractResponse> RepairQuizAsync(QuizRepairContractRequest request)
+    {
+        return Task.FromResult(new QuizGenerationContractResponse(request.ContractVersion, request.Questions, request.QuizRubric));
+    }
+
     public Task<string> ParseHandwritingAsync(Stream imageStream, string contentType)
     {
         return Task.FromResult(string.Empty);

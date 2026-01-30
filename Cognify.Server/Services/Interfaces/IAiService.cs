@@ -10,6 +10,7 @@ public interface IAiService
 {
     Task<List<GeneratedQuestion>> GenerateQuestionsAsync(string content, QuestionType type, int difficulty, int count);
     Task<QuizGenerationContractResponse> GenerateQuizAsync(QuizGenerationContractRequest request);
+    Task<QuizGenerationContractResponse> RepairQuizAsync(QuizRepairContractRequest request);
     Task<string> ParseHandwritingAsync(Stream imageStream, string contentType);
     Task<OcrContractResponse> ParseHandwritingAsync(Stream imageStream, OcrContractRequest request);
     Task<string> GradeAnswerAsync(string question, string answer, string context);

@@ -110,27 +110,37 @@ public class PendingQuizService(ApplicationDbContext db, IAgentRunService agentR
         if (string.IsNullOrEmpty(pending.QuestionsJson))
             throw new InvalidOperationException("No questions generated.");
 
-        // Create Quiz
+        // Parse and repair Questions before save
         var quizRubric = ParseQuizRubric(pending.QuestionsJson);
+        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true, Converters = { new JsonStringEnumConverter() } };
+        var generatedQuestions = ParseGeneratedQuestions(pending.QuestionsJson, options);
+
+        var finalQuestions = generatedQuestions ?? [];
+        var finalRubric = quizRubric;
+
+        if (finalQuestions.Count > 0)
+        {
+            var repaired = await RepairGeneratedQuestionsAsync(userId, pending, finalQuestions, finalRubric);
+            finalQuestions = repaired.Questions;
+            finalRubric = repaired.QuizRubric;
+        }
+
+        // Create Quiz
         var quiz = new Quiz
         {
             NoteId = pending.NoteId,
             Title = pending.Title,
             Difficulty = pending.Difficulty,
             Type = (QuestionType)pending.QuestionType,
-            RubricJson = quizRubric
+            RubricJson = finalRubric
         };
 
         db.Quizzes.Add(quiz);
         await db.SaveChangesAsync();
 
-        // Parse and create Questions
-        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true, Converters = { new JsonStringEnumConverter() } };
-        var generatedQuestions = ParseGeneratedQuestions(pending.QuestionsJson, options);
-
-        if (generatedQuestions != null)
+        if (finalQuestions.Count > 0)
         {
-            foreach (var gq in generatedQuestions)
+            foreach (var gq in finalQuestions)
             {
                 // GeneratedQuestion already has typed QuestionType
                 var flattenedAnswer = FlattenCorrectAnswer(gq.CorrectAnswer) ?? (gq.Pairs != null ? string.Join("|", gq.Pairs) : "");
@@ -149,7 +159,7 @@ public class PendingQuizService(ApplicationDbContext db, IAgentRunService agentR
             await db.SaveChangesAsync();
         }
 
-        await ApplyAiCategorySuggestionAsync(quiz, pending.ModuleId, userId, generatedQuestions ?? []);
+        await ApplyAiCategorySuggestionAsync(quiz, pending.ModuleId, userId, finalQuestions);
 
         // Delete pending quiz
         try
@@ -239,6 +249,45 @@ public class PendingQuizService(ApplicationDbContext db, IAgentRunService agentR
         }
 
         return null;
+    }
+
+    private async Task<(List<GeneratedQuestion> Questions, string? QuizRubric)> RepairGeneratedQuestionsAsync(
+        Guid userId,
+        PendingQuiz pending,
+        List<GeneratedQuestion> questions,
+        string? quizRubric)
+    {
+        var inputHash = AgentRunService.ComputeHash($"quizrepair:{AgentContractVersions.V2}:{userId}:{pending.Id}:{pending.QuestionsJson ?? string.Empty}");
+        var run = await agentRunService.CreateAsync(userId, AgentRunType.QuizRepair, inputHash, correlationId: pending.Id.ToString(), promptVersion: "quizrepair-v1");
+
+        try
+        {
+            var response = await aiService.RepairQuizAsync(new QuizRepairContractRequest(
+                AgentContractVersions.V2,
+                questions,
+                quizRubric));
+
+            var output = JsonSerializer.Serialize(new
+            {
+                response.ContractVersion,
+                response.Questions,
+                response.QuizRubric
+            });
+
+            await agentRunService.MarkCompletedAsync(run.Id, output);
+
+            if (response.Questions.Count == 0)
+            {
+                return (questions, quizRubric);
+            }
+
+            return (response.Questions, response.QuizRubric ?? quizRubric);
+        }
+        catch (Exception ex)
+        {
+            await agentRunService.MarkFailedAsync(run.Id, ex.Message);
+            return (questions, quizRubric);
+        }
     }
 
     private async Task ApplyAiCategorySuggestionAsync(Quiz quiz, Guid moduleId, Guid userId, List<GeneratedQuestion> questions)

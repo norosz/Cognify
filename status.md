@@ -184,6 +184,8 @@ Before each commit/push:
 - **[Frontend]** Move category breakdown to module detail and remove from Statistics page
 - **[Frontend]** Add final exam selected-notes confirmation dialog
 - **[Backend]** Fix final exam selected-notes query translation
+- **[Backend]** Add AI quiz repair agent before saving pending quizzes
+- **[Frontend]** Disable review quiz button when queue is empty and improve module/quiz/note card click affordances
 
 ---
 
