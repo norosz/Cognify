@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { GenerateQuestionsRequest, GeneratedQuestion, GradeAnswerRequest, GradingResult, TextExtractionResult } from '../models/ai.models';
+import { GenerateQuestionsRequest, GeneratedQuestion, GradeAnswerRequest, GradingResult, TextExtractionResult, ExplainMistakeRequest, ExplainMistakeResponse } from '../models/ai.models';
 
 @Injectable({
     providedIn: 'root'
@@ -21,5 +21,9 @@ export class AiService {
 
     gradeAnswer(req: GradeAnswerRequest): Observable<GradingResult> {
         return this.http.post<GradingResult>(`${this.apiUrl}/grade`, req);
+    }
+
+    explainMistake(req: ExplainMistakeRequest): Observable<ExplainMistakeResponse> {
+        return this.http.post<ExplainMistakeResponse>(`${this.apiUrl}/explain-mistake`, req);
     }
 }

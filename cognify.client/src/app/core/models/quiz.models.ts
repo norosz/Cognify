@@ -56,3 +56,24 @@ export interface QuizStatsDto {
     lastAttemptAt?: string;
     accuracyRate: number;
 }
+
+export interface AttemptReviewItemDto {
+    questionId: string;
+    questionType: string;
+    prompt: string;
+    userAnswer?: string | null;
+    correctAnswer?: string | null;
+    isCorrect?: boolean | null;
+    explanation?: string | null;
+    feedback?: string | null;
+    detectedMistakes: string[];
+    confidenceEstimate?: number | null;
+}
+
+export interface AttemptReviewDto {
+    attemptId: string;
+    quizId: string;
+    score: number;
+    createdAt: string;
+    items: AttemptReviewItemDto[];
+}

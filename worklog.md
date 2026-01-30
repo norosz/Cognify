@@ -5,6 +5,40 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-30 16:10  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Added quiz attempt result and review pages
+- Wired attempt review API and AI mistake explanations in review UI
+- Added routes for result and review pages
+- Updated status board to mark attempt result/review complete
+
+**CHANGED FILES**
+- cognify.client/src/app/core/models/quiz.models.ts
+- cognify.client/src/app/core/models/ai.models.ts
+- cognify.client/src/app/core/services/ai.service.ts
+- cognify.client/src/app/features/modules/services/quiz.service.ts
+- cognify.client/src/app/features/quizzes/quiz-attempt-result/quiz-attempt-result.component.ts
+- cognify.client/src/app/features/quizzes/quiz-attempt-result/quiz-attempt-result.component.html
+- cognify.client/src/app/features/quizzes/quiz-attempt-result/quiz-attempt-result.component.scss
+- cognify.client/src/app/features/quizzes/quiz-attempt-review/quiz-attempt-review.component.ts
+- cognify.client/src/app/features/quizzes/quiz-attempt-review/quiz-attempt-review.component.html
+- cognify.client/src/app/features/quizzes/quiz-attempt-review/quiz-attempt-review.component.scss
+- cognify.client/src/app/app.routes.ts
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Review UI highlights correct/incorrect with green/red borders and on-demand AI explanations
+
+**NEXT**
+- Add statistics page and reduce dashboard size
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-30 15:35  
 **Author:** GitHub Copilot  
 

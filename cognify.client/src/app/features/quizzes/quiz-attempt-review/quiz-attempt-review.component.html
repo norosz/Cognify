@@ -1,0 +1,67 @@
+<div *ngIf="loading()" class="loading">Loading review...</div>
+
+<div *ngIf="error()" class="error-container">
+  <p class="error-text">{{ error() }}</p>
+</div>
+
+<ng-container *ngIf="review() as r">
+  <div class="review-header">
+    <button mat-icon-button routerLink="/quizzes/{{ r.quizId }}/attempts/{{ r.attemptId }}/results" class="back-button">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <div>
+      <h1>Review</h1>
+      <p>{{ r.createdAt | date:'medium' }}</p>
+    </div>
+  </div>
+
+  <div class="review-list">
+    <mat-card *ngFor="let item of r.items; trackBy: trackByQuestion" class="review-card" [class.correct]="item.isCorrect" [class.incorrect]="item.isCorrect === false">
+      <mat-card-content>
+        <div class="question-header">
+          <span class="question-type">{{ item.questionType }}</span>
+          <span class="question-status" [class.good]="item.isCorrect" [class.bad]="item.isCorrect === false">
+            {{ item.isCorrect ? 'Correct' : 'Incorrect' }}
+          </span>
+        </div>
+        <div class="prompt" [innerHTML]="item.prompt | markdownLatex"></div>
+
+        <div class="answer-block">
+          <div>
+            <span class="label">Your answer</span>
+            <div class="value" [innerHTML]="item.userAnswer || '-' | markdownLatex"></div>
+          </div>
+          <div>
+            <span class="label">Correct answer</span>
+            <div class="value" [innerHTML]="item.correctAnswer || '-' | markdownLatex"></div>
+          </div>
+        </div>
+
+        <div class="feedback" *ngIf="item.feedback">
+          <span class="label">Feedback</span>
+          <div [innerHTML]="item.feedback | markdownLatex"></div>
+        </div>
+
+        <div class="mistakes" *ngIf="item.detectedMistakes?.length">
+          <span class="label">Mistakes</span>
+          <div class="mistake-chip" *ngFor="let mistake of item.detectedMistakes">{{ mistake }}</div>
+        </div>
+
+        <button mat-stroked-button color="primary" *ngIf="item.isCorrect === false" (click)="requestExplanation(item)" [disabled]="isExplanationLoading(item.questionId)">
+          {{ isExplanationLoading(item.questionId) ? 'Explaining...' : 'Explain Mistake' }}
+        </button>
+
+        <div class="explanation" *ngIf="getExplanation(item.questionId) as exp">
+          <h4>AI Explanation</h4>
+          <div [innerHTML]="exp.explanationMarkdown | markdownLatex"></div>
+          <div class="key-takeaways" *ngIf="exp.keyTakeaways.length">
+            <span class="label">Key takeaways</span>
+            <ul>
+              <li *ngFor="let takeaway of exp.keyTakeaways">{{ takeaway }}</li>
+            </ul>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</ng-container>

@@ -84,6 +84,7 @@ Authoritative implementation details live in [implementation.md](implementation.
 - **[Frontend]** Add difficulty badge colors on quiz cards
 - **[Frontend]** Add module statistics section on module page
 - **[Frontend]** Add quiz detail page with stats and attempt history
+- **[Frontend]** Add attempt result and review pages with AI explanations
 
 ---
 

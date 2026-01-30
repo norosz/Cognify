@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { CreateQuizDto, QuizDto, AttemptDto, SubmitAttemptDto, QuizStatsDto } from '../../../core/models/quiz.models';
+import { CreateQuizDto, QuizDto, AttemptDto, SubmitAttemptDto, QuizStatsDto, AttemptReviewDto } from '../../../core/models/quiz.models';
 
 @Injectable({
     providedIn: 'root'
@@ -37,5 +37,9 @@ export class QuizService {
 
     getQuizStats(quizId: string): Observable<QuizStatsDto> {
         return this.http.get<QuizStatsDto>(`${this.apiUrl}/quizzes/${quizId}/stats`);
+    }
+
+    getAttemptReview(quizId: string, attemptId: string): Observable<AttemptReviewDto> {
+        return this.http.get<AttemptReviewDto>(`${this.apiUrl}/quizzes/${quizId}/attempts/${attemptId}/review`);
     }
 }

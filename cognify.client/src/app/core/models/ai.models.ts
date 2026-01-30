@@ -39,3 +39,19 @@ export interface TextExtractionResult {
   extractedContentId: string;
   status: string;
 }
+
+export interface ExplainMistakeRequest {
+  questionPrompt: string;
+  userAnswer: string;
+  correctAnswer: string;
+  detectedMistakes?: string[];
+  conceptLabel?: string;
+  noteContext?: string;
+  moduleContext?: string;
+}
+
+export interface ExplainMistakeResponse {
+  explanationMarkdown: string;
+  keyTakeaways: string[];
+  nextSteps: string[];
+}

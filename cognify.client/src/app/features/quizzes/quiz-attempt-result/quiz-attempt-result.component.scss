@@ -1,0 +1,38 @@
+.result-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.result-title h1 {
+  margin: 0;
+  color: #ffffff;
+}
+
+.result-title p {
+  margin: 0.25rem 0 0;
+  color: #9aa0a6;
+}
+
+.score-card {
+  padding: 2rem;
+  text-align: center;
+}
+
+.score-value {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.score-meta {
+  margin-top: 0.5rem;
+  color: #b0b7c3;
+}
+
+.loading {
+  padding: 3rem;
+  text-align: center;
+  color: #9aa0a6;
+}
