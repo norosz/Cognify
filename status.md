@@ -99,7 +99,7 @@ Before each commit/push:
 - [x] Notes UX: scrollable content, image thumbnails + modal, correct “AI generated” labeling
 - [x] Notes actions: generate quiz, delete documents, extract content
 - [x] Rename “Extract text” → “Extract content”
-- [ ] Rename Pending to “Quizzes & Exams”
+- [x] Rename Pending to “Quizzes & Exams”
 
 ---
 

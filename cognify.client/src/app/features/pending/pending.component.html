@@ -84,18 +84,18 @@
             </div>
         </mat-tab>
 
-        <!-- Quizzes Tab -->
+        <!-- Quizzes & Exams Tab -->
         <mat-tab>
             <ng-template mat-tab-label>
                 <mat-icon class="tab-icon">quiz</mat-icon>
-                <span>Quizzes</span>
+                <span>Quizzes &amp; Exams</span>
                 <span class="badge" *ngIf="pendingQuizzes().length > 0">{{pendingQuizzes().length}}</span>
             </ng-template>
 
             <div class="tab-content">
                 <div class="empty-state" *ngIf="pendingQuizzes().length === 0 && !isLoading()">
                     <mat-icon>inbox</mat-icon>
-                    <p>No pending quizzes found.</p>
+                    <p>No pending quizzes or exams found.</p>
                 </div>
 
                 <div class="items-grid">

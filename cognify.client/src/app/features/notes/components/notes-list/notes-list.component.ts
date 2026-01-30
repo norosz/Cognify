@@ -63,7 +63,7 @@ export class NotesListComponent implements OnInit {
                         this.notification.success(
                             'Quiz generation started.',
                             ['/pending', { tab: 'quizzes' }],
-                            'View Pending Quizzes'
+                            'View Pending Quizzes & Exams'
                         );
                         this.pendingService.refreshPendingCount();
                         // Removed auto-redirect as per user request

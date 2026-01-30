@@ -5,6 +5,29 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-30 23:35  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Renamed Pending quizzes tab to “Quizzes & Exams” and updated related labels
+
+**CHANGED FILES**
+- cognify.client/src/app/features/pending/pending.component.html
+- cognify.client/src/app/features/notes/components/notes-list/notes-list.component.ts
+- cognify.client/src/app/features/notes/note-detail/note-detail.component.ts
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Pending tab now reflects quizzes and exams in a single label
+
+**NEXT**
+- Continue remaining bugfix items (exam regenerate enablement, module cards counts, review queue verification)
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-30 23:22  
 **Author:** GitHub Copilot  
 
