@@ -8,7 +8,8 @@ import {
     RetentionHeatmapPointDto,
     DecayForecastDto,
     MistakePatternSummaryDto,
-    CategoryBreakdownDto
+    CategoryBreakdownDto,
+    ExamAnalyticsSummaryDto
 } from '../models/analytics.models';
 
 @Injectable({
@@ -54,9 +55,31 @@ export class LearningAnalyticsService {
         });
     }
 
-    getCategoryBreakdown(includeExams = false): Observable<CategoryBreakdownDto> {
+    getCategoryBreakdown(params?: { includeExams?: boolean; groupBy?: 'moduleCategory' | 'quizCategory'; filterQuizCategories?: string[] }): Observable<CategoryBreakdownDto> {
+        const query: Record<string, any> = { includeExams: params?.includeExams ?? false };
+
+        if (params?.groupBy) {
+            query.groupBy = params.groupBy;
+        }
+
+        if (params?.filterQuizCategories && params.filterQuizCategories.length > 0) {
+            query.filterQuizCategories = params.filterQuizCategories.join(',');
+        }
+
         return this.http.get<CategoryBreakdownDto>(`${this.apiUrl}/category-breakdown`, {
-            params: { includeExams }
+            params: query
         });
+    }
+
+    getQuizCategories(): Observable<string[]> {
+        return this.http.get<string[]>(`${this.apiUrl}/quiz-categories`);
+    }
+
+    getExamSummary(): Observable<ExamAnalyticsSummaryDto> {
+        return this.http.get<ExamAnalyticsSummaryDto>(`${this.apiUrl}/exams/summary`);
+    }
+
+    getExamCategoryBreakdown(): Observable<CategoryBreakdownDto> {
+        return this.http.get<CategoryBreakdownDto>(`${this.apiUrl}/exams/category-breakdown`);
     }
 }

@@ -119,9 +119,37 @@ public class LearningAnalyticsController(ILearningAnalyticsService analyticsServ
     }
 
     [HttpGet("category-breakdown")]
-    public async Task<ActionResult<CategoryBreakdownDto>> GetCategoryBreakdown([FromQuery] bool includeExams = false)
+    public async Task<ActionResult<CategoryBreakdownDto>> GetCategoryBreakdown(
+        [FromQuery] bool includeExams = false,
+        [FromQuery] string groupBy = "moduleCategory",
+        [FromQuery] string? filterQuizCategories = null)
     {
-        var breakdown = await analyticsService.GetCategoryBreakdownAsync(includeExams);
+        var filters = string.IsNullOrWhiteSpace(filterQuizCategories)
+            ? Array.Empty<string>()
+            : filterQuizCategories.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        var breakdown = await analyticsService.GetCategoryBreakdownAsync(includeExams, groupBy, filters);
+        return Ok(breakdown);
+    }
+
+    [HttpGet("quiz-categories")]
+    public async Task<ActionResult<List<string>>> GetQuizCategories()
+    {
+        var categories = await analyticsService.GetQuizCategoriesAsync();
+        return Ok(categories);
+    }
+
+    [HttpGet("exams/summary")]
+    public async Task<ActionResult<ExamAnalyticsSummaryDto>> GetExamSummary()
+    {
+        var summary = await analyticsService.GetExamSummaryAsync();
+        return Ok(summary);
+    }
+
+    [HttpGet("exams/category-breakdown")]
+    public async Task<ActionResult<CategoryBreakdownDto>> GetExamCategoryBreakdown()
+    {
+        var breakdown = await analyticsService.GetExamCategoryBreakdownAsync();
         return Ok(breakdown);
     }
 }

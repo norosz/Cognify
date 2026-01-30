@@ -3,13 +3,16 @@ import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatButtonModule } from '@angular/material/button';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
 import { NgxEchartsModule } from 'ngx-echarts';
 import { forkJoin } from 'rxjs';
 import { LearningAnalyticsService } from '../../core/services/learning-analytics.service';
 import {
   LearningAnalyticsSummaryDto,
+  ExamAnalyticsSummaryDto,
   PerformanceTrendsDto,
   TopicDistributionDto,
   RetentionHeatmapPointDto,
@@ -27,8 +30,10 @@ import {
     MatCardModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    MatSlideToggleModule,
     MatButtonModule,
+    MatTabsModule,
+    MatFormFieldModule,
+    MatSelectModule,
     NgxEchartsModule
   ],
   templateUrl: './statistics.component.html',
@@ -44,6 +49,11 @@ export class StatisticsComponent implements OnInit {
   decayForecast = signal<DecayForecastDto | null>(null);
   mistakePatterns = signal<MistakePatternSummaryDto[]>([]);
   categoryBreakdown = signal<CategoryBreakdownItemDto[]>([]);
+  quizCategoryOptions = signal<string[]>([]);
+  selectedQuizCategories = signal<string[]>([]);
+
+  examSummary = signal<ExamAnalyticsSummaryDto | null>(null);
+  examCategoryBreakdown = signal<CategoryBreakdownItemDto[]>([]);
 
   readinessOptions = signal<any>({});
   velocityOptions = signal<any>({});
@@ -52,22 +62,13 @@ export class StatisticsComponent implements OnInit {
   decayOptions = signal<any>({});
   categoryOptions = signal<any>({});
   categoryMetric = signal<'attempts' | 'average'>('attempts');
-  includeExams = signal<boolean>(false);
-
-  private includeExamsKey = 'cognify.analytics.includeExams';
+  examCategoryOptions = signal<any>({});
+  examCategoryMetric = signal<'attempts' | 'average'>('attempts');
 
   ngOnInit() {
-    const saved = localStorage.getItem(this.includeExamsKey);
-    if (saved !== null) {
-      this.includeExams.set(saved === 'true');
-    }
-    this.loadAnalytics();
-  }
-
-  setIncludeExams(value: boolean) {
-    this.includeExams.set(value);
-    localStorage.setItem(this.includeExamsKey, String(value));
-    this.loadAnalytics();
+    this.loadQuizCategories();
+    this.loadPracticeAnalytics();
+    this.loadExamAnalytics();
   }
 
   setCategoryMetric(metric: 'attempts' | 'average') {
@@ -75,18 +76,32 @@ export class StatisticsComponent implements OnInit {
     this.categoryOptions.set(this.buildCategoryBreakdownOptions(this.categoryBreakdown(), metric));
   }
 
-  loadAnalytics() {
+  setExamCategoryMetric(metric: 'attempts' | 'average') {
+    this.examCategoryMetric.set(metric);
+    this.examCategoryOptions.set(this.buildExamCategoryBreakdownOptions(this.examCategoryBreakdown(), metric));
+  }
+
+  setQuizCategoryFilters(values: string[]) {
+    this.selectedQuizCategories.set(values);
+    this.loadPracticeAnalytics();
+  }
+
+  loadPracticeAnalytics() {
     this.isAnalyticsLoading.set(true);
-    const includeExams = this.includeExams();
+    const filters = this.selectedQuizCategories();
 
     forkJoin({
-      summary: this.analyticsService.getSummary(includeExams),
-      trends: this.analyticsService.getTrends({ bucketDays: 7 }, includeExams),
-      topics: this.analyticsService.getTopics({ maxTopics: 20, maxWeakTopics: 5 }, includeExams),
-      heatmap: this.analyticsService.getRetentionHeatmap({ maxTopics: 12 }, includeExams),
-      decay: this.analyticsService.getDecayForecast({ maxTopics: 5, days: 14, stepDays: 2 }, includeExams),
-      mistakes: this.analyticsService.getMistakePatterns({ maxItems: 6, maxTopics: 3 }, includeExams),
-      categories: this.analyticsService.getCategoryBreakdown(includeExams)
+      summary: this.analyticsService.getSummary(false),
+      trends: this.analyticsService.getTrends({ bucketDays: 7 }, false),
+      topics: this.analyticsService.getTopics({ maxTopics: 20, maxWeakTopics: 5 }, false),
+      heatmap: this.analyticsService.getRetentionHeatmap({ maxTopics: 12 }, false),
+      decay: this.analyticsService.getDecayForecast({ maxTopics: 5, days: 14, stepDays: 2 }, false),
+      mistakes: this.analyticsService.getMistakePatterns({ maxItems: 6, maxTopics: 3 }, false),
+      categories: this.analyticsService.getCategoryBreakdown({
+        includeExams: false,
+        groupBy: 'moduleCategory',
+        filterQuizCategories: filters
+      })
     }).subscribe({
       next: (data) => {
         this.analyticsSummary.set(data.summary);
@@ -121,6 +136,31 @@ export class StatisticsComponent implements OnInit {
     });
   }
 
+  loadQuizCategories() {
+    this.analyticsService.getQuizCategories().subscribe({
+      next: (items) => this.quizCategoryOptions.set(items),
+      error: () => this.quizCategoryOptions.set([])
+    });
+  }
+
+  loadExamAnalytics() {
+    this.analyticsService.getExamSummary().subscribe({
+      next: (summary) => this.examSummary.set(summary),
+      error: () => this.examSummary.set(null)
+    });
+
+    this.analyticsService.getExamCategoryBreakdown().subscribe({
+      next: (data) => {
+        this.examCategoryBreakdown.set(data.items || []);
+        this.examCategoryOptions.set(this.buildExamCategoryBreakdownOptions(data.items || [], this.examCategoryMetric()));
+      },
+      error: () => {
+        this.examCategoryBreakdown.set([]);
+        this.examCategoryOptions.set({});
+      }
+    });
+  }
+
   private buildCategoryBreakdownOptions(items: CategoryBreakdownItemDto[], metric: 'attempts' | 'average') {
     const labels = items.map(i => i.categoryLabel);
     const values = items.map(i => metric === 'attempts'
@@ -141,6 +181,32 @@ export class StatisticsComponent implements OnInit {
           type: 'bar',
           data: values,
           itemStyle: { color: '#8f73ff' },
+          barWidth: 14
+        }
+      ]
+    };
+  }
+
+  private buildExamCategoryBreakdownOptions(items: CategoryBreakdownItemDto[], metric: 'attempts' | 'average') {
+    const labels = items.map(i => i.categoryLabel);
+    const values = items.map(i => metric === 'attempts'
+      ? i.examAttemptCount
+      : Math.round(i.examAverageScore));
+
+    return {
+      grid: { left: 140, right: 20, top: 10, bottom: 20 },
+      xAxis: { type: 'value', min: 0, max: metric === 'attempts' ? undefined : 100 },
+      yAxis: { type: 'category', data: labels },
+      tooltip: {
+        formatter: ({ name, value }: any) => metric === 'attempts'
+          ? `${name}: ${value} exams`
+          : `${name}: ${value}% avg`
+      },
+      series: [
+        {
+          type: 'bar',
+          data: values,
+          itemStyle: { color: '#4fb6ff' },
           barWidth: 14
         }
       ]

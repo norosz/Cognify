@@ -10,6 +10,13 @@ export interface LearningAnalyticsSummaryDto {
     lastActivityAt?: string | null;
 }
 
+export interface ExamAnalyticsSummaryDto {
+    totalExamAttempts: number;
+    averageScore: number;
+    bestScore: number;
+    lastAttemptAt?: string | null;
+}
+
 export interface PerformanceTrendPointDto {
     periodStart: string;
     periodEnd: string;

@@ -133,10 +133,10 @@ Before each commit/push:
 
 ### Epic F — Statistics v2 (tabs + filters)
 
-- [ ] Frontend: split Statistics into tabs (Practice / Exams)
-- [ ] Backend: extend category breakdown to default group by module category
-- [ ] Frontend: add multi-select quiz-category filters (Practice only)
-- [ ] Backend: add exam-only analytics endpoint(s) for Exams tab (grouped by module category)
+- [x] Frontend: split Statistics into tabs (Practice / Exams)
+- [x] Backend: extend category breakdown to default group by module category
+- [x] Frontend: add multi-select quiz-category filters (Practice only)
+- [x] Backend: add exam-only analytics endpoint(s) for Exams tab (grouped by module category)
 
 ### Epic G — Module create category defaults
 

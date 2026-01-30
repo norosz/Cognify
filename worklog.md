@@ -5,6 +5,40 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-31 04:25  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Split Statistics into Practice/Exams tabs with separate summaries
+- Added quiz-category multi-select filters for practice category breakdown
+- Added exam analytics endpoints and exam category breakdown
+
+**CHANGED FILES**
+- Cognify.Server/Dtos/Analytics/AnalyticsDtos.cs
+- Cognify.Server/Controllers/LearningAnalyticsController.cs
+- Cognify.Server/Services/Interfaces/ILearningAnalyticsService.cs
+- Cognify.Server/Services/Interfaces/ILearningAnalyticsComputationService.cs
+- Cognify.Server/Services/LearningAnalyticsService.cs
+- Cognify.Server/Services/LearningAnalyticsComputationService.cs
+- cognify.client/src/app/core/models/analytics.models.ts
+- cognify.client/src/app/core/services/learning-analytics.service.ts
+- cognify.client/src/app/features/statistics/statistics.component.ts
+- cognify.client/src/app/features/statistics/statistics.component.html
+- cognify.client/src/app/features/statistics/statistics.component.scss
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Practice tab uses module-category grouping and quiz-category filters
+- Exams tab uses module-category grouping without quiz-category filters
+
+**NEXT**
+- Implement module create category default + remaining UX polish
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-31 03:45  
 **Author:** GitHub Copilot  
 

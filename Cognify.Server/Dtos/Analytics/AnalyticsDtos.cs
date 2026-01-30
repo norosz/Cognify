@@ -13,6 +13,14 @@ public record LearningAnalyticsSummaryDto
     public DateTime? LastActivityAt { get; init; }
 }
 
+public record ExamAnalyticsSummaryDto
+{
+    public int TotalExamAttempts { get; init; }
+    public double AverageScore { get; init; }
+    public double BestScore { get; init; }
+    public DateTime? LastAttemptAt { get; init; }
+}
+
 public record PerformanceTrendPointDto
 {
     public DateTime PeriodStart { get; init; }

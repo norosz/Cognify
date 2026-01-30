@@ -41,9 +41,27 @@ public class LearningAnalyticsService(IUserContextService userContext, ILearning
         return await computationService.GetMistakePatternsAsync(userId, maxItems, maxTopics, includeExams);
     }
 
-    public async Task<CategoryBreakdownDto> GetCategoryBreakdownAsync(bool includeExams)
+    public async Task<CategoryBreakdownDto> GetCategoryBreakdownAsync(bool includeExams, string groupBy, IReadOnlyList<string> quizCategoryFilters)
     {
         var userId = userContext.GetCurrentUserId();
-        return await computationService.GetCategoryBreakdownAsync(userId, includeExams);
+        return await computationService.GetCategoryBreakdownAsync(userId, includeExams, groupBy, quizCategoryFilters);
+    }
+
+    public async Task<List<string>> GetQuizCategoriesAsync()
+    {
+        var userId = userContext.GetCurrentUserId();
+        return await computationService.GetQuizCategoriesAsync(userId);
+    }
+
+    public async Task<ExamAnalyticsSummaryDto> GetExamSummaryAsync()
+    {
+        var userId = userContext.GetCurrentUserId();
+        return await computationService.GetExamSummaryAsync(userId);
+    }
+
+    public async Task<CategoryBreakdownDto> GetExamCategoryBreakdownAsync()
+    {
+        var userId = userContext.GetCurrentUserId();
+        return await computationService.GetExamCategoryBreakdownAsync(userId);
     }
 }

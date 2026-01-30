@@ -3,261 +3,271 @@
         <h1>Statistics</h1>
         <p class="text-secondary">Track mastery, decay, and readiness over time.</p>
     </div>
-    <mat-slide-toggle [checked]="includeExams()" (change)="setIncludeExams($event.checked)">
-        Include exams
-    </mat-slide-toggle>
 </div>
-
-<mat-card class="summary-card cognify-glass-card">
-    <mat-card-header>
-        <mat-card-title>Summary</mat-card-title>
-        <mat-card-subtitle>Last 30 days</mat-card-subtitle>
-    </mat-card-header>
-    <mat-card-content>
-        @if (isAnalyticsLoading()) {
-        <div class="loading-inline">
-            <mat-spinner diameter="28"></mat-spinner>
-        </div>
-        } @else {
-        @if (!analyticsSummary()) {
-        <div class="empty-inline">
-            <mat-icon>analytics</mat-icon>
-            <p>No analytics data yet.</p>
-        </div>
-        } @else {
-        <div class="summary-grid">
-            <div class="summary-item">
-                <span class="summary-label">Accuracy</span>
-                <span class="summary-value">{{ (analyticsSummary()?.accuracyRate || 0) * 100 | number: '1.0-0' }}%</span>
-            </div>
-            <div class="summary-item">
-                <span class="summary-label">Avg Mastery</span>
-                <span class="summary-value">{{ (analyticsSummary()?.averageMastery || 0) * 100 | number: '1.0-0' }}%</span>
-            </div>
-            <div class="summary-item">
-                <span class="summary-label">Attempts</span>
-                <span class="summary-value">{{ analyticsSummary()?.totalAttempts || 0 }}</span>
-            </div>
-            <div class="summary-item">
-                <span class="summary-label">Topics</span>
-                <span class="summary-value">{{ analyticsSummary()?.totalTopics || 0 }}</span>
-            </div>
-        </div>
-        }
-        }
-    </mat-card-content>
-</mat-card>
-
-<div class="analytics-header">
-    <h2>Learning Analytics</h2>
-    <p>Track mastery, decay, and readiness at a glance.</p>
-</div>
-
-<div class="analytics-grid">
-    <mat-card class="analytics-card cognify-glass-card wide">
-        <mat-card-header>
-            <mat-card-title>Category Breakdown</mat-card-title>
-            <mat-card-subtitle>Modules and quizzes grouped by category</mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-content>
-            @if (isAnalyticsLoading()) {
-            <div class="loading-inline">
-                <mat-spinner diameter="28"></mat-spinner>
-            </div>
-            } @else {
-            @if ((categoryBreakdown().length || 0) === 0) {
-            <div class="empty-inline">
-                <mat-icon>category</mat-icon>
-                <p>No category data yet.</p>
-            </div>
-            } @else {
-            <div class="category-toggle">
-                <button mat-stroked-button color="primary" (click)="setCategoryMetric('attempts')"
-                        [disabled]="categoryMetric() === 'attempts'">
-                    By attempts
-                </button>
-                <button mat-stroked-button color="primary" (click)="setCategoryMetric('average')"
-                        [disabled]="categoryMetric() === 'average'">
-                    By average score
-                </button>
-            </div>
-            <div class="chart chart-tall" echarts [options]="categoryOptions()"></div>
-            }
-            }
-        </mat-card-content>
-    </mat-card>
-
-    <mat-card class="analytics-card cognify-glass-card">
-        <mat-card-header>
-            <mat-card-title>Exam Readiness</mat-card-title>
-            <mat-card-subtitle>Overall preparedness score</mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-content>
-            @if (isAnalyticsLoading()) {
-            <div class="loading-inline">
-                <mat-spinner diameter="28"></mat-spinner>
-            </div>
-            } @else {
-            @if (!analyticsSummary()) {
-            <div class="empty-inline">
-                <mat-icon>analytics</mat-icon>
-                <p>No analytics data yet. Complete a quiz to generate insights.</p>
-            </div>
-            } @else {
-            <div class="chart" echarts [options]="readinessOptions()"></div>
-            <div class="analytics-meta">
-                <span>Accuracy {{ (analyticsSummary()?.accuracyRate || 0) * 100 | number: '1.0-0' }}%</span>
-                <span>Topics {{ analyticsSummary()?.totalTopics || 0 }}</span>
-            </div>
-            }
-            }
-        </mat-card-content>
-    </mat-card>
-
-    <mat-card class="analytics-card cognify-glass-card">
-        <mat-card-header>
-            <mat-card-title>Learning Velocity</mat-card-title>
-            <mat-card-subtitle>Recent momentum (last 30 days)</mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-content>
-            @if (isAnalyticsLoading()) {
-            <div class="loading-inline">
-                <mat-spinner diameter="28"></mat-spinner>
-            </div>
-            } @else {
-            @if (!performanceTrends() || (performanceTrends()?.points?.length || 0) === 0) {
-            <div class="empty-inline">
-                <mat-icon>show_chart</mat-icon>
-                <p>No recent activity yet. Take a quiz to start tracking momentum.</p>
-            </div>
-            } @else {
-            <div class="chart chart-small" echarts [options]="velocityOptions()"></div>
-            <div class="analytics-meta">
-                <span>Velocity {{ (analyticsSummary()?.learningVelocity || 0) * 100 | number: '1.0-0' }}%</span>
-                <span>Attempts {{ analyticsSummary()?.totalAttempts || 0 }}</span>
-            </div>
-            }
-            }
-        </mat-card-content>
-    </mat-card>
-
-    <mat-card class="analytics-card cognify-glass-card">
-        <mat-card-header>
-            <mat-card-title>Topic Distribution</mat-card-title>
-            <mat-card-subtitle>Mastery split by topic</mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-content>
-            @if (isAnalyticsLoading()) {
-            <div class="loading-inline">
-                <mat-spinner diameter="28"></mat-spinner>
-            </div>
-            } @else {
-            @if (!analyticsSummary() || (topicDistribution()?.topics?.length || 0) === 0) {
-            <div class="empty-inline">
-                <mat-icon>pie_chart</mat-icon>
-                <p>No topic distribution yet. Add notes or complete quizzes to populate.</p>
-            </div>
-            } @else {
-            <div class="chart" echarts [options]="distributionOptions()"></div>
-            }
-            }
-        </mat-card-content>
-    </mat-card>
-
-    <mat-card class="analytics-card cognify-glass-card wide">
-        <mat-card-header>
-            <mat-card-title>Knowledge Map</mat-card-title>
-            <mat-card-subtitle>Heatmap of mastery</mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-content>
-            @if (isAnalyticsLoading()) {
-            <div class="loading-inline">
-                <mat-spinner diameter="28"></mat-spinner>
-            </div>
-            } @else {
-            @if ((retentionHeatmap().length || 0) === 0) {
-            <div class="empty-inline">
-                <mat-icon>grid_view</mat-icon>
-                <p>No heatmap data yet. Keep practicing to visualize mastery.</p>
-            </div>
-            } @else {
-            <div class="chart chart-tall" echarts [options]="heatmapOptions()"></div>
-            }
-            }
-        </mat-card-content>
-    </mat-card>
-
-    <mat-card class="analytics-card cognify-glass-card wide">
-        <mat-card-header>
-            <mat-card-title>Memory Decay Forecast</mat-card-title>
-            <mat-card-subtitle>Predicted forgetting risk</mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-content>
-            @if (isAnalyticsLoading()) {
-            <div class="loading-inline">
-                <mat-spinner diameter="28"></mat-spinner>
-            </div>
-            } @else {
-            @if ((decayForecast()?.topics?.length || 0) === 0) {
-            <div class="empty-inline">
-                <mat-icon>timeline</mat-icon>
-                <p>No decay forecast yet. Complete quizzes to unlock predictions.</p>
-            </div>
-            } @else {
-            <div class="chart chart-tall" echarts [options]="decayOptions()"></div>
-            }
-            }
-        </mat-card-content>
-    </mat-card>
-
-    <mat-card class="analytics-card cognify-glass-card">
-        <mat-card-header>
-            <mat-card-title>Concept Weaknesses</mat-card-title>
-            <mat-card-subtitle>Top topics to revisit</mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-content>
-            @if (isAnalyticsLoading()) {
-            <div class="loading-inline">
-                <mat-spinner diameter="28"></mat-spinner>
-            </div>
-            } @else {
-            @if ((topicDistribution()?.weakestTopics?.length || 0) === 0) {
-            <div class="empty-inline">
-                <mat-icon>auto_awesome</mat-icon>
-                <p>No weakness data yet.</p>
-            </div>
-            } @else {
-            <ul class="topic-list">
-                @for (item of topicDistribution()?.weakestTopics || []; track item.topic) {
-                <li>
-                    <span class="topic-name">{{ item.topic }}</span>
-                    <span class="topic-meta">Risk {{ (item.forgettingRisk * 100) | number: '1.0-0' }}%</span>
-                </li>
+<mat-tab-group>
+    <mat-tab label="Practice">
+        <mat-card class="summary-card cognify-glass-card">
+            <mat-card-header>
+                <mat-card-title>Summary</mat-card-title>
+                <mat-card-subtitle>Last 30 days</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+                @if (isAnalyticsLoading()) {
+                <div class="loading-inline">
+                    <mat-spinner diameter="28"></mat-spinner>
+                </div>
+                } @else {
+                @if (!analyticsSummary()) {
+                <div class="empty-inline">
+                    <mat-icon>analytics</mat-icon>
+                    <p>No analytics data yet.</p>
+                </div>
+                } @else {
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="summary-label">Accuracy</span>
+                        <span class="summary-value">{{ (analyticsSummary()?.accuracyRate || 0) * 100 | number: '1.0-0' }}%</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Avg Mastery</span>
+                        <span class="summary-value">{{ (analyticsSummary()?.averageMastery || 0) * 100 | number: '1.0-0' }}%</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Attempts</span>
+                        <span class="summary-value">{{ analyticsSummary()?.totalAttempts || 0 }}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Topics</span>
+                        <span class="summary-value">{{ analyticsSummary()?.totalTopics || 0 }}</span>
+                    </div>
+                </div>
                 }
-            </ul>
-            }
-            }
-        </mat-card-content>
-    </mat-card>
+                }
+            </mat-card-content>
+        </mat-card>
 
-    <mat-card class="analytics-card cognify-glass-card">
-        <mat-card-header>
-            <mat-card-title>Mistake Patterns</mat-card-title>
-            <mat-card-subtitle>Recurring error categories</mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-content>
-            @if (isAnalyticsLoading()) {
-            <div class="loading-inline">
-                <mat-spinner diameter="28"></mat-spinner>
-            </div>
-            } @else {
-            @if (mistakePatterns().length === 0) {
-            <div class="empty-inline">
-                <mat-icon>insights</mat-icon>
-                <p>No mistake patterns yet.</p>
-            </div>
-            } @else {
-            <ul class="topic-list mistake-list">
+        <div class="analytics-header">
+            <h2>Learning Analytics</h2>
+            <p>Track mastery, decay, and readiness at a glance.</p>
+        </div>
+
+        <div class="analytics-grid">
+            <mat-card class="analytics-card cognify-glass-card wide">
+                <mat-card-header>
+                    <mat-card-title>Category Breakdown</mat-card-title>
+                    <mat-card-subtitle>Modules grouped by category (practice only)</mat-card-subtitle>
+                </mat-card-header>
+                <mat-card-content>
+                    <div class="category-filters">
+                        <mat-form-field appearance="outline">
+                            <mat-label>Filter by quiz categories</mat-label>
+                            <mat-select multiple [value]="selectedQuizCategories()"
+                                        (selectionChange)="setQuizCategoryFilters($event.value)">
+                                <mat-option *ngFor="let option of quizCategoryOptions()" [value]="option">
+                                    {{ option }}
+                                </mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </div>
+
+                    @if (isAnalyticsLoading()) {
+                    <div class="loading-inline">
+                        <mat-spinner diameter="28"></mat-spinner>
+                    </div>
+                    } @else {
+                    @if ((categoryBreakdown().length || 0) === 0) {
+                    <div class="empty-inline">
+                        <mat-icon>category</mat-icon>
+                        <p>No category data yet.</p>
+                    </div>
+                    } @else {
+                    <div class="category-toggle">
+                        <button mat-stroked-button color="primary" (click)="setCategoryMetric('attempts')"
+                                [disabled]="categoryMetric() === 'attempts'">
+                            By attempts
+                        </button>
+                        <button mat-stroked-button color="primary" (click)="setCategoryMetric('average')"
+                                [disabled]="categoryMetric() === 'average'">
+                            By average score
+                        </button>
+                    </div>
+                    <div class="chart chart-tall" echarts [options]="categoryOptions()"></div>
+                    }
+                    }
+                </mat-card-content>
+            </mat-card>
+
+            <mat-card class="analytics-card cognify-glass-card">
+                <mat-card-header>
+                    <mat-card-title>Exam Readiness</mat-card-title>
+                    <mat-card-subtitle>Overall preparedness score</mat-card-subtitle>
+                </mat-card-header>
+                <mat-card-content>
+                    @if (isAnalyticsLoading()) {
+                    <div class="loading-inline">
+                        <mat-spinner diameter="28"></mat-spinner>
+                    </div>
+                    } @else {
+                    @if (!analyticsSummary()) {
+                    <div class="empty-inline">
+                        <mat-icon>analytics</mat-icon>
+                        <p>No analytics data yet. Complete a quiz to generate insights.</p>
+                    </div>
+                    } @else {
+                    <div class="chart" echarts [options]="readinessOptions()"></div>
+                    <div class="analytics-meta">
+                        <span>Accuracy {{ (analyticsSummary()?.accuracyRate || 0) * 100 | number: '1.0-0' }}%</span>
+                        <span>Topics {{ analyticsSummary()?.totalTopics || 0 }}</span>
+                    </div>
+                    }
+                    }
+                </mat-card-content>
+            </mat-card>
+
+            <mat-card class="analytics-card cognify-glass-card">
+                <mat-card-header>
+                    <mat-card-title>Learning Velocity</mat-card-title>
+                    <mat-card-subtitle>Recent momentum (last 30 days)</mat-card-subtitle>
+                </mat-card-header>
+                <mat-card-content>
+                    @if (isAnalyticsLoading()) {
+                    <div class="loading-inline">
+                        <mat-spinner diameter="28"></mat-spinner>
+                    </div>
+                    } @else {
+                    @if (!performanceTrends() || (performanceTrends()?.points?.length || 0) === 0) {
+                    <div class="empty-inline">
+                        <mat-icon>show_chart</mat-icon>
+                        <p>No recent activity yet. Take a quiz to start tracking momentum.</p>
+                    </div>
+                    } @else {
+                    <div class="chart chart-small" echarts [options]="velocityOptions()"></div>
+                    <div class="analytics-meta">
+                        <span>Velocity {{ (analyticsSummary()?.learningVelocity || 0) * 100 | number: '1.0-0' }}%</span>
+                        <span>Attempts {{ analyticsSummary()?.totalAttempts || 0 }}</span>
+                    </div>
+                    }
+                    }
+                </mat-card-content>
+            </mat-card>
+
+            <mat-card class="analytics-card cognify-glass-card">
+                <mat-card-header>
+                    <mat-card-title>Topic Distribution</mat-card-title>
+                    <mat-card-subtitle>Mastery split by topic</mat-card-subtitle>
+                </mat-card-header>
+                <mat-card-content>
+                    @if (isAnalyticsLoading()) {
+                    <div class="loading-inline">
+                        <mat-spinner diameter="28"></mat-spinner>
+                    </div>
+                    } @else {
+                    @if (!analyticsSummary() || (topicDistribution()?.topics?.length || 0) === 0) {
+                    <div class="empty-inline">
+                        <mat-icon>pie_chart</mat-icon>
+                        <p>No topic distribution yet. Add notes or complete quizzes to populate.</p>
+                    </div>
+                    } @else {
+                    <div class="chart" echarts [options]="distributionOptions()"></div>
+                    }
+                    }
+                </mat-card-content>
+            </mat-card>
+
+            <mat-card class="analytics-card cognify-glass-card wide">
+                <mat-card-header>
+                    <mat-card-title>Knowledge Map</mat-card-title>
+                    <mat-card-subtitle>Heatmap of mastery</mat-card-subtitle>
+                </mat-card-header>
+                <mat-card-content>
+                    @if (isAnalyticsLoading()) {
+                    <div class="loading-inline">
+                        <mat-spinner diameter="28"></mat-spinner>
+                    </div>
+                    } @else {
+                    @if ((retentionHeatmap().length || 0) === 0) {
+                    <div class="empty-inline">
+                        <mat-icon>grid_view</mat-icon>
+                        <p>No heatmap data yet. Keep practicing to visualize mastery.</p>
+                    </div>
+                    } @else {
+                    <div class="chart chart-tall" echarts [options]="heatmapOptions()"></div>
+                    }
+                    }
+                </mat-card-content>
+            </mat-card>
+
+            <mat-card class="analytics-card cognify-glass-card wide">
+                <mat-card-header>
+                    <mat-card-title>Memory Decay Forecast</mat-card-title>
+                    <mat-card-subtitle>Predicted forgetting risk</mat-card-subtitle>
+                </mat-card-header>
+                <mat-card-content>
+                    @if (isAnalyticsLoading()) {
+                    <div class="loading-inline">
+                        <mat-spinner diameter="28"></mat-spinner>
+                    </div>
+                    } @else {
+                    @if ((decayForecast()?.topics?.length || 0) === 0) {
+                    <div class="empty-inline">
+                        <mat-icon>timeline</mat-icon>
+                        <p>No decay forecast yet. Complete quizzes to unlock predictions.</p>
+                    </div>
+                    } @else {
+                    <div class="chart chart-tall" echarts [options]="decayOptions()"></div>
+                    }
+                    }
+                </mat-card-content>
+            </mat-card>
+
+            <mat-card class="analytics-card cognify-glass-card">
+                <mat-card-header>
+                    <mat-card-title>Concept Weaknesses</mat-card-title>
+                    <mat-card-subtitle>Top topics to revisit</mat-card-subtitle>
+                </mat-card-header>
+                <mat-card-content>
+                    @if (isAnalyticsLoading()) {
+                    <div class="loading-inline">
+                        <mat-spinner diameter="28"></mat-spinner>
+                    </div>
+                    } @else {
+                    @if ((topicDistribution()?.weakestTopics?.length || 0) === 0) {
+                    <div class="empty-inline">
+                        <mat-icon>auto_awesome</mat-icon>
+                        <p>No weakness data yet.</p>
+                    </div>
+                    } @else {
+                    <ul class="topic-list">
+                        @for (item of topicDistribution()?.weakestTopics || []; track item.topic) {
+                        <li>
+                            <span class="topic-name">{{ item.topic }}</span>
+                            <span class="topic-meta">Risk {{ (item.forgettingRisk * 100) | number: '1.0-0' }}%</span>
+                        </li>
+                        }
+                    </ul>
+                    }
+                    }
+                </mat-card-content>
+            </mat-card>
+
+            <mat-card class="analytics-card cognify-glass-card">
+                <mat-card-header>
+                    <mat-card-title>Mistake Patterns</mat-card-title>
+                    <mat-card-subtitle>Recurring error categories</mat-card-subtitle>
+                </mat-card-header>
+                <mat-card-content>
+                    @if (isAnalyticsLoading()) {
+                    <div class="loading-inline">
+                        <mat-spinner diameter="28"></mat-spinner>
+                    </div>
+                    } @else {
+                    @if (mistakePatterns().length === 0) {
+                    <div class="empty-inline">
+                        <mat-icon>insights</mat-icon>
+                        <p>No mistake patterns yet.</p>
+                    </div>
+                    } @else {
+                    <ul class="topic-list mistake-list">
                 @for (pattern of mistakePatterns(); track pattern.category) {
                 <li>
                     <div class="mistake-row">
@@ -281,4 +291,71 @@
             }
         </mat-card-content>
     </mat-card>
-</div>
+        </div>
+    </mat-tab>
+
+    <mat-tab label="Exams">
+        <mat-card class="summary-card cognify-glass-card">
+            <mat-card-header>
+                <mat-card-title>Exam Summary</mat-card-title>
+                <mat-card-subtitle>All-time performance</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+                @if (!examSummary()) {
+                <div class="empty-inline">
+                    <mat-icon>school</mat-icon>
+                    <p>No exam attempts yet.</p>
+                </div>
+                } @else {
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="summary-label">Attempts</span>
+                        <span class="summary-value">{{ examSummary()?.totalExamAttempts || 0 }}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Average</span>
+                        <span class="summary-value">{{ examSummary()?.averageScore | number: '1.0-0' }}%</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Best</span>
+                        <span class="summary-value">{{ examSummary()?.bestScore | number: '1.0-0' }}%</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Last Attempt</span>
+                        <span class="summary-value">{{ examSummary()?.lastAttemptAt | date: 'MMM d, y' }}</span>
+                    </div>
+                </div>
+                }
+            </mat-card-content>
+        </mat-card>
+
+        <div class="analytics-grid">
+            <mat-card class="analytics-card cognify-glass-card wide">
+                <mat-card-header>
+                    <mat-card-title>Exam Category Breakdown</mat-card-title>
+                    <mat-card-subtitle>Grouped by module category</mat-card-subtitle>
+                </mat-card-header>
+                <mat-card-content>
+                    @if ((examCategoryBreakdown().length || 0) === 0) {
+                    <div class="empty-inline">
+                        <mat-icon>category</mat-icon>
+                        <p>No exam category data yet.</p>
+                    </div>
+                    } @else {
+                    <div class="category-toggle">
+                        <button mat-stroked-button color="primary" (click)="setExamCategoryMetric('attempts')"
+                                [disabled]="examCategoryMetric() === 'attempts'">
+                            By attempts
+                        </button>
+                        <button mat-stroked-button color="primary" (click)="setExamCategoryMetric('average')"
+                                [disabled]="examCategoryMetric() === 'average'">
+                            By average score
+                        </button>
+                    </div>
+                    <div class="chart chart-tall" echarts [options]="examCategoryOptions()"></div>
+                    }
+                </mat-card-content>
+            </mat-card>
+        </div>
+    </mat-tab>
+</mat-tab-group>
