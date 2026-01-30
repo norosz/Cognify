@@ -5,6 +5,46 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-30 17:40  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Added final exam UI section on module detail
+- Implemented exam attempt flow (take exam dialog, results, review pages)
+- Added exam services/models and routes
+- Updated status board for exam UI completion
+
+**CHANGED FILES**
+- cognify.client/src/app/app.routes.ts
+- cognify.client/src/app/core/models/exam.models.ts
+- cognify.client/src/app/core/services/exam-attempt.service.ts
+- cognify.client/src/app/core/services/final-exam.service.ts
+- cognify.client/src/app/features/exams/exam-attempt-result/exam-attempt-result.component.ts
+- cognify.client/src/app/features/exams/exam-attempt-result/exam-attempt-result.component.html
+- cognify.client/src/app/features/exams/exam-attempt-result/exam-attempt-result.component.scss
+- cognify.client/src/app/features/exams/exam-attempt-review/exam-attempt-review.component.ts
+- cognify.client/src/app/features/exams/exam-attempt-review/exam-attempt-review.component.html
+- cognify.client/src/app/features/exams/exam-attempt-review/exam-attempt-review.component.scss
+- cognify.client/src/app/features/exams/exam-taking/exam-taking.component.ts
+- cognify.client/src/app/features/exams/exam-taking/exam-taking.component.html
+- cognify.client/src/app/features/exams/exam-taking/exam-taking.component.scss
+- cognify.client/src/app/features/modules/module-detail/module-detail.component.ts
+- cognify.client/src/app/features/modules/module-detail/module-detail.component.html
+- cognify.client/src/app/features/modules/module-detail/module-detail.component.scss
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Final exam regeneration defaults to 20 questions, Intermediate difficulty, Mixed types
+- Pending final exam ID stored per module for save action
+
+**NEXT**
+- Implement notes detail page (sources + inline images + split inputs)
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-30 17:00  
 **Author:** GitHub Copilot  
 

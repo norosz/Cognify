@@ -18,6 +18,8 @@ export const routes: Routes = [
             { path: 'dashboard', component: DashboardComponent },
             { path: 'statistics', loadComponent: () => import('./features/statistics/statistics.component').then(m => m.StatisticsComponent) },
             { path: 'modules/:id', component: ModuleDetailComponent },
+            { path: 'modules/:moduleId/exams/:examAttemptId/results', loadComponent: () => import('./features/exams/exam-attempt-result/exam-attempt-result.component').then(m => m.ExamAttemptResultComponent) },
+            { path: 'modules/:moduleId/exams/:examAttemptId/review', loadComponent: () => import('./features/exams/exam-attempt-review/exam-attempt-review.component').then(m => m.ExamAttemptReviewComponent) },
             { path: 'quizzes/:quizId', loadComponent: () => import('./features/quizzes/quiz-detail/quiz-detail.component').then(m => m.QuizDetailComponent) },
             { path: 'quizzes/:quizId/attempts/:attemptId/results', loadComponent: () => import('./features/quizzes/quiz-attempt-result/quiz-attempt-result.component').then(m => m.QuizAttemptResultComponent) },
             { path: 'quizzes/:quizId/attempts/:attemptId/review', loadComponent: () => import('./features/quizzes/quiz-attempt-review/quiz-attempt-review.component').then(m => m.QuizAttemptReviewComponent) },

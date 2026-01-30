@@ -1,0 +1,26 @@
+<div *ngIf="loading()" class="loading">Loading result...</div>
+
+<div *ngIf="error()" class="error-container">
+  <p class="error-text">{{ error() }}</p>
+</div>
+
+<ng-container *ngIf="review() as r">
+  <div class="result-header">
+    <button mat-icon-button [routerLink]="['/modules', moduleId() || '']" class="back-button">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <div class="result-title">
+      <h1>Final Exam Result</h1>
+      <p>{{ r.createdAt | date:'medium' }}</p>
+    </div>
+    <button mat-flat-button color="primary" (click)="retakeExam()" [disabled]="!(finalExam()?.currentQuizId)">Retake</button>
+    <button mat-stroked-button color="accent" [routerLink]="['/modules', moduleId() || '', 'exams', r.attemptId, 'review']">
+      Review
+    </button>
+  </div>
+
+  <mat-card class="score-card">
+    <div class="score-value">{{ r.score | number:'1.0-0' }}%</div>
+    <div class="score-meta">Correct: {{ (r.score / 100) * r.items.length | number:'1.0-0' }} / {{ r.items.length }}</div>
+  </mat-card>
+</ng-container>

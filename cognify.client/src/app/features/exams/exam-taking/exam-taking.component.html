@@ -1,0 +1,116 @@
+<div *ngIf="!quiz() && !error()">
+    <p>Loading exam...</p>
+</div>
+
+<div *ngIf="error()" class="error-container">
+    <p class="error-text">{{ error() }}</p>
+    <button mat-button (click)="close()">Close</button>
+</div>
+
+<ng-container *ngIf="quiz() as qs">
+    <h2 mat-dialog-title class="accent-text dialog-header-flush">
+        <mat-icon class="header-icon">school</mat-icon>
+        <span class="title-text">{{ qs.title || 'Final Exam' }}</span>
+        <span class="type-badge-mini">Final Exam</span>
+    </h2>
+
+    <div mat-dialog-content>
+        <div class="questions-list">
+            <div *ngFor="let q of qs.questions; let i = index" class="question-item">
+                <p class="question-prompt">
+                    <strong>{{ i + 1 }}.</strong>
+                    <span [innerHTML]="q.prompt | markdownLatex"></span>
+                    <span *ngIf="!q.prompt" class="text-error">(Missing Question Text)</span>
+                </p>
+
+                <div [ngSwitch]="q.type">
+                    <div *ngSwitchCase="'OpenText'">
+                        <mat-form-field appearance="outline" style="width: 100%;">
+                            <mat-label>Your Answer</mat-label>
+                            <textarea matInput [(ngModel)]="answers[q.id!]" rows="3"></textarea>
+                        </mat-form-field>
+                    </div>
+
+                    <div *ngSwitchCase="'Matching'">
+                        <div class="matching-interaction" *ngIf="matchingState[q.id!] as state">
+                            <p class="text-secondary small">Select a term, then click the corresponding definition.</p>
+
+                            <div class="matching-columns">
+                                <div class="terms-column">
+                                    <div *ngFor="let term of state.terms" class="match-chip term"
+                                        [class.matched]="state.pairs[term]" [class.selected]="selectedTerm === term"
+                                        [ngClass]="getPairColorClass(q.id!, term)"
+                                        (click)="onTermClick(q.id!, term)">
+                                        <span [innerHTML]="term | markdownLatex"></span>
+                                        <mat-icon *ngIf="state.pairs[term]">link</mat-icon>
+                                    </div>
+                                </div>
+
+                                <div class="vertical-divider"></div>
+
+                                <div class="defs-column">
+                                    <div *ngFor="let def of state.definitions" class="match-chip def"
+                                        [class.matched]="isDefMatched(q.id!, def)"
+                                        [class.selected]="selectedDef === def"
+                                        [ngClass]="getPairColorClass(q.id!, def)"
+                                        (click)="onDefinitionClick(q.id!, def)">
+                                        <span [innerHTML]="def | markdownLatex"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="review-status" *ngIf="answers[q.id!]">
+                                <mat-icon color="primary">check_circle</mat-icon> {{ getMatchedCount(q.id!) }} / {{
+                                state.terms.length }} pairs matched
+                            </div>
+                        </div>
+                    </div>
+
+                    <div *ngSwitchCase="'Ordering'">
+                        <p class="text-secondary small">Drag and drop items to arrange them in the correct order:</p>
+
+                        <div cdkDropList class="ordering-list" (cdkDropListDropped)="drop($event, q.id!)">
+                            <div class="order-box" *ngFor="let item of orderingOptions[q.id!]" cdkDrag>
+                                <div class="drag-handle">
+                                    <mat-icon>drag_indicator</mat-icon>
+                                </div>
+                                <span [innerHTML]="item | markdownLatex"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div *ngSwitchCase="'MultipleSelect'">
+                        <div class="options-group">
+                            <mat-checkbox *ngFor="let opt of q.options"
+                                [checked]="isMultipleSelectChecked(q.id!, opt)"
+                                (change)="onMultipleSelectChange(q.id!, opt, $event.checked)"
+                                class="option-checkbox">
+                                <span [innerHTML]="opt | markdownLatex"></span>
+                            </mat-checkbox>
+                        </div>
+                    </div>
+
+                    <div *ngSwitchDefault>
+                        <mat-radio-group [(ngModel)]="answers[q.id!]" aria-label="Select an option"
+                            class="options-group">
+                            <mat-radio-button *ngFor="let opt of q.options" [value]="opt" class="option-radio">
+                                <span [innerHTML]="opt | markdownLatex"></span>
+                            </mat-radio-button>
+                        </mat-radio-group>
+                        <p *ngIf="!q.options || q.options.length === 0" class="text-error">
+                            Warning: No options generated for this question.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div mat-dialog-actions align="end">
+        <button mat-button (click)="close()" [disabled]="submitting()">Cancel</button>
+        <button mat-flat-button color="primary" (click)="submit()" [disabled]="submitting()">
+            <mat-progress-spinner *ngIf="submitting()" diameter="18" mode="indeterminate"></mat-progress-spinner>
+            <span>{{ submitting() ? 'Submitting...' : 'Submit Exam' }}</span>
+        </button>
+    </div>
+</ng-container>

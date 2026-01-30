@@ -48,7 +48,7 @@ Authoritative implementation details live in [implementation.md](implementation.
 2) **[Backend]** Implement exam endpoints + final exam regenerate/save pointer flow
 3) **[Backend]** Add `includeExams` filtering to analytics + review queue endpoints
 4) **[Frontend]** Add quiz pages: detail/stats, results, review (green/red + AI explain)
-5) **[Frontend]** Refactor module page to card layout + module stats + exam section
+5) **[Frontend]** Refactor module page to card layout
 6) **[Frontend]** Notes detail page: sources list + downloads + inline images + split inputs
 7) **[Backend/Frontend]** Categories: AI suggest + user override for modules/quizzes
 8) **[Backend]** Concept clustering pipeline (per module) + concept IDs stored
@@ -85,6 +85,7 @@ Authoritative implementation details live in [implementation.md](implementation.
 - **[Frontend]** Add quiz detail page with stats and attempt history
 - **[Frontend]** Add attempt result and review pages with AI explanations
 - **[Frontend]** Add statistics page and move analytics off dashboard
+- **[Frontend]** Add final exam UI and exam attempt flows
 
 ---
 

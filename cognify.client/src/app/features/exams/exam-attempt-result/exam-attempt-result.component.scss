@@ -1,0 +1,48 @@
+.result-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.result-title h1 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.result-title p {
+    margin: 4px 0 0;
+    color: var(--text-secondary);
+}
+
+.score-card {
+    padding: 24px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.score-value {
+    font-size: 48px;
+    font-weight: 700;
+}
+
+.score-meta {
+    margin-top: 8px;
+    color: var(--text-secondary);
+}
+
+.loading {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 32px;
+}
+
+.error-container {
+    padding: 16px;
+    border-radius: 12px;
+    background: rgba(244, 67, 54, 0.1);
+    color: #f44336;
+}

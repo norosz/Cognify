@@ -1,17 +1,23 @@
 import { Component, inject, signal, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ModuleService } from '../../../core/modules/module.service';
 import { ModuleDto, ModuleStatsDto } from '../../../core/modules/module.models';
+import { FinalExamService } from '../../../core/services/final-exam.service';
+import { ExamAttemptService } from '../../../core/services/exam-attempt.service';
+import { PendingQuizDto, PendingService } from '../../../core/services/pending.service';
+import { NotificationService } from '../../../core/services/notification.service';
+import { FinalExamDto, ExamAttemptDto } from '../../../core/models/exam.models';
 import { DocumentListComponent } from '../components/document-list/document-list.component';
 import { NotesListComponent } from '../../notes/components/notes-list/notes-list.component';
 import { UploadDocumentDialogComponent } from '../components/upload-document-dialog/upload-document-dialog.component';
 import { DocumentsService } from '../services/documents.service';
 import { QuizListComponent } from '../components/quiz-list/quiz-list.component';
+import { ExamTakingComponent } from '../../exams/exam-taking/exam-taking.component';
 
 @Component({
   selector: 'app-module-detail',
@@ -32,7 +38,12 @@ import { QuizListComponent } from '../components/quiz-list/quiz-list.component';
 })
 export class ModuleDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private moduleService = inject(ModuleService);
+  private finalExamService = inject(FinalExamService);
+  private examAttemptService = inject(ExamAttemptService);
+  private pendingService = inject(PendingService);
+  private notificationService = inject(NotificationService);
   private dialog = inject(MatDialog);
   private documentsService = inject(DocumentsService);
 
@@ -41,6 +52,16 @@ export class ModuleDetailComponent implements OnInit {
   statsLoading = signal<boolean>(false);
   statsError = signal<string | null>(null);
   selectedTabIndex = signal<number>(0);
+  finalExam = signal<FinalExamDto | null>(null);
+  finalExamLoading = signal<boolean>(false);
+  finalExamError = signal<string | null>(null);
+  examAttempts = signal<ExamAttemptDto[]>([]);
+  examAttemptsLoading = signal<boolean>(false);
+  pendingFinalExam = signal<PendingQuizDto | null>(null);
+  pendingFinalExamId = signal<string | null>(null);
+  regeneratingFinalExam = signal<boolean>(false);
+  savingFinalExam = signal<boolean>(false);
+  moduleId = signal<string | null>(null);
 
   @ViewChild(DocumentListComponent) documentList!: DocumentListComponent;
   @ViewChild(NotesListComponent) notesList!: NotesListComponent;
@@ -49,6 +70,7 @@ export class ModuleDetailComponent implements OnInit {
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
+      this.moduleId.set(id);
       this.moduleService.getModule(id).subscribe({
         next: (data) => this.module.set(data),
         error: (err) => console.error('Failed to load module', err)
@@ -66,6 +88,10 @@ export class ModuleDetailComponent implements OnInit {
           this.statsLoading.set(false);
         }
       });
+
+      this.loadFinalExam(id);
+      this.loadExamAttempts(id);
+      this.loadPendingFinalExam(id);
     }
 
     this.route.params.subscribe(params => {
@@ -86,6 +112,142 @@ export class ModuleDetailComponent implements OnInit {
     if (this.notesList) {
       this.notesList.loadNotes();
     }
+  }
+
+  loadFinalExam(moduleId: string) {
+    this.finalExamLoading.set(true);
+    this.finalExamService.getFinalExam(moduleId).subscribe({
+      next: (exam) => {
+        this.finalExam.set(exam);
+        this.finalExamLoading.set(false);
+      },
+      error: () => {
+        this.finalExamError.set('Failed to load final exam.');
+        this.finalExamLoading.set(false);
+      }
+    });
+  }
+
+  loadExamAttempts(moduleId: string) {
+    this.examAttemptsLoading.set(true);
+    this.examAttemptService.getExamAttempts(moduleId).subscribe({
+      next: (attempts) => {
+        this.examAttempts.set(attempts);
+        this.examAttemptsLoading.set(false);
+      },
+      error: () => {
+        this.examAttempts.set([]);
+        this.examAttemptsLoading.set(false);
+      }
+    });
+  }
+
+  loadPendingFinalExam(moduleId: string) {
+    const pendingId = localStorage.getItem(this.getPendingFinalExamKey(moduleId));
+    if (!pendingId) {
+      this.pendingFinalExamId.set(null);
+      this.pendingFinalExam.set(null);
+      return;
+    }
+
+    this.pendingFinalExamId.set(pendingId);
+    this.pendingService.getPendingQuizzes().subscribe({
+      next: (items) => {
+        const match = items.find(item => item.id === pendingId) ?? null;
+        this.pendingFinalExam.set(match);
+        if (!match) {
+          this.pendingFinalExamId.set(null);
+          localStorage.removeItem(this.getPendingFinalExamKey(moduleId));
+        }
+      },
+      error: () => {
+        this.pendingFinalExam.set(null);
+      }
+    });
+  }
+
+  startFinalExam() {
+    const moduleId = this.moduleId();
+    const currentExam = this.finalExam();
+    if (!moduleId || !currentExam?.currentQuizId) return;
+
+    const dialogRef = this.dialog.open(ExamTakingComponent, {
+      width: '700px',
+      data: { moduleId, quizId: currentExam.currentQuizId }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result?.examAttemptId) {
+        this.router.navigate(['/modules', moduleId, 'exams', result.examAttemptId, 'results']);
+        this.loadExamAttempts(moduleId);
+        this.moduleService.getModuleStats(moduleId).subscribe({
+          next: (stats) => this.moduleStats.set(stats),
+          error: () => null
+        });
+      }
+    });
+  }
+
+  regenerateFinalExam() {
+    const moduleId = this.moduleId();
+    if (!moduleId || this.regeneratingFinalExam()) return;
+
+    this.regeneratingFinalExam.set(true);
+    this.finalExamService.regenerateFinalExam(moduleId, {
+      questionCount: 20,
+      difficulty: 'Intermediate',
+      questionType: 'Mixed',
+      title: 'Final Exam'
+    }).subscribe({
+      next: (result) => {
+        localStorage.setItem(this.getPendingFinalExamKey(moduleId), result.pendingQuizId);
+        this.pendingFinalExamId.set(result.pendingQuizId);
+        this.notificationService.success(
+          'Final exam generation queued',
+          ['/pending', { tab: 'quizzes' }],
+          'View Pending'
+        );
+        this.loadPendingFinalExam(moduleId);
+        this.regeneratingFinalExam.set(false);
+      },
+      error: () => {
+        this.notificationService.error('Failed to regenerate final exam.');
+        this.regeneratingFinalExam.set(false);
+      }
+    });
+  }
+
+  saveFinalExam() {
+    const moduleId = this.moduleId();
+    const pendingId = this.pendingFinalExamId();
+    if (!moduleId || !pendingId || this.savingFinalExam()) return;
+
+    this.savingFinalExam.set(true);
+    this.finalExamService.saveFinalExam(moduleId, pendingId).subscribe({
+      next: () => {
+        localStorage.removeItem(this.getPendingFinalExamKey(moduleId));
+        this.pendingFinalExamId.set(null);
+        this.pendingFinalExam.set(null);
+        this.loadFinalExam(moduleId);
+        this.notificationService.success('Final exam saved.');
+        this.savingFinalExam.set(false);
+      },
+      error: () => {
+        this.notificationService.error('Failed to save final exam.');
+        this.savingFinalExam.set(false);
+      }
+    });
+  }
+
+  canSaveFinalExam(): boolean {
+    const pending = this.pendingFinalExam();
+    if (!pending) return false;
+    const status = pending.status?.toLowerCase();
+    return status === 'ready' || status === 'completed';
+  }
+
+  private getPendingFinalExamKey(moduleId: string) {
+    return `cognify.finalExam.pending.${moduleId}`;
   }
 
 
