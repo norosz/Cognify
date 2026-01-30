@@ -5,6 +5,27 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-30 20:00  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Added success/error notifications when applying module and quiz categories
+
+**CHANGED FILES**
+- cognify.client/src/app/features/modules/module-detail/module-detail.component.ts
+- cognify.client/src/app/features/quizzes/quiz-detail/quiz-detail.component.ts
+- worklog.md
+
+**DECISIONS**
+- None
+
+**NEXT**
+- None
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-30 19:40  
 **Author:** GitHub Copilot  
 

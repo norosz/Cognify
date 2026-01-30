@@ -335,7 +335,7 @@ export class ModuleDetailComponent implements OnInit {
 
     this.moduleService.setCategory(moduleId, label).subscribe({
       next: () => {
-        this.notificationService.success('Category updated.');
+        this.notificationService.success(`Module category set to ${label}.`);
         this.moduleService.getModule(moduleId).subscribe({
           next: (data) => this.module.set(data)
         });

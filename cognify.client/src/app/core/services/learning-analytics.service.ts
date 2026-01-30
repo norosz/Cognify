@@ -59,11 +59,11 @@ export class LearningAnalyticsService {
         const query: Record<string, any> = { includeExams: params?.includeExams ?? false };
 
         if (params?.groupBy) {
-            query.groupBy = params.groupBy;
+            query['groupBy'] = params.groupBy;
         }
 
         if (params?.filterQuizCategories && params.filterQuizCategories.length > 0) {
-            query.filterQuizCategories = params.filterQuizCategories.join(',');
+            query['filterQuizCategories'] = params.filterQuizCategories.join(',');
         }
 
         return this.http.get<CategoryBreakdownDto>(`${this.apiUrl}/category-breakdown`, {

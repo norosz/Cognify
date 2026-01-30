@@ -13,6 +13,7 @@ import { forkJoin } from 'rxjs';
 import { QuizDto, QuizStatsDto, AttemptDto } from '../../../core/models/quiz.models';
 import { QuizTakingComponent } from '../../modules/components/quiz-taking/quiz-taking.component';
 import { CategoryHistoryBatchDto } from '../../../core/models/category.models';
+import { NotificationService } from '../../../core/services/notification.service';
 
 @Component({
   selector: 'app-quiz-detail',
@@ -35,6 +36,7 @@ export class QuizDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private quizService = inject(QuizService);
   private dialog = inject(MatDialog);
+  private notificationService = inject(NotificationService);
 
   quiz = signal<QuizDto | null>(null);
   stats = signal<QuizStatsDto | null>(null);
@@ -138,12 +140,13 @@ export class QuizDetailComponent implements OnInit {
 
     this.quizService.setCategory(quiz.id, label).subscribe({
       next: () => {
+        this.notificationService.success(`Quiz category set to ${label}.`);
         this.quizService.getQuiz(quiz.id).subscribe({
           next: (data) => this.quiz.set(data)
         });
         this.loadCategoryHistory(true);
       },
-      error: (err) => console.error(err)
+      error: () => this.notificationService.error('Failed to update quiz category.')
     });
   }
 
