@@ -46,7 +46,7 @@
                 <div class="question-header">
                     <div class="question-title">Q{{ i + 1 }} ({{ q.type }})</div>
                     <div class="question-preview">
-                        {{ q.prompt | slice:0:80 }}<span *ngIf="q.prompt?.length > 80">…</span>
+                        {{ q.prompt | slice:0:80 }}<span *ngIf="q.prompt.length > 80">…</span>
                     </div>
                 </div>
 

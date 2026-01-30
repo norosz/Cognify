@@ -60,7 +60,8 @@ public class StatsService(ApplicationDbContext context, IUserContextService user
 
         var totalDocuments = await context.Documents.AsNoTracking().CountAsync(d => d.ModuleId == moduleId);
         var totalNotes = noteIds.Count;
-        var totalQuizzes = await context.Quizzes.AsNoTracking().CountAsync(q => noteIds.Contains(q.NoteId));
+        var totalQuizzes = await context.Quizzes.AsNoTracking()
+            .CountAsync(q => q.NoteId.HasValue && noteIds.Contains(q.NoteId.Value));
 
         return new ModuleStatsDto
         {

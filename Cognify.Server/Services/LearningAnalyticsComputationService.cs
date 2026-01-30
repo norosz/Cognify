@@ -102,8 +102,17 @@ public class LearningAnalyticsComputationService(ApplicationDbContext context, I
             cursor = periodEnd;
         }
 
-    public async Task<CategoryBreakdownDto> GetCategoryBreakdownAsync(Guid userId, bool includeExams, string groupBy, IReadOnlyList<string> quizCategoryFilters)
+        return new PerformanceTrendsDto
         {
+            From = start,
+            To = end,
+            BucketDays = bucket,
+            Points = points
+        };
+    }
+
+    public async Task<CategoryBreakdownDto> GetCategoryBreakdownAsync(Guid userId, bool includeExams, string groupBy, IReadOnlyList<string> quizCategoryFilters)
+    {
         var normalizedFilters = quizCategoryFilters
             .Where(f => !string.IsNullOrWhiteSpace(f))
             .Select(f => f.Trim())
@@ -112,7 +121,7 @@ public class LearningAnalyticsComputationService(ApplicationDbContext context, I
         var moduleQuery = context.Modules
             .AsNoTracking()
             .Where(m => m.OwnerUserId == userId)
-            .Select(m => new { m.Id, CategoryLabel = NormalizeCategory(m.CategoryLabel) });
+            .Select(m => new { m.Id, CategoryLabel = NormalizeCategoryLabel(m.CategoryLabel) });
 
         var quizQuery = context.Quizzes
             .AsNoTracking()
@@ -129,8 +138,8 @@ public class LearningAnalyticsComputationService(ApplicationDbContext context, I
             .Select(q => new
             {
                 q.Id,
-                QuizCategory = NormalizeCategory(q.CategoryLabel),
-                ModuleCategory = NormalizeCategory(q.Note!.Module!.CategoryLabel),
+                QuizCategory = NormalizeCategoryLabel(q.CategoryLabel),
+                ModuleCategory = NormalizeCategoryLabel(q.Note!.Module!.CategoryLabel),
                 ModuleId = q.Note!.Module!.Id
             })
             .ToListAsync();
@@ -154,8 +163,8 @@ public class LearningAnalyticsComputationService(ApplicationDbContext context, I
         {
             a.Score,
             a.CreatedAt,
-            QuizCategory = NormalizeCategory(a.Quiz!.CategoryLabel),
-            ModuleCategory = NormalizeCategory(a.Quiz!.Note!.Module!.CategoryLabel),
+            QuizCategory = NormalizeCategoryLabel(a.Quiz!.CategoryLabel),
+            ModuleCategory = NormalizeCategoryLabel(a.Quiz!.Note!.Module!.CategoryLabel),
             ModuleId = a.Quiz!.Note!.Module!.Id
         }).ToList();
 
@@ -214,20 +223,35 @@ public class LearningAnalyticsComputationService(ApplicationDbContext context, I
                 .Where(a => a.UserId == userId)
                 .ToListAsync();
 
-            foreach (var group in exams.GroupBy(a => NormalizeCategory(a.Module?.CategoryLabel)))
+            foreach (var group in exams.GroupBy(a => NormalizeCategoryLabel(a.Module?.CategoryLabel)))
             {
                 var label = ResolveGroupLabel(null, group.Key);
-                var row = rows.FirstOrDefault(r => r.CategoryLabel == label);
-                if (row == null)
-                {
-                    row = new CategoryBreakdownItemDto { CategoryLabel = label };
-                    rows.Add(row);
-                }
+                var rowIndex = rows.FindIndex(r => r.CategoryLabel == label);
+                var existing = rowIndex >= 0 ? rows[rowIndex] : null;
 
-                row.ExamAttemptCount = group.Count();
-                row.ExamAverageScore = group.Any() ? group.Average(a => a.Score) : 0;
-                row.ExamBestScore = group.Any() ? group.Max(a => a.Score) : 0;
-                row.LastExamAttemptAt = group.Any() ? group.Max(a => a.CreatedAt) : null;
+                var updated = new CategoryBreakdownItemDto
+                {
+                    CategoryLabel = label,
+                    ModuleCount = existing?.ModuleCount ?? 0,
+                    QuizCount = existing?.QuizCount ?? 0,
+                    PracticeAttemptCount = existing?.PracticeAttemptCount ?? 0,
+                    PracticeAverageScore = existing?.PracticeAverageScore ?? 0,
+                    PracticeBestScore = existing?.PracticeBestScore ?? 0,
+                    LastPracticeAttemptAt = existing?.LastPracticeAttemptAt,
+                    ExamAttemptCount = group.Count(),
+                    ExamAverageScore = group.Any() ? group.Average(a => a.Score) : 0,
+                    ExamBestScore = group.Any() ? group.Max(a => a.Score) : 0,
+                    LastExamAttemptAt = group.Any() ? group.Max(a => a.CreatedAt) : null
+                };
+
+                if (rowIndex >= 0)
+                {
+                    rows[rowIndex] = updated;
+                }
+                else
+                {
+                    rows.Add(updated);
+                }
             }
 
             rows = rows.OrderBy(r => r.CategoryLabel).ToList();
@@ -278,7 +302,7 @@ public class LearningAnalyticsComputationService(ApplicationDbContext context, I
             .Where(a => a.UserId == userId)
             .ToListAsync();
 
-        var groups = attempts.GroupBy(a => NormalizeCategory(a.Module?.CategoryLabel));
+        var groups = attempts.GroupBy(a => NormalizeCategoryLabel(a.Module?.CategoryLabel));
         var rows = groups.Select(group => new CategoryBreakdownItemDto
         {
             CategoryLabel = group.Key,
@@ -295,12 +319,6 @@ public class LearningAnalyticsComputationService(ApplicationDbContext context, I
         }).OrderBy(r => r.CategoryLabel).ToList();
 
         return new CategoryBreakdownDto { Items = rows };
-    }
-            From = start,
-            To = end,
-            BucketDays = bucket,
-            Points = points
-        };
     }
 
     public async Task<TopicDistributionDto> GetTopicDistributionAsync(Guid userId, int maxTopics, int maxWeakTopics, bool includeExams)
