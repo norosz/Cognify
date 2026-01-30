@@ -96,7 +96,7 @@ export class ModuleDetailComponent implements OnInit {
   @ViewChild(QuizListComponent) quizList!: QuizListComponent;
 
   ngOnInit() {
-    const id = this.route.snapshot.paramMap.get('id');
+    const id = this.normalizeModuleId(this.route.snapshot.paramMap.get('id'));
     if (id) {
       this.moduleId.set(id);
       this.moduleService.getModule(id).subscribe({
@@ -126,8 +126,8 @@ export class ModuleDetailComponent implements OnInit {
       this.loadModuleCategoryBreakdown(id);
     }
 
-    this.route.params.subscribe(params => {
-      const tab = params['tab'];
+    this.route.queryParamMap.subscribe(params => {
+      const tab = params.get('tab') ?? this.route.snapshot.params['tab'];
       if (tab === 'notes') this.selectedTabIndex.set(1);
       else if (tab === 'quizzes') this.selectedTabIndex.set(2);
       else if (tab === 'documents') this.selectedTabIndex.set(0);
@@ -332,6 +332,12 @@ export class ModuleDetailComponent implements OnInit {
 
   private isFinalExamMarkerNote(note: Note): boolean {
     return note.title === 'Final Exam' && (note.content ?? '').includes('<!-- cognify:final-exam -->');
+  }
+
+  private normalizeModuleId(value: string | null): string | null {
+    if (!value) return null;
+    const decoded = decodeURIComponent(value);
+    return decoded.split('?')[0].split(';')[0];
   }
 
   private buildModuleCategoryOptions(items: CategoryBreakdownItemDto[], metric: 'attempts' | 'average') {

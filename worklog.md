@@ -5,6 +5,56 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-30 22:00  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Fixed module back navigation to use query params instead of encoded returnTo
+- Normalized moduleId parsing to strip encoded query fragments
+
+**CHANGED FILES**
+- cognify.client/src/app/features/quizzes/quiz-detail/quiz-detail.component.ts
+- cognify.client/src/app/features/quizzes/quiz-detail/quiz-detail.component.html
+- cognify.client/src/app/features/modules/components/quiz-list/quiz-list.component.html
+- cognify.client/src/app/features/modules/module-detail/module-detail.component.ts
+- worklog.md
+
+**DECISIONS**
+- Return navigation uses `returnPath` + `returnTab` query params
+
+**NEXT**
+- None
+
+**BLOCKERS**
+- None
+
+## ENTRY
+**Timestamp:** 2026-01-30 21:45  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Normalized moduleId routing to avoid matrix param pollution
+- Switched module tab links to query params
+- Added drag cursor styling for final exam ordering questions
+
+**CHANGED FILES**
+- cognify.client/src/app/features/modules/module-detail/module-detail.component.ts
+- cognify.client/src/app/features/modules/components/quiz-list/quiz-list.component.html
+- cognify.client/src/app/features/notes/note-detail/note-detail.component.html
+- cognify.client/src/app/features/pending/pending.component.ts
+- cognify.client/src/app/features/exams/exam-taking/exam-taking.component.scss
+- worklog.md
+
+**DECISIONS**
+- Module tab state is read from query params to avoid bad module IDs
+
+**NEXT**
+- None
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-30 21:35  
 **Author:** GitHub Copilot  
 

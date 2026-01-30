@@ -43,7 +43,8 @@ export class QuizDetailComponent implements OnInit {
   attempts = signal<AttemptDto[]>([]);
   loading = signal<boolean>(false);
   error = signal<string | null>(null);
-  returnTo = signal<string>('/dashboard');
+  returnPath = signal<string>('/dashboard');
+  returnTab = signal<string | null>(null);
   categoryInput = signal<string>('');
   categoryOptions = signal<CategoryOption[]>([]);
   categoryHistoryLoading = signal<boolean>(false);
@@ -54,9 +55,28 @@ export class QuizDetailComponent implements OnInit {
 
   ngOnInit(): void {
     const quizId = this.route.snapshot.paramMap.get('quizId');
+    const returnPath = this.route.snapshot.queryParamMap.get('returnPath');
+    const returnTab = this.route.snapshot.queryParamMap.get('returnTab');
     const returnTo = this.route.snapshot.queryParamMap.get('returnTo');
-    if (returnTo) {
-      this.returnTo.set(returnTo);
+    if (returnPath) {
+      this.returnPath.set(returnPath);
+    }
+    if (returnTab) {
+      this.returnTab.set(returnTab);
+    }
+    if (returnTo && !returnPath) {
+      const decoded = decodeURIComponent(returnTo);
+      const [path, query] = decoded.split('?');
+      if (path) {
+        this.returnPath.set(path);
+      }
+      if (query) {
+        const params = new URLSearchParams(query);
+        const tab = params.get('tab');
+        if (tab) {
+          this.returnTab.set(tab);
+        }
+      }
     }
     if (!quizId) {
       this.error.set('Quiz not found.');
@@ -200,6 +220,11 @@ export class QuizDetailComponent implements OnInit {
     }
 
     return Array.from(map.values()).sort((a, b) => b.lastCreatedAt - a.lastCreatedAt);
+  }
+
+  returnQueryParams(): Record<string, string> | null {
+    const tab = this.returnTab();
+    return tab ? { tab } : null;
   }
 }
 

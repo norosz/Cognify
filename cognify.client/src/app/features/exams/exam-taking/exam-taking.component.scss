@@ -79,6 +79,11 @@
     background: rgba(255, 255, 255, 0.04);
     border-radius: 10px;
     border: 1px solid rgba(255, 255, 255, 0.08);
+    cursor: grab;
+
+    &:active {
+        cursor: grabbing;
+    }
 }
 
 .drag-handle {

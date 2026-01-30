@@ -6,7 +6,7 @@
 
 <ng-container *ngIf="note() as note">
   <div class="note-header">
-    <button mat-icon-button [routerLink]="['/modules', note.moduleId, { tab: 'notes' }]" class="back-button">
+    <button mat-icon-button [routerLink]="['/modules', note.moduleId]" [queryParams]="{ tab: 'notes' }" class="back-button">
       <mat-icon>arrow_back</mat-icon>
     </button>
     <div class="note-title">
