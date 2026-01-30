@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ModuleService } from '../../../core/modules/module.service';
 import { ModuleDto, ModuleStatsDto } from '../../../core/modules/module.models';
@@ -27,6 +28,7 @@ import { ExamTakingComponent } from '../../exams/exam-taking/exam-taking.compone
     MatTabsModule,
     MatIconModule,
     MatButtonModule,
+    MatCardModule,
     RouterLink,
     MatDialogModule,
     DocumentListComponent,

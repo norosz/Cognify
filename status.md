@@ -84,6 +84,7 @@ Authoritative implementation details live in [implementation.md](implementation.
 - **[Tests]** Stabilize concept clustering test seed data
 - **[Backend]** Fix concept clustering tracking query for tests
 - **[Backend]** Remove cascade delete on LearningInteraction -> ExamAttempt
+- **[Frontend]** Add MatCardModule import for module detail view
 
 ---
 

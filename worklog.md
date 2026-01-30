@@ -5,6 +5,27 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-30 21:30  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Added MatCardModule to module detail component imports
+
+**CHANGED FILES**
+- cognify.client/src/app/features/modules/module-detail/module-detail.component.ts
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Use explicit Material module import for standalone component
+
+**NEXT**
+- Re-run frontend build
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-30 21:24  
 **Author:** GitHub Copilot  
 
