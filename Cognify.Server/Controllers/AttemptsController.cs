@@ -8,7 +8,7 @@ namespace Cognify.Server.Controllers;
 [Authorize]
 [ApiController]
 [Route("api/quizzes/{quizId}/attempts")]
-public class AttemptsController(IAttemptService attemptService) : ControllerBase
+public class AttemptsController(IAttemptService attemptService, IAttemptReviewService reviewService) : ControllerBase
 {
     [HttpPost]
     public async Task<IActionResult> SubmitAttempt(Guid quizId, [FromBody] SubmitAttemptDto dto)
@@ -32,5 +32,13 @@ public class AttemptsController(IAttemptService attemptService) : ControllerBase
     {
         var attempts = await attemptService.GetAttemptsAsync(quizId);
         return Ok(attempts);
+    }
+
+    [HttpGet("{attemptId}/review")]
+    public async Task<IActionResult> GetAttemptReview(Guid quizId, Guid attemptId)
+    {
+        var review = await reviewService.GetAttemptReviewAsync(quizId, attemptId);
+        if (review == null) return NotFound();
+        return Ok(review);
     }
 }

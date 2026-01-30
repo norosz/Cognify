@@ -5,6 +5,35 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-30 12:25  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Added attempt review DTOs and review service for practice and exam attempts
+- Added attempt review endpoints for quizzes and exams
+- Registered AttemptReviewService in DI
+- Updated status board to mark review endpoints complete
+
+**CHANGED FILES**
+- Cognify.Server/Dtos/Attempt/AttemptReviewDtos.cs
+- Cognify.Server/Services/Interfaces/IAttemptReviewService.cs
+- Cognify.Server/Services/AttemptReviewService.cs
+- Cognify.Server/Controllers/AttemptsController.cs
+- Cognify.Server/Controllers/ExamAttemptsController.cs
+- Cognify.Server/Program.cs
+- status.md
+- worklog.md
+
+**DECISIONS**
+- Review payload includes question prompt, correct answer, user answer, correctness, feedback, and detected mistakes
+
+**NEXT**
+- Implement AI explanation endpoint for mistakes
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-30 12:00  
 **Author:** GitHub Copilot  
 
