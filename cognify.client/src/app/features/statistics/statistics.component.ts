@@ -139,6 +139,25 @@ export class StatisticsComponent implements OnInit {
     });
   }
 
+  formatMistakeLabel(label: string): string {
+    const trimmed = label?.trim();
+    if (!trimmed) {
+      return '';
+    }
+
+    const overrides: Record<string, string> = {
+      IncorrectAnswer: 'Incorrect Answer',
+      TooShortAnswer: 'Too Short Answer',
+      IrrelevantContent: 'Irrelevant Content'
+    };
+
+    if (overrides[trimmed]) {
+      return overrides[trimmed];
+    }
+
+    return trimmed.replace(/_/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2');
+  }
+
 
   private buildExamCategoryBreakdownOptions(items: CategoryBreakdownItemDto[], metric: 'attempts' | 'average') {
     const labels = items.map(i => i.categoryLabel);

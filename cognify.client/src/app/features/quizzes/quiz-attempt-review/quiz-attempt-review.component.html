@@ -44,7 +44,7 @@
 
         <div class="mistakes" *ngIf="item.detectedMistakes.length">
           <span class="label">Mistakes</span>
-          <div class="mistake-chip" *ngFor="let mistake of item.detectedMistakes">{{ mistake }}</div>
+          <div class="mistake-chip" *ngFor="let mistake of item.detectedMistakes">{{ formatMistakeLabel(mistake) }}</div>
         </div>
 
         <button mat-stroked-button color="primary" *ngIf="item.isCorrect === false" (click)="requestExplanation(item)" [disabled]="isExplanationLoading(item.questionId)">

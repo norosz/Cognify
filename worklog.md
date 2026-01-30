@@ -5,6 +5,31 @@
 ---
 
 ## ENTRY
+**Timestamp:** 2026-01-31 11:10  
+**Author:** GitHub Copilot  
+
+**DONE**
+- Normalized mistake labels on review pages and statistics
+
+**CHANGED FILES**
+- cognify.client/src/app/features/quizzes/quiz-attempt-review/quiz-attempt-review.component.ts
+- cognify.client/src/app/features/quizzes/quiz-attempt-review/quiz-attempt-review.component.html
+- cognify.client/src/app/features/exams/exam-attempt-review/exam-attempt-review.component.ts
+- cognify.client/src/app/features/exams/exam-attempt-review/exam-attempt-review.component.html
+- cognify.client/src/app/features/statistics/statistics.component.ts
+- cognify.client/src/app/features/statistics/statistics.component.html
+- worklog.md
+
+**DECISIONS**
+- Display mistake categories with human-readable spacing
+
+**NEXT**
+- None
+
+**BLOCKERS**
+- None
+
+## ENTRY
 **Timestamp:** 2026-01-31 10:00  
 **Author:** GitHub Copilot  
 

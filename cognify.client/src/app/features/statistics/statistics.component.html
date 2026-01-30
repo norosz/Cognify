@@ -259,7 +259,7 @@
                 @for (pattern of mistakePatterns(); track pattern.category) {
                 <li>
                     <div class="mistake-row">
-                        <span class="topic-name">{{ pattern.category }}</span>
+                        <span class="topic-name">{{ formatMistakeLabel(pattern.category) }}</span>
                         <span class="topic-meta">{{ pattern.totalCount }}x</span>
                     </div>
                     @if ((pattern.topTopics.length || 0) > 0) {
