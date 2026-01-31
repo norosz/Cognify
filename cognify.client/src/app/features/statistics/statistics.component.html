@@ -238,7 +238,7 @@
                 </mat-card-content>
             </mat-card>
 
-            <mat-card class="analytics-card cognify-glass-card">
+            <mat-card class="analytics-card wide cognify-glass-card">
                 <mat-card-header>
                     <mat-card-title>Mistake Patterns</mat-card-title>
                     <mat-card-subtitle>Recurring error categories</mat-card-subtitle>
@@ -255,30 +255,30 @@
                         <p>No mistake patterns yet.</p>
                     </div>
                     } @else {
-                    <ul class="topic-list mistake-list">
-                @for (pattern of mistakePatterns(); track pattern.category) {
-                <li>
-                    <div class="mistake-row">
-                        <span class="topic-name">{{ formatMistakeLabel(pattern.category) }}</span>
-                        <span class="topic-meta">{{ pattern.totalCount }}x</span>
-                    </div>
-                    @if ((pattern.topTopics.length || 0) > 0) {
-                    <div class="mistake-topics">
-                        <span class="text-secondary">Top topics:</span>
-                        <span class="mistake-topics-list">
-                            @for (topic of pattern.topTopics; track topic.topic) {
-                            <span class="mistake-topic">{{ topic.topic }} ({{ topic.count }})</span>
+                    <div class="mistake-patterns-row">
+                        @for (pattern of mistakePatterns(); track pattern.category) {
+                        <div class="mistake-pattern-card">
+                            <div class="mistake-row">
+                                <span class="topic-name">{{ formatMistakeLabel(pattern.category) }}</span>
+                                <span class="topic-meta">{{ pattern.totalCount }}x</span>
+                            </div>
+                            @if ((pattern.topTopics.length || 0) > 0) {
+                            <div class="mistake-topics">
+                                <span class="text-secondary">Top topics:</span>
+                                <span class="mistake-topics-list">
+                                    @for (topic of pattern.topTopics; track topic.topic) {
+                                    <span class="mistake-topic">{{ topic.topic }} ({{ topic.count }})</span>
+                                    }
+                                </span>
+                            </div>
                             }
-                        </span>
+                        </div>
+                        }
                     </div>
                     }
-                </li>
-                }
-            </ul>
-            }
-            }
-        </mat-card-content>
-    </mat-card>
+                    }
+                </mat-card-content>
+                </mat-card>
         </div>
     </mat-tab>
 

@@ -1,6 +1,12 @@
 <h2 mat-dialog-title>{{ isEditMode ? 'Edit Module' : 'Create New Module' }}</h2>
 <mat-dialog-content>
-    <form [formGroup]="form" class="create-module-form">
+    <div class="create-module-overlay" *ngIf="isLoading">
+        <div class="create-module-spinner">
+            <mat-spinner diameter="40"></mat-spinner>
+            <p class="create-module-status">Creating module...</p>
+        </div>
+    </div>
+    <form [formGroup]="form" class="create-module-form" [class.loading]="isLoading">
         <mat-form-field appearance="outline" class="full-width">
             <mat-label>Title</mat-label>
             <input matInput formControlName="title" placeholder="e.g. History of Rome" required />

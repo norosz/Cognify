@@ -272,7 +272,7 @@ export class StatisticsComponent implements OnInit {
     const data = points.map((p, index) => [0, index, Math.round(p.masteryScore * 100)]);
     return {
       tooltip: { formatter: ({ value }: any) => `${topics[value[1]]}: ${value[2]}%` },
-      grid: { left: 120, right: 20, top: 20, bottom: 20 },
+      grid: { left: 120, right: 20, top: 20, bottom: 80 },
       xAxis: { type: 'category', data: ['Mastery'], splitArea: { show: false } },
       yAxis: { type: 'category', data: topics, splitArea: { show: false } },
       visualMap: {
@@ -309,7 +309,7 @@ export class StatisticsComponent implements OnInit {
     return {
       tooltip: { trigger: 'axis' },
       legend: { show: true, bottom: 0 },
-      grid: { left: 40, right: 20, top: 20, bottom: 40 },
+      grid: { left: 40, right: 20, top: 20, bottom: 80 },
       xAxis: { type: 'category', data: xLabels },
       yAxis: { type: 'value', min: 0, max: 100 },
       series

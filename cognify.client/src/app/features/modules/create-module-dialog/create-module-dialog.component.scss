@@ -3,9 +3,42 @@
     flex-direction: column;
     min-width: 400px;
     padding-top: 8px;
+    position: relative;
 }
 
 .full-width {
     width: 100%;
     margin-bottom: 8px;
+}
+
+.create-module-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255,255,255,0.85);
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.create-module-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.create-module-status {
+    color: var(--text-secondary, #666);
+    font-size: 1.1rem;
+    margin-top: 8px;
+}
+
+.create-module-form.loading {
+    pointer-events: none;
+    opacity: 0.5;
 }
