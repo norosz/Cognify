@@ -585,4 +585,86 @@ public class AiService : IAiService
             return new CategorySuggestionResponse();
         }
     }
+    public async Task<VerificationContractResponse> VerifyAttemptAsync(VerificationContractRequest request)
+    {
+        var model = _configuration["OpenAI:Model"] ?? "gpt-4o";
+        var chatClient = _client.GetChatClient(model);
+        var prompt = AiPrompts.BuildBatchVerificationPrompt(request.Items, request.QuizRubric);
+
+        try
+        {
+            var completion = await chatClient.CompleteChatAsync(
+                [
+                    new SystemChatMessage("You are a strict JSON generator. Return only the required verification results JSON object."),
+                    new UserChatMessage(prompt)
+                ],
+                new ChatCompletionOptions
+                {
+                    ResponseFormat = ChatResponseFormat.CreateJsonObjectFormat()
+                }
+            );
+
+            var json = completion.Value.Content[0].Text;
+            _logger.LogInformation("AI Verification Response: {Json}", json);
+            
+            var results = ParseVerificationResponse(json);
+            return new VerificationContractResponse(request.ContractVersion, results);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to perform AI batch verification.");
+            return new VerificationContractResponse(request.ContractVersion, []);
+        }
+    }
+
+    private static List<VerificationResult> ParseVerificationResponse(string json)
+    {
+        if (string.IsNullOrWhiteSpace(json)) return [];
+
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+            
+            if (root.TryGetProperty("results", out var resultsProp) && resultsProp.ValueKind == JsonValueKind.Array)
+            {
+                var list = new List<VerificationResult>();
+                foreach (var item in resultsProp.EnumerateArray())
+                {
+                    Guid qId = Guid.Empty;
+                    double score = 0;
+                    bool isCorrect = false;
+                    string? feedback = null;
+
+                    if (item.TryGetProperty("questionId", out var idProp))
+                    {
+                        Guid.TryParse(idProp.GetString(), out qId);
+                    }
+                    if (item.TryGetProperty("score", out var scoreProp))
+                    {
+                        score = scoreProp.GetDouble();
+                    }
+                    if (item.TryGetProperty("isCorrect", out var correctProp))
+                    {
+                        isCorrect = correctProp.GetBoolean();
+                    }
+                    if (item.TryGetProperty("feedback", out var feedbackProp))
+                    {
+                        feedback = feedbackProp.GetString();
+                    }
+
+                    if (qId != Guid.Empty)
+                    {
+                        list.Add(new VerificationResult(qId, score, isCorrect, feedback));
+                    }
+                }
+                return list;
+            }
+        }
+        catch
+        {
+            // Fallback: Empty list
+        }
+        return [];
+    }
 }

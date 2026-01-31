@@ -84,6 +84,74 @@ public class AttemptService(
             });
         }
 
+        if (quiz.Questions.Any(q => q.Type != QuestionType.OpenText))
+        {
+            var incorrectInteractions = interactions
+                .Where(i => !i.IsCorrect)
+                .Select(i => new { i, Question = quiz.Questions.First(q => q.Id == i.QuestionId) })
+                .Where(x => x.Question.Type != QuestionType.OpenText)
+                .ToList();
+
+            if (incorrectInteractions.Count > 0)
+            {
+                var verificationItems = interactions.Select(i => {
+                    var q = quiz.Questions.First(question => question.Id == i.QuestionId);
+                    return new VerificationItem(
+                        q.Id,
+                        q.Prompt,
+                        i.UserAnswer ?? "",
+                        TryDeserializeString(q.CorrectAnswerJson),
+                        q.Type.ToString()
+                    );
+                }).ToList();
+
+                var inputHash = AgentRunService.ComputeHash($"verification:{AgentContractVersions.V2}:{quiz.Id}:{dto.Answers.GetHashCode()}");
+                var run = await agentRunService.CreateAsync(userId, AgentRunType.Verification, inputHash, correlationId: quiz.Id.ToString(), promptVersion: "verification-v2");
+
+                try
+                {
+                    var verificationRequest = new VerificationContractRequest(
+                        AgentContractVersions.V2,
+                        verificationItems,
+                        quiz.RubricJson);
+
+                    var verificationResponse = await aiService.VerifyAttemptAsync(verificationRequest);
+
+                    if (verificationResponse?.Results != null)
+                    {
+                        for (int i = 0; i < interactions.Count; i++)
+                        {
+                            var interaction = interactions[i];
+                            var result = verificationResponse.Results.FirstOrDefault(r => r.QuestionId == interaction.QuestionId);
+                            
+                            if (result != null && result.IsCorrect && !interaction.IsCorrect)
+                            {
+                                // Override strict check using 'with' for immutable record
+                                interactions[i] = interaction with 
+                                { 
+                                    IsCorrect = true, 
+                                    Score = result.Score / 100.0,
+                                    Feedback = (interaction.Feedback ?? "") + " [Verified by AI Agent] " + result.Feedback
+                                };
+                            }
+                        }
+
+                        // Recalculate total score
+                        totalScore = interactions.Sum(i => i.Score);
+                        await agentRunService.MarkCompletedAsync(run.Id, JsonSerializer.Serialize(verificationResponse));
+                    }
+                    else
+                    {
+                        await agentRunService.MarkFailedAsync(run.Id, "AI verification returned null results.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    await agentRunService.MarkFailedAsync(run.Id, ex.Message);
+                }
+            }
+        }
+
         double score = totalQuestions > 0 ? (totalScore / totalQuestions) * 100 : 0;
 
         var attempt = new Attempt

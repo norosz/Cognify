@@ -15,6 +15,7 @@ public interface IAiService
     Task<OcrContractResponse> ParseHandwritingAsync(Stream imageStream, OcrContractRequest request);
     Task<string> GradeAnswerAsync(string question, string answer, string context);
     Task<GradingContractResponse> GradeAnswerAsync(GradingContractRequest request);
+    Task<VerificationContractResponse> VerifyAttemptAsync(VerificationContractRequest request);
     Task<ExplainMistakeResponse> ExplainMistakeAsync(ExplainMistakeRequest request);
     Task<CategorySuggestionResponse> SuggestCategoriesAsync(string context, int maxSuggestions);
 }

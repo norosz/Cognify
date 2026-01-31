@@ -1,4 +1,7 @@
+using System.Collections.Generic;
+using System.Text.Json;
 using Cognify.Server.Models;
+using Cognify.Server.Dtos.Ai.Contracts;
 
 namespace Cognify.Server.Services;
 
@@ -214,6 +217,50 @@ public static class AiPrompts
           "questions": [ ... ],
           "quizRubric": "..." (optional)
         }
+        """;
+    }
+
+    public static string BuildBatchVerificationPrompt(
+        List<VerificationItem> items,
+        string? quizRubric)
+    {
+        var itemsJson = JsonSerializer.Serialize(items, new JsonSerializerOptions { WriteIndented = true });
+        
+        return $$"""
+        You are an expert grading assistant. A student has completed a quiz, and some answers were marked as INCORRECT by a strict string-matching system. 
+        Your task is to perform a holistic "second opinion" review of all these answers and decide if any of them are actually CORRECT based on their meaning and the quiz context.
+
+        ### Quiz Content and Student Submissions
+        {{itemsJson}}
+
+        ### Quiz Rubric (if any)
+        {{quizRubric ?? "(none)"}}
+
+        ### Evaluation Criteria
+        1. SEMANTIC EQUALITY: If the student's answer means the same thing as the expected answer, it should be marked as correct.
+        2. FORMATTING VARIATIONS: For Multiple Choice, if the student provided the option text instead of the letter (or vice versa), mark it as correct if it's clear.
+        3. ORDERING/MATCHING: If the sequence or pairs are logically equivalent but formatted slightly differently, mark it as correct.
+        4. TECHNICAL TERMS: Be lenient with capitalization or minor spelling mistakes in technical terms if the meaning is clear.
+        5. SCORE: If you override a mistake to be 'correct', give a score of 100. If you uphold the 'incorrect' status, provide the actual score (0-100).
+
+        ### Mandatory Output Format
+        Return a SINGLE JSON object with the following structure:
+        {
+          "results": [
+            {
+              "questionId": "guid",
+              "score": 0-100,
+              "isCorrect": true/false,
+              "feedback": "Concise explanation of your decision"
+            },
+            ...
+          ]
+        }
+
+        ### Rules
+        1. NO conversational filler. DO NOT wrap the JSON output in markdown code blocks.
+        2. Ensure valid JSON syntax.
+        3. Use LaTeX for math expressions ($...$).
         """;
     }
 }

@@ -51,6 +51,11 @@ public class NullAiService : IAiService
             RawAnalysis: null));
     }
 
+    public Task<VerificationContractResponse> VerifyAttemptAsync(VerificationContractRequest request)
+    {
+        return Task.FromResult(new VerificationContractResponse(request.ContractVersion, []));
+    }
+
     public Task<ExplainMistakeResponse> ExplainMistakeAsync(ExplainMistakeRequest request)
     {
         return Task.FromResult(new ExplainMistakeResponse

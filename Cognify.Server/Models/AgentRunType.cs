@@ -6,5 +6,6 @@ public enum AgentRunType
     QuizGeneration,
     QuizRepair,
     Grading,
-    Analytics
+    Analytics,
+    Verification
 }
