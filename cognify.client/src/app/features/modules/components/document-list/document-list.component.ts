@@ -13,6 +13,7 @@ import { AiService } from '../../../../core/services/ai.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { PendingService } from '../../../../core/services/pending.service';
 import { HandwritingPreviewDialogComponent } from '../handwriting-preview-dialog/handwriting-preview-dialog.component';
+import { ConfirmationDialogComponent } from '../../../../shared/components/confirmation-dialog/confirmation-dialog.component';
 
 @Component({
   selector: 'app-document-list',
@@ -60,18 +61,30 @@ export class DocumentListComponent implements OnInit {
   }
 
   deleteDocument(doc: DocumentDto): void {
-    if (confirm(`Are you sure you want to delete ${doc.fileName}?`)) {
-      this.documentsService.deleteDocument(doc.id).subscribe({
-        next: () => {
-          this.notification.success('Document deleted');
-          this.loadDocuments();
-        },
-        error: (err) => {
-          console.error('Failed to delete document', err);
-          this.notification.error('Failed to delete document');
-        }
-      });
-    }
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Delete Document',
+        message: `Are you sure you want to delete ${doc.fileName}?`,
+        confirmText: 'Delete',
+        isDestructive: true
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.documentsService.deleteDocument(doc.id).subscribe({
+          next: () => {
+            this.notification.success('Document deleted');
+            this.loadDocuments();
+          },
+          error: (err) => {
+            console.error('Failed to delete document', err);
+            this.notification.error('Failed to delete document');
+          }
+        });
+      }
+    });
   }
 
   openDocument(doc: DocumentDto): void {

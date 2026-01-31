@@ -11,6 +11,7 @@ import { QuizService } from '../../services/quiz.service';
 import { QuizDto } from '../../../../core/models/quiz.models';
 import { QuizTakingComponent } from '../quiz-taking/quiz-taking.component';
 import { forkJoin, map, switchMap, of } from 'rxjs';
+import { ConfirmationDialogComponent } from '../../../../shared/components/confirmation-dialog/confirmation-dialog.component';
 
 interface QuizItem {
   quiz: QuizDto;
@@ -81,15 +82,29 @@ export class QuizListComponent implements OnInit {
 
   takeQuiz(quiz: QuizDto) {
     this.dialog.open(QuizTakingComponent, {
-      width: '600px',
+      width: '900px', // Wider
+      height: '85vh',  // Taller
+      maxWidth: '95vw',
       data: { quiz }
     });
   }
 
   deleteQuiz(quiz: QuizDto) {
-    if (confirm('Delete this quiz?')) {
-      this.quizService.deleteQuiz(quiz.id).subscribe(() => this.loadQuizzes());
-    }
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Delete Quiz',
+        message: 'Are you sure you want to delete this quiz?',
+        confirmText: 'Delete',
+        isDestructive: true
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.quizService.deleteQuiz(quiz.id).subscribe(() => this.loadQuizzes());
+      }
+    });
   }
 
   getQuizTypeInfo(type: string) {

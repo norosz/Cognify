@@ -1,0 +1,13 @@
+<h2 mat-dialog-title>Delete Module</h2>
+<mat-dialog-content>
+    <p>Are you sure you want to delete <strong>{{ data.moduleTitle }}</strong>?</p>
+    <p class="text-warn">
+        <mat-icon class="warn-icon">warning</mat-icon>
+        This action cannot be undone. All associated documents, notes, quizzes, and exam history will be permanently
+        deleted.
+    </p>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+    <button mat-button (click)="cancel()">Cancel</button>
+    <button mat-flat-button color="warn" (click)="confirmDelete()">Delete Forever</button>
+</mat-dialog-actions>

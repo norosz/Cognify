@@ -11,6 +11,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { PendingService, ExtractedContentDto, PendingQuizDto } from '../../core/services/pending.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { HandwritingPreviewDialogComponent } from '../modules/components/handwriting-preview-dialog/handwriting-preview-dialog.component';
+import { ConfirmationDialogComponent } from '../../shared/components/confirmation-dialog/confirmation-dialog.component';
 
 @Component({
   selector: 'app-pending',
@@ -96,14 +97,26 @@ export class PendingComponent implements OnInit {
   }
 
   deleteExtractedContent(id: string): void {
-    if (confirm('Are you sure you want to discard this extraction?')) {
-      this.pendingService.deleteExtractedContent(id).subscribe({
-        next: () => {
-          this.notificationService.success('Extraction discarded');
-          this.loadPendingItems();
-        }
-      });
-    }
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Discard Extraction',
+        message: 'Are you sure you want to discard this extraction?',
+        confirmText: 'Discard',
+        isDestructive: true
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.pendingService.deleteExtractedContent(id).subscribe({
+          next: () => {
+            this.notificationService.success('Extraction discarded');
+            this.loadPendingItems();
+          }
+        });
+      }
+    });
   }
 
   saveQuiz(quiz: PendingQuizDto): void {
@@ -141,14 +154,26 @@ export class PendingComponent implements OnInit {
   }
 
   deleteQuiz(id: string): void {
-    if (confirm('Are you sure you want to discard this quiz?')) {
-      this.pendingService.deletePendingQuiz(id).subscribe({
-        next: () => {
-          this.notificationService.success('Quiz discarded');
-          this.loadPendingItems();
-        }
-      });
-    }
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Discard Quiz',
+        message: 'Are you sure you want to discard this quiz?',
+        confirmText: 'Discard',
+        isDestructive: true
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.pendingService.deletePendingQuiz(id).subscribe({
+          next: () => {
+            this.notificationService.success('Quiz discarded');
+            this.loadPendingItems();
+          }
+        });
+      }
+    });
   }
 
   getExtractionIcon(status: string): string {

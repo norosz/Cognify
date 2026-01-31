@@ -39,14 +39,14 @@
 .questions-list {
     display: flex;
     flex-direction: column;
-    gap: 32px;
-    padding: 16px 0;
+    gap: 48px; // More spacing between questions
+    padding: 24px 16px; // Side padding
 }
 
 .question-item {
     background: rgba(255, 255, 255, 0.02);
-    padding: 16px;
-    border-radius: 12px;
+    padding: 32px; // generous inner padding
+    border-radius: 16px;
     border: 1px solid rgba(255, 255, 255, 0.05);
 }
 

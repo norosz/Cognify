@@ -125,14 +125,54 @@ public class ModuleService(ApplicationDbContext context, IUserContextService use
     public async Task<bool> DeleteModuleAsync(Guid id)
     {
         var userId = userContext.GetCurrentUserId();
-        var module = await context.Modules
-            .FirstOrDefaultAsync(m => m.Id == id && m.OwnerUserId == userId);
+        
+        // Use ExecutionStrategy for retry compatibility
+        var strategy = context.Database.CreateExecutionStrategy();
 
-        if (module == null) return false;
+        return await strategy.ExecuteAsync(async () =>
+        {
+            using var transaction = await context.Database.BeginTransactionAsync();
+            try
+            {
+                // Re-query module inside the execution strategy
+                var module = await context.Modules
+                    .FirstOrDefaultAsync(m => m.Id == id && m.OwnerUserId == userId);
 
-        context.Modules.Remove(module);
-        await context.SaveChangesAsync();
-        return true;
+                if (module == null) return false;
+
+                // 1. Delete ExtractedContents (NoAction)
+                await context.ExtractedContents
+                    .Where(e => e.ModuleId == id)
+                    .ExecuteDeleteAsync();
+
+                // 2. Delete ExamAttempts (NoAction)
+                await context.ExamAttempts
+                    .Where(e => e.ModuleId == id)
+                    .ExecuteDeleteAsync();
+
+                // 3. Delete PendingQuizzes (NoAction)
+                await context.PendingQuizzes
+                    .Where(p => p.ModuleId == id)
+                    .ExecuteDeleteAsync();
+
+                // 4. Delete Notes (NoAction)
+                await context.Notes
+                    .Where(n => n.ModuleId == id)
+                    .ExecuteDeleteAsync();
+
+                // 5. Delete the Module itself
+                context.Modules.Remove(module);
+                await context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        });
     }
 
     private static string BuildModuleCreationContext(string title, string? description)

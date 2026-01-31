@@ -16,6 +16,7 @@ import { AdaptiveQuizService } from '../../core/services/adaptive-quiz.service';
 import { PendingService } from '../../core/services/pending.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { ReviewQueueItemDto, UserKnowledgeStateDto } from '../../core/models/knowledge.models';
+import { DeleteModuleConfirmationDialogComponent } from '../modules/components/delete-module-confirmation-dialog/delete-module-confirmation-dialog.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -193,16 +194,62 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  deleteModule(event: Event, id: string) {
+  deletingModuleId = signal<string | null>(null);
+  deleteStatusMessage = signal<string>('');
+  private statusMessages = [
+    'Removing documents...',
+    'Deleting quizzes...',
+    'Cleaning up exam history...',
+    'Removing notes...',
+    'Finalizing deletion...'
+  ];
+
+  deleteModule(event: Event, module: ModuleDto) {
     event.stopPropagation();
     event.preventDefault();
 
-    if (confirm('Are you sure you want to delete this module? All associated documents and notes will be deleted.')) {
-      this.moduleService.deleteModule(id).subscribe({
-        next: () => this.loadModules(),
-        error: (err) => console.error('Failed to delete module', err)
-      });
-    }
+    const dialogRef = this.dialog.open(DeleteModuleConfirmationDialogComponent, {
+      width: '400px',
+      data: { moduleId: module.id, moduleTitle: module.title }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.startModuleDeletion(module.id);
+      }
+    });
+  }
+
+  startModuleDeletion(id: string) {
+    this.deletingModuleId.set(id);
+    this.cycleStatusMessages();
+
+    this.moduleService.deleteModule(id).subscribe({
+      next: () => {
+        this.deletingModuleId.set(null);
+        this.loadModules();
+        this.notificationService.success('Module deleted successfully');
+      },
+      error: (err) => {
+        console.error('Failed to delete module', err);
+        this.deletingModuleId.set(null);
+        this.notificationService.error('Failed to delete module');
+      }
+    });
+  }
+
+  private cycleStatusMessages() {
+    let index = 0;
+    this.deleteStatusMessage.set(this.statusMessages[0]);
+
+    const interval = setInterval(() => {
+      if (!this.deletingModuleId()) {
+        clearInterval(interval);
+        return;
+      }
+      index = (index + 1) % this.statusMessages.length;
+      this.deleteStatusMessage.set(this.statusMessages[index]);
+    }, 800);
   }
 
   hasNotesForAdaptiveQuizzes(): boolean {

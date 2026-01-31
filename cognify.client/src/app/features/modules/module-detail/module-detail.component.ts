@@ -146,6 +146,20 @@ export class ModuleDetailComponent implements OnInit {
     }
   }
 
+  onNoteDeleted() {
+    if (this.quizList) {
+      this.quizList.loadQuizzes();
+    }
+    // Also refresh stats as note count changes
+    const module = this.module();
+    if (module) {
+      this.moduleService.getModuleStats(module.id).subscribe({
+        next: (stats) => this.moduleStats.set(stats),
+        error: () => null
+      });
+    }
+  }
+
   loadFinalExam(moduleId: string) {
     this.finalExamLoading.set(true);
     this.finalExamService.getFinalExam(moduleId).subscribe({
@@ -226,7 +240,9 @@ export class ModuleDetailComponent implements OnInit {
     if (!moduleId || !currentExam?.currentQuizId) return;
 
     const dialogRef = this.dialog.open(ExamTakingComponent, {
-      width: '700px',
+      width: '1000px', // Large modal
+      height: '90vh',
+      maxWidth: '95vw',
       data: { moduleId, quizId: currentExam.currentQuizId }
     });
 

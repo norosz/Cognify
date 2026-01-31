@@ -15,6 +15,7 @@ import { Router } from '@angular/router';
 import { NoteEditorDialogComponent } from '../note-editor-dialog/note-editor-dialog.component';
 import { QuizGenerationDialogComponent } from '../../../modules/components/quiz-generation-dialog/quiz-generation-dialog.component';
 import { MarkdownLatexPipe } from '../../../../shared/pipes/markdown-latex.pipe';
+import { ConfirmationDialogComponent } from '../../../../shared/components/confirmation-dialog/confirmation-dialog.component';
 
 @Component({
     selector: 'app-notes-list',
@@ -36,6 +37,7 @@ import { MarkdownLatexPipe } from '../../../../shared/pipes/markdown-latex.pipe'
 export class NotesListComponent implements OnInit {
     @Input() moduleId!: string;
     @Output() quizGenerated = new EventEmitter<void>();
+    @Output() noteDeleted = new EventEmitter<void>();
 
     notes = signal<Note[]>([]);
     isLoading = signal<boolean>(false);
@@ -99,8 +101,9 @@ export class NotesListComponent implements OnInit {
 
     openEditor(note?: Note): void {
         const dialogRef = this.dialog.open(NoteEditorDialogComponent, {
-            width: '900px',
+            width: '1000px',
             maxWidth: '95vw',
+            height: '90vh', // Fixed height for full screen feel
             data: { moduleId: this.moduleId, note: note }
         });
 
@@ -113,18 +116,31 @@ export class NotesListComponent implements OnInit {
     }
 
     deleteNote(note: Note): void {
-        if (confirm(`Are you sure you want to delete note "${note.title}"?`)) {
-            this.noteService.deleteNote(note.id).subscribe({
-                next: () => {
-                    this.loadNotes();
-                    this.notification.success('Note deleted');
-                },
-                error: (err) => {
-                    console.error('Error deleting note:', err);
-                    this.notification.error('Failed to delete note');
-                }
-            });
-        }
+        const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+            width: '400px',
+            data: {
+                title: 'Delete Note',
+                message: `Are you sure you want to delete "${note.title}"? associated quizzes will be deleted (except Final Exams).`,
+                confirmText: 'Delete',
+                isDestructive: true
+            }
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+            if (result) {
+                this.noteService.deleteNote(note.id).subscribe({
+                    next: () => {
+                        this.loadNotes();
+                        this.notification.success('Note deleted');
+                        this.noteDeleted.emit();
+                    },
+                    error: (err) => {
+                        console.error('Error deleting note:', err);
+                        this.notification.error('Failed to delete note');
+                    }
+                });
+            }
+        });
     }
 
     updateExamInclusion(note: Note, includeInFinalExam: boolean): void {

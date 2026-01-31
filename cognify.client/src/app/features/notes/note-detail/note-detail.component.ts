@@ -17,6 +17,7 @@ import { NotificationService } from '../../../core/services/notification.service
 import { AiService } from '../../../core/services/ai.service';
 import { DocumentsService } from '../../modules/services/documents.service';
 import { NoteImagePreviewDialogComponent } from '../components/note-image-preview-dialog/note-image-preview-dialog.component';
+import { ConfirmationDialogComponent } from '../../../shared/components/confirmation-dialog/confirmation-dialog.component';
 
 @Component({
   selector: 'app-note-detail',
@@ -156,18 +157,30 @@ export class NoteDetailComponent implements OnInit {
   }
 
   deleteDocument(doc: NoteSourceDocumentDto) {
-    if (confirm(`Delete ${doc.fileName}?`)) {
-      this.documentsService.deleteDocument(doc.documentId).subscribe({
-        next: () => {
-          this.notification.success('Document deleted');
-          const noteId = this.note()?.id;
-          if (noteId) {
-            this.loadSources(noteId);
-          }
-        },
-        error: () => this.notification.error('Failed to delete document')
-      });
-    }
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Delete Document',
+        message: `Delete ${doc.fileName}?`,
+        confirmText: 'Delete',
+        isDestructive: true
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.documentsService.deleteDocument(doc.documentId).subscribe({
+          next: () => {
+            this.notification.success('Document deleted');
+            const noteId = this.note()?.id;
+            if (noteId) {
+              this.loadSources(noteId);
+            }
+          },
+          error: () => this.notification.error('Failed to delete document')
+        });
+      }
+    });
   }
 
   isExtracting(docId: string): boolean {

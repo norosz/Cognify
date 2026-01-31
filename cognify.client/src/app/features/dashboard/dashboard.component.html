@@ -31,7 +31,8 @@
                 @for (item of reviewQueue(); track item.topic) {
                 <li>
                     <span class="topic-name">{{ item.topic }}</span>
-                    <span class="topic-meta">Due {{ item.nextReviewAt ? (item.nextReviewAt | date: 'MMM d') : 'soon' }}</span>
+                    <span class="topic-meta">Due {{ item.nextReviewAt ? (item.nextReviewAt | date: 'MMM d') : 'soon'
+                        }}</span>
                 </li>
                 }
             </ul>
@@ -81,67 +82,75 @@
             </button>
         </mat-card-actions>
     </mat-card>
-    </div>
+</div>
 
-    <div class="modules-grid">
-        @for (module of modules(); track module.id) {
-        <mat-card class="module-card cognify-glass-card cursor-pointer" [routerLink]="['/modules', module.id]">
-            <mat-card-header>
-                <mat-card-title>{{ module.title }}</mat-card-title>
-                <mat-card-subtitle>Created {{ module.createdAt | date }}</mat-card-subtitle>
-            </mat-card-header>
-            <mat-card-content>
-                <p>{{ module.description || 'No description provided.' }}</p>
+<div class="modules-grid">
+    @for (module of modules(); track module.id) {
+    <mat-card class="module-card cognify-glass-card cursor-pointer" [class.deleting]="deletingModuleId() === module.id"
+        [routerLink]="['/modules', module.id]">
+        @if (deletingModuleId() === module.id) {
+        <div class="delete-overlay">
+            <mat-progress-spinner mode="indeterminate" diameter="40"></mat-progress-spinner>
+            <p class="delete-status">{{ deleteStatusMessage() }}</p>
+        </div>
+        }
+        <mat-card-header>
+            <mat-card-title>{{ module.title }}</mat-card-title>
+            <mat-card-subtitle>Created {{ module.createdAt | date }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+            <p>{{ module.description || 'No description provided.' }}</p>
 
-                <p class="module-category" *ngIf="module.categoryLabel">
-                    Category: {{ module.categoryLabel }}
-                </p>
+            <p class="module-category" *ngIf="module.categoryLabel">
+                Category: {{ module.categoryLabel }}
+            </p>
 
-                <div class="stats-row">
-                    <div class="stat-item">
-                        <mat-icon>description</mat-icon>
-                        <div class="stat-text">
-                            <span class="stat-label">Documents</span>
-                            <span class="stat-value">{{ module.documentsCount || 0 }}</span>
-                        </div>
-                    </div>
-                    <div class="stat-item">
-                        <mat-icon>event_note</mat-icon>
-                        <div class="stat-text">
-                            <span class="stat-label">Notes</span>
-                            <span class="stat-value">{{ module.notesCount || 0 }}</span>
-                        </div>
-                    </div>
-                    <div class="stat-item">
-                        <mat-icon>school</mat-icon>
-                        <div class="stat-text">
-                            <span class="stat-label">Quizzes &amp; Exams</span>
-                            <span class="stat-value">{{ module.quizzesCount || 0 }}</span>
-                        </div>
+            <div class="stats-row">
+                <div class="stat-item">
+                    <mat-icon>description</mat-icon>
+                    <div class="stat-text">
+                        <span class="stat-label">Documents</span>
+                        <span class="stat-value">{{ module.documentsCount || 0 }}</span>
                     </div>
                 </div>
+                <div class="stat-item">
+                    <mat-icon>event_note</mat-icon>
+                    <div class="stat-text">
+                        <span class="stat-label">Notes</span>
+                        <span class="stat-value">{{ module.notesCount || 0 }}</span>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <mat-icon>school</mat-icon>
+                    <div class="stat-text">
+                        <span class="stat-label">Quizzes &amp; Exams</span>
+                        <span class="stat-value">{{ module.quizzesCount || 0 }}</span>
+                    </div>
+                </div>
+            </div>
 
-            </mat-card-content>
-            <mat-card-actions align="end">
-                <button mat-icon-button [matMenuTriggerFor]="menu" (click)="$event.stopPropagation()">
-                    <mat-icon>more_vert</mat-icon>
+        </mat-card-content>
+        <mat-card-actions align="end">
+            <button mat-icon-button [matMenuTriggerFor]="menu" (click)="$event.stopPropagation()"
+                [disabled]="deletingModuleId() === module.id">
+                <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #menu="matMenu">
+                <button mat-menu-item (click)="openEditModuleDialog($event, module)">
+                    <mat-icon>edit</mat-icon> Edit
                 </button>
-                <mat-menu #menu="matMenu">
-                    <button mat-menu-item (click)="openEditModuleDialog($event, module)">
-                        <mat-icon>edit</mat-icon> Edit
-                    </button>
-                    <button mat-menu-item class="delete-item" (click)="deleteModule($event, module.id)">
-                        <mat-icon color="warn">delete</mat-icon> Delete
-                    </button>
-                </mat-menu>
-            </mat-card-actions>
-        </mat-card>
-        } @empty {
-        <mat-card class="empty-state cognify-glass-card">
-            <mat-card-content class="empty-state-content">
-                <mat-icon class="huge-icon">library_books</mat-icon>
-                <p>No modules yet. Create your first one!</p>
-            </mat-card-content>
-        </mat-card>
-        }
-    </div>
+                <button mat-menu-item class="delete-item" (click)="deleteModule($event, module)">
+                    <mat-icon color="warn">delete</mat-icon> Delete
+                </button>
+            </mat-menu>
+        </mat-card-actions>
+    </mat-card>
+    } @empty {
+    <mat-card class="empty-state cognify-glass-card">
+        <mat-card-content class="empty-state-content">
+            <mat-icon class="huge-icon">library_books</mat-icon>
+            <p>No modules yet. Create your first one!</p>
+        </mat-card-content>
+    </mat-card>
+    }
+</div>
