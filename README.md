@@ -1,6 +1,6 @@
 # 🧠 Cognify: Personalized Cognitive Tutor Platform
 
-> **An AI-powered adaptive learning system that models the learner’s cognition and dynamically adjusts teaching strategy.**
+> **Originally developed as part of a university AI systems course, this project has been extended into a full adaptive learning platform.**
 
 Cognify goes beyond simple quizzes to build a persistent **User Knowledge Model**, predicting memory decay and adapting content to each learner’s style, performance patterns, and conceptual gaps.  
 It operates as a **closed-loop AI learning system**, where every interaction refines the model and influences future content.
